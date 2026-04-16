@@ -11,7 +11,7 @@ function LandingVolume() {
       <header style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding: '1.5rem 2rem', background: 'var(--card-bg)', backdropFilter: 'blur(10px)', borderBottom: '1px solid var(--border)', position: 'sticky', top:0, zIndex: 100}}>
         <div style={{display:'flex', alignItems:'center', gap:'0.75rem', fontWeight:'800', fontSize:'1.4rem'}}>
           <div className="brand-logo" style={{width:'32px', height:'32px', fontSize:'1rem', margin:0, boxShadow:'none'}}>TJ</div>
-          TrendJacker SaaS
+          Asisto SaaS
         </div>
         <div style={{display:'flex', gap:'1rem'}}>
           <a href="/admin" style={{color: 'var(--text-secondary)', textDecoration: 'none', fontWeight:'500', padding:'0.5rem 1rem'}}>Acceder al Panel</a>
@@ -45,7 +45,7 @@ function LandingVolume() {
           <div style={{background: 'var(--card-bg)', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border)'}}>
            <Zap size={32} color="#10b981" style={{marginBottom:'1rem'}}/>
            <h3 style={{fontSize:'1.3rem', margin:'0 0 0.5rem 0'}}>2FA & Seguridad</h3>
-           <p style={{color:'var(--text-secondary)', margin:0, lineHeight:'1.5'}}>Protege tus campañas de difusión. TrendJacker valida por código directo envíos masivos para proteger tu número de Meta.</p>
+           <p style={{color:'var(--text-secondary)', margin:0, lineHeight:'1.5'}}>Protege tus campañas de difusión. Asisto valida por código directo envíos masivos para proteger tu número de Meta.</p>
           </div>
           <div style={{background: 'var(--card-bg)', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border)'}}>
            <TrendingUp size={32} color="#8b5cf6" style={{marginBottom:'1rem'}}/>
@@ -81,7 +81,7 @@ function LandingVolume() {
       </section>
       
       <footer style={{padding: '2rem', textAlign: 'center', borderTop: '1px solid var(--border)', color: 'var(--text-secondary)', fontSize: '0.9rem'}}>
-        © 2026 TrendJacker AI. Todos los derechos reservados.
+        © 2026 Asisto AI. Todos los derechos reservados.
       </footer>
     </div>
   );

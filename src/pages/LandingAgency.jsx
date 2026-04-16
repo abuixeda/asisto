@@ -9,7 +9,7 @@ function LandingAgency() {
       <header style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding: '1.5rem 2rem', position: 'absolute', top:0, width:'100%', boxSizing:'border-box', zIndex: 100}}>
         <div style={{display:'flex', alignItems:'center', gap:'0.75rem', fontWeight:'800', fontSize:'1.4rem'}}>
           <div className="brand-logo" style={{width:'32px', height:'32px', fontSize:'1rem', margin:0, background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)'}}>TJ</div>
-          Savage Elite
+          Asisto Premium
         </div>
         <div style={{display:'flex', gap:'1rem'}}>
           <a href="/admin" style={{color: 'var(--text-secondary)', textDecoration: 'none', fontWeight:'500', padding:'0.5rem 1rem'}}>Acceso Clientes</a>
@@ -25,7 +25,7 @@ function LandingAgency() {
         <p style={{fontSize: '1.3rem', color: 'var(--text-secondary)', maxWidth: '700px', margin: '0 auto 3rem auto', lineHeight: '1.6'}}>
           Un servicio "Llave en Mano" para comercios físicos y de servicios. Nosotros entrenamos a la Inteligencia Artificial con tus precios, horarios y reglas. La instalamos, la monitoreamos y te liberamos de WhatsApp.
         </p>
-        <button onClick={() => window.open('https://wa.me/5491100000000?text=Hola,%20vengo%20de%20la%20invitaci%C3%B3n%20VIP%20Savage%20Elite', '_blank')} className="btn-solid-blue" style={{background: 'linear-gradient(135deg, #3b82f6, #6366f1)', fontSize: '1.2rem', padding: '1.2rem 3rem', width: 'auto', borderRadius: '99px', margin: '0 auto', boxShadow: '0 10px 25px rgba(59, 130, 246, 0.3)', color: '#ffffff'}}>
+        <button onClick={() => window.open('https://wa.me/5491100000000?text=Hola,%20vengo%20de%20la%20invitaci%C3%B3n%20VIP%20Asisto%20Premium', '_blank')} className="btn-solid-blue" style={{background: 'linear-gradient(135deg, #3b82f6, #6366f1)', fontSize: '1.2rem', padding: '1.2rem 3rem', width: 'auto', borderRadius: '99px', margin: '0 auto', boxShadow: '0 10px 25px rgba(59, 130, 246, 0.3)', color: '#ffffff'}}>
           Agendar Entrevista de Análisis <ChevronRight size={20} />
         </button>
       </section>
@@ -76,7 +76,7 @@ function LandingAgency() {
       </section>
 
       <footer style={{padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.9rem'}}>
-        © 2026 TrendJacker Agency. Un servicio personalizado.
+        © 2026 Asisto Agency. Un servicio personalizado.
       </footer>
     </div>
   );

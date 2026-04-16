@@ -41,7 +41,7 @@ function LoginScreen({ onLogin }) {
       <div className="login-box">
         <div className="login-header">
           <div className="brand-logo">TJ</div>
-          <h2>TrendJacker AI</h2>
+          <h2>Asisto AI</h2>
           <p>{isRegistering ? 'Crea tu Espacio de Trabajo' : 'Portal de Acceso Privado SaaS'}</p>
         </div>
         
