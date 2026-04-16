@@ -4,7 +4,8 @@ import { Settings, Smartphone, Loader, BrainCircuit, MessageCircle, Users, Trend
 import { QRCodeSVG } from 'qrcode.react';
 import '../index.css';
 
-const socket = io('http://localhost:3001');
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const socket = io(API_URL);
 
 function LoginScreen({ onLogin }) {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -18,7 +19,7 @@ function LoginScreen({ onLogin }) {
     e.preventDefault();
     setLoading(true);
     setError('');
-    const endpoint = isRegistering ? 'http://localhost:3001/api/register' : 'http://localhost:3001/api/login';
+    const endpoint = isRegistering ? `${API_URL}/api/register` : `${API_URL}/api/login`;
     const payload = isRegistering ? { name, email, password } : { email, password };
     
     try {
@@ -29,6 +30,7 @@ function LoginScreen({ onLogin }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Credenciales inválidas o error de red.');
+      localStorage.setItem('asisto_user', JSON.stringify(data.user));
       setTimeout(() => onLogin(data.user), 500); 
     } catch (err) {
       setError(err.message);
@@ -78,7 +80,10 @@ function LoginScreen({ onLogin }) {
 }
 
 function Dashboard() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+     const savedUser = localStorage.getItem('asisto_user');
+     return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [bots, setBots] = useState([]);
   const [qrCodes, setQrCodes] = useState({});
   
@@ -102,10 +107,20 @@ function Dashboard() {
   const [verificationCode, setVerificationCode] = useState({});
   const [isVerifyingMFA, setIsVerifyingMFA] = useState({});
 
+  // States Debtors
+  const [debtors, setDebtors] = useState({});
+  const [newDebtor, setNewDebtor] = useState({});
+
   const fetchBots = () => {
-    fetch('http://localhost:3001/api/bots')
+    fetch(`${API_URL}/api/bots`)
       .then(res => res.json())
       .then(data => setBots(data));
+  };
+
+  const fetchDebtors = async (botId) => {
+    const res = await fetch(`${API_URL}/api/bots/${botId}/debtors`);
+    const data = await res.json();
+    setDebtors(prev => ({...prev, [botId]: data}));
   };
 
   useEffect(() => {
@@ -117,7 +132,7 @@ function Dashboard() {
       setBots(prev => prev.map(bot => bot.id === data.id ? { ...bot, ...data } : bot));
     });
     socket.on('bot_updated', (data) => {
-      setBots(prev => prev.map(bot => bot.id === data.id ? { ...bot, prompt: data.prompt, knowledgeBase: data.knowledgeBase, shopifyUrl: data.shopifyUrl, metrics: {...bot.metrics, workingHours: data.workingHours} } : bot));
+      setBots(prev => prev.map(bot => bot.id === data.id ? { ...bot, prompt: data.prompt, knowledgeBase: data.knowledgeBase, shopifyUrl: data.shopifyUrl, metrics: {...bot.metrics, workingHours: data.workingHours, hasDebtorsFeature: data.hasDebtorsFeature} } : bot));
     });
     socket.on('bot_added', fetchBots);
     socket.on('qr_code', (data) => {
@@ -151,10 +166,10 @@ function Dashboard() {
 
   const handleStart = async (id) => {
     setQrCodes(prev => ({ ...prev, [id]: null }));
-    await fetch(`http://localhost:3001/api/bots/${id}/start`, { method: 'POST' });
+    await fetch(`${API_URL}/api/bots/${id}/start`, { method: 'POST' });
   };
   const handleStop = async (id) => {
-    await fetch(`http://localhost:3001/api/bots/${id}/stop`, { method: 'POST' });
+    await fetch(`${API_URL}/api/bots/${id}/stop`, { method: 'POST' });
     setQrCodes(prev => ({ ...prev, [id]: null }));
   };
 
@@ -173,7 +188,7 @@ function Dashboard() {
 
     if (Object.keys(bodyData).length === 0) return;
     
-    await fetch(`http://localhost:3001/api/bots/${botId}/prompt`, {
+    await fetch(`${API_URL}/api/bots/${botId}/prompt`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bodyData)
@@ -192,7 +207,7 @@ function Dashboard() {
 
   const handleAddClient = async (e) => {
     e.preventDefault();
-    await fetch('http://localhost:3001/api/bots', {
+    await fetch(`${API_URL}/api/bots`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newClient)
@@ -205,7 +220,7 @@ function Dashboard() {
     const phone = adminPhoneToVerify[botId];
     if (!phone) return alert('Por favor ingresa un número de teléfono válido.');
     
-    const res = await fetch(`http://localhost:3001/api/bots/${botId}/mfa/send`, {
+    const res = await fetch(`${API_URL}/api/bots/${botId}/mfa/send`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone })
@@ -222,7 +237,7 @@ function Dashboard() {
     const code = verificationCode[botId];
     if (!code) return;
     
-    const res = await fetch(`http://localhost:3001/api/bots/${botId}/mfa/verify`, {
+    const res = await fetch(`${API_URL}/api/bots/${botId}/mfa/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code })
@@ -263,7 +278,7 @@ function Dashboard() {
               <Plus size={18} /> Alta Cliente
             </button>
           )}
-          <button className="btn-logout" onClick={() => setUser(null)}>
+          <button className="btn-logout" onClick={() => { localStorage.removeItem('asisto_user'); setUser(null); }}>
             <LogOut size={16} /> Salir
           </button>
         </div>
@@ -362,6 +377,9 @@ function Dashboard() {
                   className={`btn-settings ${openSettingsId === bot.id ? 'active' : ''}`} 
                   title="Ajustes y Parámetros del Cerebro AI"
                   onClick={() => {
+                    if (openSettingsId !== bot.id) {
+                        fetchDebtors(bot.id);
+                    }
                     setOpenSettingsId(openSettingsId === bot.id ? null : bot.id);
                     if (editingPrompt[bot.id] === undefined) {
                       setEditingPrompt({...editingPrompt, [bot.id]: bot.prompt || ''});
@@ -472,6 +490,8 @@ function Dashboard() {
                   </div>
                 )}
                 
+
+
                 <div className="prompt-header" style={{marginTop:'1.5rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
                   <Lock size={20} color="#8b5cf6" />
                   <h3 style={{color: '#8b5cf6'}}>Seguridad: Celular de Administrador</h3>
@@ -479,8 +499,8 @@ function Dashboard() {
                 <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:'0 0 0.5rem 0'}}>Vincula el número del dueño o encargados (puedes agregar hasta 5 números separados por coma) para autorizar acciones seguras.</p>
                 
                 <div style={{display:'flex', gap:'10px', marginBottom:'10px'}}>
-                  <input className="modal-input" placeholder="Ej: 549112345678, 549118765432" value={adminPhoneToVerify[bot.id] || ''} onChange={e => setAdminPhoneToVerify({...adminPhoneToVerify, [bot.id]: e.target.value})} disabled={bot.status !== 'ON'} />
-                  <button className="btn-solid-blue" style={{background: '#8b5cf6', width:'auto', padding:'0.6rem 1rem'}} onClick={() => handleSendMFA(bot.id)} disabled={bot.status !== 'ON'}>
+                  <input className="modal-input" placeholder="Ej: 549112345678, 549118765432" value={adminPhoneToVerify[bot.id] || ''} onChange={e => setAdminPhoneToVerify({...adminPhoneToVerify, [bot.id]: e.target.value})} />
+                  <button className="btn-solid-blue" style={{background: '#8b5cf6', width:'auto', padding:'0.6rem 1rem'}} onClick={() => handleSendMFA(bot.id)}>
                     Validar Nro
                   </button>
                 </div>
@@ -495,6 +515,101 @@ function Dashboard() {
                   <button id={`save-btn-${bot.id}`} className="btn-solid-blue" onClick={() => handleSavePrompt(bot.id)} style={{width:'auto', padding:'0.6rem 1.25rem', marginTop:0}}>
                     <Save size={16} /> Actualizar Cerebro
                   </button>
+                </div>
+
+                {/* ===== UPSELLS / BLOCKED FEATURES AT THE BOTTOM ===== */}
+                <div style={{marginTop:'2rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
+                  {bot.metrics?.hasDebtorsFeature ? (
+                    <>
+                      <div className="prompt-header">
+                        <Users size={20} color="#ef4444" />
+                        <h3 style={{color: '#ef4444'}}>Motor Asistente Automático (Gestión de Deudores)</h3>
+                      </div>
+                      
+                      {user.role === 'admin' && (
+                        <div style={{display:'flex', gap:'10px', alignItems:'center', marginBottom:'10px'}}>
+                          <label className="ios-toggle">
+                            <input 
+                              type="checkbox" 
+                              checked={bot.metrics?.hasDebtorsFeature || false} 
+                              onChange={async (e) => {
+                                  const val = e.target.checked;
+                                  // Optimistic Update
+                                  setBots(prev => prev.map(b => b.id === bot.id ? { ...b, metrics: { ...b.metrics, hasDebtorsFeature: val } } : b));
+                                  await fetch(`${API_URL}/api/bots/${bot.id}/prompt`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hasDebtorsFeature: val }) });
+                              }} 
+                            />
+                            <span className="slider"></span>
+                          </label>
+                          <span style={{color: 'gray', fontWeight: 'bold'}}>Habilitar Servicio Elite (Solo Admin)</span>
+                        </div>
+                      )}
+
+                      <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:'0 0 0.5rem 0'}}>Agenda un cliente aquí y la IA cobrará de forma elegante a las 10:00 AM cada día en automático.</p>
+                      
+                      <div style={{display:'flex', gap:'5px', marginBottom:'10px', flexWrap:'wrap'}}>
+                        <input className="modal-input" placeholder="Nombre" style={{flex: 1, minWidth: '100px'}} value={newDebtor[bot.id]?.name || ''} onChange={e => setNewDebtor({...newDebtor, [bot.id]: {...newDebtor[bot.id], name: e.target.value}})} />
+                        <input className="modal-input" placeholder="Wsp (Ej: 549112233)" style={{flex: 1, minWidth: '100px'}} value={newDebtor[bot.id]?.phone || ''} onChange={e => setNewDebtor({...newDebtor, [bot.id]: {...newDebtor[bot.id], phone: e.target.value}})} />
+                        <input className="modal-input" placeholder="Monto ($)" type="number" style={{flex: 1, minWidth: '100px'}} value={newDebtor[bot.id]?.amount || ''} onChange={e => setNewDebtor({...newDebtor, [bot.id]: {...newDebtor[bot.id], amount: e.target.value}})} />
+                        <button className="btn-solid-blue" style={{background: '#ef4444', width:'auto', padding:'0.6rem 1rem'}} onClick={async () => {
+                            const d = newDebtor[bot.id];
+                            if(!d || !d.name || !d.phone || !d.amount) return alert('Completa todos los campos');
+                            await fetch(`${API_URL}/api/bots/${bot.id}/debtors`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(d) });
+                            setNewDebtor({...newDebtor, [bot.id]: {name:'', phone:'', amount:''}});
+                            fetchDebtors(bot.id);
+                        }}>Cargar</button>
+                      </div>
+
+                      {debtors[bot.id] && debtors[bot.id].length > 0 && (
+                        <div style={{background: 'rgba(239, 68, 68, 0.05)', borderRadius:'8px', border:'1px solid rgba(239, 68, 68, 0.2)', padding:'10px', maxHeight: '150px', overflowY: 'auto'}}>
+                          {debtors[bot.id].map(d => (
+                              <div key={d.id} style={{display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom: '1px solid rgba(239, 68, 68, 0.1)', padding:'5px 0'}}>
+                                  <div style={{fontSize:'0.85rem'}}>
+                                      <strong style={{color: d.status === 'pending' ? '#ef4444' : '#10b981'}}>{d.name}</strong> - ${d.amount} <br/><span style={{color:'gray', fontSize:'0.75rem'}}>+{d.phone} ({d.status})</span>
+                                  </div>
+                                  <div style={{display:'flex', gap:'5px'}}>
+                                    {d.status === 'pending' && (
+                                      <button style={{background:'#10b981', color:'white', border:'none', borderRadius:'4px', padding:'4px 8px', cursor:'pointer', fontSize:'0.75rem'}} onClick={async () => {
+                                          await fetch(`${API_URL}/api/bots/${bot.id}/debtors/${d.id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status: 'paid'}) });
+                                          fetchDebtors(bot.id);
+                                      }}>Pagó</button>
+                                    )}
+                                    <button style={{background:'transparent', color:'var(--text-secondary)', border:'1px solid var(--border)', borderRadius:'4px', padding:'4px 8px', cursor:'pointer', fontSize:'0.75rem'}} onClick={async () => {
+                                        await fetch(`${API_URL}/api/bots/${bot.id}/debtors/${d.id}`, { method: 'DELETE' });
+                                        fetchDebtors(bot.id);
+                                    }}>Borrar</button>
+                                  </div>
+                              </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div style={{background: 'rgba(0,0,0,0.02)', border: '1px dashed rgba(255,255,255,0.1)', padding: '1.5rem', borderRadius: '8px', textAlign: 'center', width: '100%', boxSizing: 'border-box', opacity: '0.6'}}>
+                        <Lock size={32} color="gray" style={{margin: '0 auto 10px auto', display: 'block'}}/>
+                        <h4 style={{margin: '0 0 5px 0', color: 'gray'}}>Terminal Recordatorio de Pagos a Clientes</h4>
+                        <p style={{margin: 0, fontSize: '0.85rem', color: 'gray'}}>Comunícate con Soporte para adquirir esta función Elite. La IA enviará alertas de cobro amigables por WhatsApp a tus clientes deudores de forma 100% automática a las 10:00 AM.</p>
+                        
+                        {user.role === 'admin' && (
+                          <div style={{display:'inline-flex', gap:'10px', alignItems:'center', marginTop:'15px', padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px'}}>
+                            <span style={{color: 'gray', fontWeight: 'bold', fontSize: '0.8rem'}}>Desbloquear VIP (Admin)</span>
+                            <label className="ios-toggle">
+                              <input 
+                                type="checkbox" 
+                                checked={bot.metrics?.hasDebtorsFeature || false} 
+                                onChange={async (e) => {
+                                    const val = e.target.checked;
+                                    // Optimistic Update
+                                    setBots(prev => prev.map(b => b.id === bot.id ? { ...b, metrics: { ...b.metrics, hasDebtorsFeature: val } } : b));
+                                    await fetch(`${API_URL}/api/bots/${bot.id}/prompt`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hasDebtorsFeature: val }) });
+                                }} 
+                              />
+                              <span className="slider"></span>
+                            </label>
+                          </div>
+                        )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="prompt-footer-info">
