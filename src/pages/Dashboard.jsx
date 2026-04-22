@@ -1,11 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
-import { Settings, Smartphone, Loader, BrainCircuit, MessageCircle, Users, TrendingUp, Lock, Mail, ChevronRight, LogOut, Plus, X, Save, Bell, Clock } from 'lucide-react';
+import { Settings, Smartphone, Loader, BrainCircuit, MessageCircle, Users, TrendingUp, Lock, Mail, ChevronRight, LogOut, Plus, X, Save, Bell, Clock, Trash2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import '../index.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const socket = io(API_URL);
+
+// FIX 3: Helper centralizado que adjunta el token JWT a cada request autenticado.
+// Antes, el token que devolvía el backend en el login nunca se almacenaba ni se enviaba,
+// por lo que todos los endpoints protegidos habrían rechazado las peticiones del frontend.
+function authFetch(url, options = {}) {
+  const token = localStorage.getItem('asisto_token');
+  return fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+  }).then(res => {
+    // Si el token expiró o no existe, limpiar sesión y recargar al login
+    if (res.status === 401) {
+      localStorage.removeItem('asisto_token');
+      localStorage.removeItem('asisto_user');
+      window.location.reload();
+    }
+    return res;
+  });
+}
 
 function LoginScreen({ onLogin }) {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -21,7 +44,7 @@ function LoginScreen({ onLogin }) {
     setError('');
     const endpoint = isRegistering ? `${API_URL}/api/register` : `${API_URL}/api/login`;
     const payload = isRegistering ? { name, email, password } : { email, password };
-    
+
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -30,8 +53,11 @@ function LoginScreen({ onLogin }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Credenciales inválidas o error de red.');
+
+      // FIX 3: Almacenar el token para que authFetch pueda enviarlo en cada request posterior.
+      localStorage.setItem('asisto_token', data.token);
       localStorage.setItem('asisto_user', JSON.stringify(data.user));
-      setTimeout(() => onLogin(data.user), 500); 
+      setTimeout(() => onLogin(data.user), 500);
     } catch (err) {
       setError(err.message);
       setLoading(false);
@@ -46,9 +72,9 @@ function LoginScreen({ onLogin }) {
           <h2>Asisto AI</h2>
           <p>{isRegistering ? 'Crea tu Espacio de Trabajo' : 'Portal de Acceso Privado SaaS'}</p>
         </div>
-        
+
         {error && <div className="login-error">{error}</div>}
-        
+
         <form onSubmit={handleSubmit} className="login-form">
           {isRegistering && (
              <div className="input-group">
@@ -86,23 +112,24 @@ function Dashboard() {
   });
   const [bots, setBots] = useState([]);
   const [qrCodes, setQrCodes] = useState({});
-  
+
   // States Modal Settings (Prompt & Knowledge Base)
   const [openSettingsId, setOpenSettingsId] = useState(null);
-  const [editingPrompt, setEditingPrompt] = useState({}); 
+  const [editingPrompt, setEditingPrompt] = useState({});
   const [editingKnowledge, setEditingKnowledge] = useState({});
-  const [editingShopify, setEditingShopify] = useState({}); 
+  const [editingShopify, setEditingShopify] = useState({});
   const [editingWorkingHours, setEditingWorkingHours] = useState({});
 
   // States Modal Add Client
   const [showAddModal, setShowAddModal] = useState(false);
   const [newClient, setNewClient] = useState({ name: '', email: '', password: '', shopifyUrl: '' });
-  
+
   // Custom Notifications
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
   // States 2FA MFA Verification
+  const [adminPhoneCountryCode, setAdminPhoneCountryCode] = useState({});
   const [adminPhoneToVerify, setAdminPhoneToVerify] = useState({});
   const [verificationCode, setVerificationCode] = useState({});
   const [isVerifyingMFA, setIsVerifyingMFA] = useState({});
@@ -111,22 +138,31 @@ function Dashboard() {
   const [debtors, setDebtors] = useState({});
   const [newDebtor, setNewDebtor] = useState({});
 
+  // Delete confirmation
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
+  // FIX 3: Todos los fetches del dashboard usan authFetch para enviar el token.
   const fetchBots = () => {
-    fetch(`${API_URL}/api/bots`)
+    authFetch(`${API_URL}/api/bots`)
       .then(res => res.json())
-      .then(data => setBots(data));
+      .then(data => setBots(Array.isArray(data) ? data : []));
   };
 
   const fetchDebtors = async (botId) => {
-    const res = await fetch(`${API_URL}/api/bots/${botId}/debtors`);
+    const res = await authFetch(`${API_URL}/api/bots/${botId}/debtors`);
     const data = await res.json();
     setDebtors(prev => ({...prev, [botId]: data}));
   };
 
   useEffect(() => {
     if (!user) return;
-    
+
     fetchBots();
+
+    // Auto-sync de la UI cuando la PC despierta de suspensión o reconecta el internet
+    socket.on('connect', fetchBots);
+    const onFocus = () => fetchBots();
+    window.addEventListener('focus', onFocus);
 
     socket.on('bot_status', (data) => {
       setBots(prev => prev.map(bot => bot.id === data.id ? { ...bot, ...data } : bot));
@@ -145,10 +181,10 @@ function Dashboard() {
       } else if (cleanMsg.includes('API key not valid')) {
           cleanMsg = "API Key inválida o no configurada.";
       }
-      
-      const newNotif = { 
-        id: Date.now() + Math.random(), 
-        title: "⚠️ Alerta Técnica AI", 
+
+      const newNotif = {
+        id: Date.now() + Math.random(),
+        title: "⚠️ Alerta Técnica AI",
         botName: data.botName,
         message: cleanMsg
       };
@@ -156,6 +192,8 @@ function Dashboard() {
     });
 
     return () => {
+      socket.off('connect', fetchBots);
+      window.removeEventListener('focus', onFocus);
       socket.off('bot_status'); socket.off('bot_updated'); socket.off('bot_added'); socket.off('qr_code'); socket.off('bot_error');
     };
   }, [user]);
@@ -166,10 +204,10 @@ function Dashboard() {
 
   const handleStart = async (id) => {
     setQrCodes(prev => ({ ...prev, [id]: null }));
-    await fetch(`${API_URL}/api/bots/${id}/start`, { method: 'POST' });
+    await authFetch(`${API_URL}/api/bots/${id}/start`, { method: 'POST' });
   };
   const handleStop = async (id) => {
-    await fetch(`${API_URL}/api/bots/${id}/stop`, { method: 'POST' });
+    await authFetch(`${API_URL}/api/bots/${id}/stop`, { method: 'POST' });
     setQrCodes(prev => ({ ...prev, [id]: null }));
   };
 
@@ -178,8 +216,7 @@ function Dashboard() {
     const knowledgeText = editingKnowledge[botId];
     const shopifyText = editingShopify[botId];
     const workingHoursData = editingWorkingHours[botId];
-    
-    // Si no fue modificado, no mandar undef
+
     let bodyData = {};
     if (promptText !== undefined) bodyData.prompt = promptText;
     if (knowledgeText !== undefined) bodyData.knowledgeBase = knowledgeText;
@@ -187,13 +224,12 @@ function Dashboard() {
     if (workingHoursData !== undefined) bodyData.workingHours = workingHoursData;
 
     if (Object.keys(bodyData).length === 0) return;
-    
-    await fetch(`${API_URL}/api/bots/${botId}/prompt`, {
+
+    await authFetch(`${API_URL}/api/bots/${botId}/prompt`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bodyData)
     });
-    // alert visual
+
     const btn = document.getElementById(`save-btn-${botId}`);
     if(btn) {
       btn.innerText = "¡Guardado!";
@@ -205,11 +241,16 @@ function Dashboard() {
     }
   };
 
+  const handleDeleteBot = async (id) => {
+    await authFetch(`${API_URL}/api/bots/${id}`, { method: 'DELETE' });
+    setBots(prev => prev.filter(b => b.id !== id));
+    setConfirmDeleteId(null);
+  };
+
   const handleAddClient = async (e) => {
     e.preventDefault();
-    await fetch(`${API_URL}/api/bots`, {
+    await authFetch(`${API_URL}/api/bots`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newClient)
     });
     setShowAddModal(false);
@@ -217,12 +258,15 @@ function Dashboard() {
   };
 
   const handleSendMFA = async (botId) => {
-    const phone = adminPhoneToVerify[botId];
-    if (!phone) return alert('Por favor ingresa un número de teléfono válido.');
-    
-    const res = await fetch(`${API_URL}/api/bots/${botId}/mfa/send`, {
+    let localPhone = adminPhoneToVerify[botId];
+    if (!localPhone) return alert('Por favor ingresa un número de teléfono válido.');
+
+    localPhone = localPhone.replace(/\D/g, '');
+    const code = adminPhoneCountryCode[botId] || '549';
+    const phone = code + localPhone;
+
+    const res = await authFetch(`${API_URL}/api/bots/${botId}/mfa/send`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone })
     });
     const data = await res.json();
@@ -236,10 +280,9 @@ function Dashboard() {
   const handleVerifyMFA = async (botId) => {
     const code = verificationCode[botId];
     if (!code) return;
-    
-    const res = await fetch(`${API_URL}/api/bots/${botId}/mfa/verify`, {
+
+    const res = await authFetch(`${API_URL}/api/bots/${botId}/mfa/verify`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code })
     });
     const data = await res.json();
@@ -258,8 +301,8 @@ function Dashboard() {
       <header className="header header-flex">
         <div className="header-titles">
           <h1>Bot Manager <span className="badge">PRO</span></h1>
-          <p>{user.role === 'admin' 
-            ? 'Vista Global Súper Administrador' 
+          <p>{user.role === 'admin'
+            ? 'Vista Global Súper Administrador'
             : `Panel de Auto-Gestión Inteligente`}</p>
         </div>
         <div style={{display:'flex', gap:'1rem', alignItems:'center'}}>
@@ -272,13 +315,18 @@ function Dashboard() {
                 </div>
              )}
           </div>
-          
+
           {user.role === 'admin' && (
             <button className="btn-solid-blue" onClick={() => setShowAddModal(true)} style={{marginTop:0, padding:'0.6rem 1.25rem'}}>
               <Plus size={18} /> Alta Cliente
             </button>
           )}
-          <button className="btn-logout" onClick={() => { localStorage.removeItem('asisto_user'); setUser(null); }}>
+          {/* FIX 3: Limpiar también el token al hacer logout. */}
+          <button className="btn-logout" onClick={() => {
+            localStorage.removeItem('asisto_user');
+            localStorage.removeItem('asisto_token');
+            setUser(null);
+          }}>
             <LogOut size={16} /> Salir
           </button>
         </div>
@@ -323,15 +371,36 @@ function Dashboard() {
             <form onSubmit={handleAddClient} className="login-form">
               <input className="modal-input" placeholder="Nombre de la Tienda (Ej: Paruolo)" required value={newClient.name} onChange={e => setNewClient({...newClient, name: e.target.value})} />
               <input className="modal-input" placeholder="Shopify URL (Ej: paruolo.myshopify.com)" required value={newClient.shopifyUrl} onChange={e => setNewClient({...newClient, shopifyUrl: e.target.value})} />
-              
+
               <hr style={{borderColor:'var(--border)', margin:'0.5rem 0'}}/>
               <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:0}}>Credenciales del Portal de Cliente:</p>
-              
+
               <input className="modal-input" type="email" placeholder="Correo del local" required value={newClient.email} onChange={e => setNewClient({...newClient, email: e.target.value})} />
               <input className="modal-input" type="password" placeholder="Contraseña segura" required value={newClient.password} onChange={e => setNewClient({...newClient, password: e.target.value})} />
-              
+
               <button type="submit" className="btn-solid-blue">Fundar Espacio de Trabajo</button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal confirmación eliminar */}
+      {confirmDeleteId && (
+        <div className="modal-overlay">
+          <div className="login-box" style={{ margin: 'auto', maxWidth: '380px', textAlign: 'center' }}>
+            <Trash2 size={40} color="#ef4444" style={{ margin: '0 auto 1rem' }} />
+            <h3 style={{ margin: '0 0 0.5rem' }}>¿Eliminar este bot?</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0 0 1.5rem' }}>
+              Se borrarán el bot, el usuario y todos los datos asociados. Esta acción no se puede deshacer.
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <button onClick={() => setConfirmDeleteId(null)} style={{ padding: '0.65rem 1.5rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)', cursor: 'pointer' }}>
+                Cancelar
+              </button>
+              <button onClick={() => handleDeleteBot(confirmDeleteId)} style={{ padding: '0.65rem 1.5rem', borderRadius: '8px', border: 'none', background: '#ef4444', color: 'white', cursor: 'pointer', fontWeight: '700' }}>
+                Sí, eliminar
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -340,7 +409,7 @@ function Dashboard() {
         {displayBots.length === 0 && <p style={{textAlign:'center', color:'gray'}}>Aún no tenés ningún negocio conectado a la nube.</p>}
         {displayBots.map(bot => (
           <div key={bot.id} className="bot-card-horizontal">
-            
+
             <div className="bot-card-main">
               <div className="bot-info-section">
                 <div className="bot-title-row">
@@ -373,8 +442,17 @@ function Dashboard() {
               </div>
 
               <div className="bot-actions-section">
-                <button 
-                  className={`btn-settings ${openSettingsId === bot.id ? 'active' : ''}`} 
+                {user.role === 'admin' && (
+                  <button
+                    title="Eliminar bot"
+                    onClick={() => setConfirmDeleteId(bot.id)}
+                    style={{ background: 'none', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', padding: '0.5rem', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center' }}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                )}
+                <button
+                  className={`btn-settings ${openSettingsId === bot.id ? 'active' : ''}`}
                   title="Ajustes y Parámetros del Cerebro AI"
                   onClick={() => {
                     if (openSettingsId !== bot.id) {
@@ -400,10 +478,10 @@ function Dashboard() {
                 <div className="ios-toggle-wrapper">
                   <span className="toggle-label">{bot.status === 'OFF' ? 'OFF' : 'ON'}</span>
                   <label className="ios-toggle">
-                    <input 
-                      type="checkbox" 
-                      checked={bot.status !== 'OFF'} 
-                      onChange={() => bot.status === 'OFF' ? handleStart(bot.id) : handleStop(bot.id)} 
+                    <input
+                      type="checkbox"
+                      checked={bot.status !== 'OFF'}
+                      onChange={() => bot.status === 'OFF' ? handleStart(bot.id) : handleStop(bot.id)}
                       disabled={bot.status === 'STARTING' || bot.status === 'QR_READY'}
                     />
                     <span className="slider"></span>
@@ -421,7 +499,7 @@ function Dashboard() {
                       <BrainCircuit size={20} className="icon-purple" />
                       <h3>Comportamiento Psicológico de la IA</h3>
                     </div>
-                    <textarea 
+                    <textarea
                       className="prompt-textarea editable"
                       value={editingPrompt[bot.id] !== undefined ? editingPrompt[bot.id] : bot.prompt}
                       onChange={(e) => setEditingPrompt({...editingPrompt, [bot.id]: e.target.value})}
@@ -434,7 +512,7 @@ function Dashboard() {
                   <Settings size={20} className="icon-blue" />
                   <h3>Conexión Catálogo Activo (Tienda Online)</h3>
                 </div>
-                <input 
+                <input
                   className="modal-input"
                   style={{marginBottom: '1rem', background: 'var(--bg-card)'}}
                   value={editingShopify[bot.id] !== undefined ? editingShopify[bot.id] : bot.shopifyUrl}
@@ -447,14 +525,14 @@ function Dashboard() {
                   <h3>Base de Conocimientos (Listas de Precio o Reglas del Local)</h3>
                 </div>
                 <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:'0 0 0.5rem 0'}}>Pega aquí texto libre con precios, links o detalles de servicios. La IA lo memorizará.</p>
-                <textarea 
+                <textarea
                   className="prompt-textarea editable"
                   style={{minHeight: '120px', borderColor: 'rgba(16, 185, 129, 0.3)'}}
                   value={editingKnowledge[bot.id] !== undefined ? editingKnowledge[bot.id] : (bot.knowledgeBase || '')}
                   onChange={(e) => setEditingKnowledge({...editingKnowledge, [bot.id]: e.target.value})}
-                  placeholder="Ej: Remera Roja: $15.000, Gorra: $5000. / Política de Devolución de 30 días..."
+                  placeholder={`Organizá la info por secciones para que la IA solo lea lo relevante en cada pregunta:\n\n[ENVIO]\nEnvíos en 24-48hs. Costo fijo $2.000 a todo el país.\n\n[PAGOS]\nEfectivo, transferencia (10% OFF) o tarjeta hasta 6 cuotas.\n\n[UBICACION]\nAv. Corrientes 1234, CABA. Lun-Sáb 9 a 20hs.\n\n[DEVOLUCIONES]\n30 días para cambios sin cargo.\n\nSin secciones también funciona, pero con secciones la IA es más eficiente.`}
                 />
-                
+
                 <div className="prompt-header" style={{marginTop:'1.5rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
                   <Clock size={20} className="icon-blue" />
                   <h3>Horario de Atención (Anti-Nocturno)</h3>
@@ -466,7 +544,7 @@ function Dashboard() {
                   </label>
                   <span>Activar Límite de Horario</span>
                 </div>
-                
+
                 {editingWorkingHours[bot.id]?.active && (
                   <div style={{background: 'rgba(59, 130, 246, 0.05)', padding:'1rem', borderRadius:'8px', border:'1px solid rgba(59, 130, 246, 0.2)', marginBottom:'1rem'}}>
                     <div style={{display:'flex', gap:'1rem', marginBottom:'1rem'}}>
@@ -480,37 +558,60 @@ function Dashboard() {
                       </div>
                     </div>
                     <label style={{display:'block', fontSize:'0.85rem', color:'var(--text-secondary)', marginBottom:'0.2rem'}}>Mensaje Automático (Si lo dejas vacío, no contestará de noche)</label>
-                    <textarea 
-                      className="prompt-textarea editable" 
-                      style={{minHeight:'60px'}} 
+                    <textarea
+                      className="prompt-textarea editable"
+                      style={{minHeight:'60px'}}
                       placeholder="Ej: Hola! Nuestro local está cerrado ahora, pero mañana a primera hora te asisto."
                       value={editingWorkingHours[bot.id]?.autoReplyMsg || ''}
                       onChange={e => setEditingWorkingHours({...editingWorkingHours, [bot.id]: {...editingWorkingHours[bot.id], autoReplyMsg: e.target.value}})}
                     />
                   </div>
                 )}
-                
-
 
                 <div className="prompt-header" style={{marginTop:'1.5rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
                   <Lock size={20} color="#8b5cf6" />
                   <h3 style={{color: '#8b5cf6'}}>Seguridad: Celular de Administrador</h3>
                 </div>
-                <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:'0 0 0.5rem 0'}}>Vincula el número del dueño o encargados (puedes agregar hasta 5 números separados por coma) para autorizar acciones seguras.</p>
-                
+
+                {bot.metrics?.adminNumber ? (
+                  <div style={{background: 'rgba(16, 185, 129, 0.1)', padding: '10px 15px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '10px'}}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    <div>
+                      <p style={{margin: 0, color: '#10b981', fontWeight: 'bold'}}>Número de Contacto Seguro Validado</p>
+                      <p style={{margin: 0, fontSize: '0.85rem', color: '#10b981', opacity: 0.9}}>+{bot.metrics.adminNumber.split('@')[0]}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:'0 0 0.5rem 0'}}>Vincula el número del dueño o encargados (puedes agregar hasta 5 números separados por coma) para autorizar acciones seguras.</p>
+                )}
+
                 <div style={{display:'flex', gap:'10px', marginBottom:'10px'}}>
-                  <input className="modal-input" placeholder="Ej: 549112345678, 549118765432" value={adminPhoneToVerify[bot.id] || ''} onChange={e => setAdminPhoneToVerify({...adminPhoneToVerify, [bot.id]: e.target.value})} />
+                  <select
+                    className="modal-input"
+                    style={{width: '90px', padding: '0.5rem', background: '#252b36', color: 'white', border: '1px solid var(--border)'}}
+                    value={adminPhoneCountryCode[bot.id] || '549'}
+                    onChange={e => setAdminPhoneCountryCode({...adminPhoneCountryCode, [bot.id]: e.target.value})}
+                  >
+                    <option value="549">🇦🇷 +54</option>
+                    <option value="52">🇲🇽 +52</option>
+                    <option value="56">🇨🇱 +56</option>
+                    <option value="57">🇨🇴 +57</option>
+                    <option value="51">🇵🇪 +51</option>
+                    <option value="34">🇪🇸 +34</option>
+                    <option value="1">🇺🇸 +1</option>
+                  </select>
+                  <input className="modal-input" placeholder="Ej: 1156687137" style={{flex: 1}} value={adminPhoneToVerify[bot.id] || ''} onChange={e => setAdminPhoneToVerify({...adminPhoneToVerify, [bot.id]: e.target.value})} />
                   <button className="btn-solid-blue" style={{background: '#8b5cf6', width:'auto', padding:'0.6rem 1rem'}} onClick={() => handleSendMFA(bot.id)}>
                     Validar Nro
                   </button>
                 </div>
                 {isVerifyingMFA[bot.id] && (
                    <div style={{display:'flex', gap:'10px', background: 'rgba(139, 92, 246, 0.05)', border: '1px solid rgba(139, 92, 246, 0.2)', padding:'10px', borderRadius:'8px', marginTop:'5px'}}>
-                      <input className="modal-input" placeholder="Pin Oficial TrenJacker de 4 cifras" style={{background:'var(--bg-app)'}} value={verificationCode[bot.id] || ''} onChange={e => setVerificationCode({...verificationCode, [bot.id]: e.target.value})} />
+                      <input className="modal-input" placeholder="Pin Oficial TrenJacker de 6 cifras" style={{background:'var(--bg-app)'}} value={verificationCode[bot.id] || ''} onChange={e => setVerificationCode({...verificationCode, [bot.id]: e.target.value})} />
                       <button className="btn-solid-blue" style={{background: '#10b981', width:'auto', padding:'0.6rem 1rem'}} onClick={() => handleVerifyMFA(bot.id)}>Confirmar</button>
                    </div>
                 )}
-                
+
                 <div style={{display:'flex', justifyContent:'flex-end', width:'100%', marginTop:'0.75rem'}}>
                   <button id={`save-btn-${bot.id}`} className="btn-solid-blue" onClick={() => handleSavePrompt(bot.id)} style={{width:'auto', padding:'0.6rem 1.25rem', marginTop:0}}>
                     <Save size={16} /> Actualizar Cerebro
@@ -525,19 +626,18 @@ function Dashboard() {
                         <Users size={20} color="#ef4444" />
                         <h3 style={{color: '#ef4444'}}>Motor Asistente Automático (Gestión de Deudores)</h3>
                       </div>
-                      
+
                       {user.role === 'admin' && (
                         <div style={{display:'flex', gap:'10px', alignItems:'center', marginBottom:'10px'}}>
                           <label className="ios-toggle">
-                            <input 
-                              type="checkbox" 
-                              checked={bot.metrics?.hasDebtorsFeature || false} 
+                            <input
+                              type="checkbox"
+                              checked={bot.metrics?.hasDebtorsFeature || false}
                               onChange={async (e) => {
                                   const val = e.target.checked;
-                                  // Optimistic Update
                                   setBots(prev => prev.map(b => b.id === bot.id ? { ...b, metrics: { ...b.metrics, hasDebtorsFeature: val } } : b));
-                                  await fetch(`${API_URL}/api/bots/${bot.id}/prompt`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hasDebtorsFeature: val }) });
-                              }} 
+                                  await authFetch(`${API_URL}/api/bots/${bot.id}/prompt`, { method: 'PUT', body: JSON.stringify({ hasDebtorsFeature: val }) });
+                              }}
                             />
                             <span className="slider"></span>
                           </label>
@@ -546,7 +646,7 @@ function Dashboard() {
                       )}
 
                       <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:'0 0 0.5rem 0'}}>Agenda un cliente aquí y la IA cobrará de forma elegante a las 10:00 AM cada día en automático.</p>
-                      
+
                       <div style={{display:'flex', gap:'5px', marginBottom:'10px', flexWrap:'wrap'}}>
                         <input className="modal-input" placeholder="Nombre" style={{flex: 1, minWidth: '100px'}} value={newDebtor[bot.id]?.name || ''} onChange={e => setNewDebtor({...newDebtor, [bot.id]: {...newDebtor[bot.id], name: e.target.value}})} />
                         <input className="modal-input" placeholder="Wsp (Ej: 549112233)" style={{flex: 1, minWidth: '100px'}} value={newDebtor[bot.id]?.phone || ''} onChange={e => setNewDebtor({...newDebtor, [bot.id]: {...newDebtor[bot.id], phone: e.target.value}})} />
@@ -554,7 +654,7 @@ function Dashboard() {
                         <button className="btn-solid-blue" style={{background: '#ef4444', width:'auto', padding:'0.6rem 1rem'}} onClick={async () => {
                             const d = newDebtor[bot.id];
                             if(!d || !d.name || !d.phone || !d.amount) return alert('Completa todos los campos');
-                            await fetch(`${API_URL}/api/bots/${bot.id}/debtors`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(d) });
+                            await authFetch(`${API_URL}/api/bots/${bot.id}/debtors`, { method: 'POST', body: JSON.stringify(d) });
                             setNewDebtor({...newDebtor, [bot.id]: {name:'', phone:'', amount:''}});
                             fetchDebtors(bot.id);
                         }}>Cargar</button>
@@ -570,12 +670,12 @@ function Dashboard() {
                                   <div style={{display:'flex', gap:'5px'}}>
                                     {d.status === 'pending' && (
                                       <button style={{background:'#10b981', color:'white', border:'none', borderRadius:'4px', padding:'4px 8px', cursor:'pointer', fontSize:'0.75rem'}} onClick={async () => {
-                                          await fetch(`${API_URL}/api/bots/${bot.id}/debtors/${d.id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status: 'paid'}) });
+                                          await authFetch(`${API_URL}/api/bots/${bot.id}/debtors/${d.id}`, { method: 'PUT', body: JSON.stringify({status: 'paid'}) });
                                           fetchDebtors(bot.id);
                                       }}>Pagó</button>
                                     )}
                                     <button style={{background:'transparent', color:'var(--text-secondary)', border:'1px solid var(--border)', borderRadius:'4px', padding:'4px 8px', cursor:'pointer', fontSize:'0.75rem'}} onClick={async () => {
-                                        await fetch(`${API_URL}/api/bots/${bot.id}/debtors/${d.id}`, { method: 'DELETE' });
+                                        await authFetch(`${API_URL}/api/bots/${bot.id}/debtors/${d.id}`, { method: 'DELETE' });
                                         fetchDebtors(bot.id);
                                     }}>Borrar</button>
                                   </div>
@@ -589,20 +689,19 @@ function Dashboard() {
                         <Lock size={32} color="gray" style={{margin: '0 auto 10px auto', display: 'block'}}/>
                         <h4 style={{margin: '0 0 5px 0', color: 'gray'}}>Terminal Recordatorio de Pagos a Clientes</h4>
                         <p style={{margin: 0, fontSize: '0.85rem', color: 'gray'}}>Comunícate con Soporte para adquirir esta función Elite. La IA enviará alertas de cobro amigables por WhatsApp a tus clientes deudores de forma 100% automática a las 10:00 AM.</p>
-                        
+
                         {user.role === 'admin' && (
                           <div style={{display:'inline-flex', gap:'10px', alignItems:'center', marginTop:'15px', padding: '10px', background: 'rgba(255,255,255,0.05)', borderRadius: '6px'}}>
                             <span style={{color: 'gray', fontWeight: 'bold', fontSize: '0.8rem'}}>Desbloquear VIP (Admin)</span>
                             <label className="ios-toggle">
-                              <input 
-                                type="checkbox" 
-                                checked={bot.metrics?.hasDebtorsFeature || false} 
+                              <input
+                                type="checkbox"
+                                checked={bot.metrics?.hasDebtorsFeature || false}
                                 onChange={async (e) => {
                                     const val = e.target.checked;
-                                    // Optimistic Update
                                     setBots(prev => prev.map(b => b.id === bot.id ? { ...b, metrics: { ...b.metrics, hasDebtorsFeature: val } } : b));
-                                    await fetch(`${API_URL}/api/bots/${bot.id}/prompt`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ hasDebtorsFeature: val }) });
-                                }} 
+                                    await authFetch(`${API_URL}/api/bots/${bot.id}/prompt`, { method: 'PUT', body: JSON.stringify({ hasDebtorsFeature: val }) });
+                                }}
                               />
                               <span className="slider"></span>
                             </label>
@@ -636,6 +735,14 @@ function Dashboard() {
               <div className="bot-card-expanded loading-state">
                 <Loader className="spinner" size={28} />
                 <p>Ensamblando el navegador aislado Chromium de alta velocidad...</p>
+              </div>
+            )}
+
+            {bot.status === 'ON' && (
+              <div className="bot-card-expanded" style={{background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)', textAlign: 'center', padding: '1rem'}}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{margin: '0 auto 10px auto', display: 'block'}}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <h4 style={{margin: '0 0 5px 0', color: '#10b981'}}>¡IA Conectada a WhatsApp Oficialmente!</h4>
+                <p style={{margin: 0, fontSize: '0.85rem', color: '#10b981', opacity: 0.9}}>Escaneo exitoso. TrendJacker ya tiene el control de las respuestas automáticas para este número.</p>
               </div>
             )}
 
