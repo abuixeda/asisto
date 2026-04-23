@@ -3,19 +3,19 @@ import { Check, Phone, Settings, CheckCircle, BarChart2, Menu, X } from 'lucide-
 
 /* ─── Paleta ─────────────────────────────────────────── */
 const C = {
-  bg:          '#fafaf9',
-  bgAlt:       '#f5f4f0',
-  bgDark:      '#0f0f0f',
+  bg:          '#ffffff',
+  bgAlt:       '#f8fafc',
+  bgDark:      '#0f172a',
   bgCard:      '#ffffff',
-  text:        '#0f0f0f',
-  textSec:     '#6b7280',
-  textMuted:   '#9ca3af',
+  text:        '#0f172a',
+  textSec:     '#475569',
+  textMuted:   '#94a3b8',
   textInv:     '#ffffff',
-  accent:      '#1a4a3a',
-  accentLight: '#2d7a5f',
-  accentSubtle:'#e8f3ef',
-  border:      '#e5e5e0',
-  borderStr:   '#d1d1c8',
+  accent:      '#4f46e5',
+  accentLight: '#6366f1',
+  accentSubtle:'#eef2ff',
+  border:      '#e2e8f0',
+  borderStr:   '#cbd5e1',
 };
 
 /* ─── Datos ───────────────────────────────────────────── */
