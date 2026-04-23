@@ -370,7 +370,7 @@ function Dashboard() {
             </div>
             <form onSubmit={handleAddClient} className="login-form">
               <input className="modal-input" placeholder="Nombre de la Tienda (Ej: Paruolo)" required value={newClient.name} onChange={e => setNewClient({...newClient, name: e.target.value})} />
-              <input className="modal-input" placeholder="Shopify URL (Ej: paruolo.myshopify.com)" required value={newClient.shopifyUrl} onChange={e => setNewClient({...newClient, shopifyUrl: e.target.value})} />
+              <input className="modal-input" placeholder="Shopify URL (opcional, Ej: paruolo.myshopify.com)" value={newClient.shopifyUrl} onChange={e => setNewClient({...newClient, shopifyUrl: e.target.value})} />
 
               <hr style={{borderColor:'var(--border)', margin:'0.5rem 0'}}/>
               <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:0}}>Credenciales del Portal de Cliente:</p>
