@@ -32,6 +32,7 @@ export default function MerchantPanel() {
   const [pwMsg, setPwMsg] = useState(null);
   const [pwSaving, setPwSaving] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const pollRef = useRef(null);
 
   useEffect(() => {
@@ -173,9 +174,27 @@ export default function MerchantPanel() {
           <div className="brand-logo" style={{ width: '32px', height: '32px', fontSize: '1rem', margin: 0, boxShadow: 'none' }}>TJ</div>
           Asisto AI
         </div>
-        <button onClick={logout} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'none', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.5rem 1rem', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.9rem' }}>
-          &#8594; Salir
-        </button>
+        <div style={{ position: 'relative' }}>
+          <div onClick={() => setShowProfile(!showProfile)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: '700', fontSize: '1rem', color: 'white', border: '2px solid var(--border)', userSelect: 'none' }}>
+            {(bot?.name || 'U').charAt(0).toUpperCase()}
+          </div>
+          {showProfile && (
+            <div style={{ position: 'absolute', top: '48px', right: 0, background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1rem', minWidth: '200px', zIndex: 9999, boxShadow: '0 10px 25px rgba(0,0,0,0.4)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '1.1rem', color: 'white', flexShrink: 0 }}>
+                  {(bot?.name || 'U').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>{bot?.name || 'Mi negocio'}</div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Usuario</div>
+                </div>
+              </div>
+              <button onClick={logout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '0.9rem', padding: '0.4rem 0' }}>
+                &#8594; Cerrar sesión
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>

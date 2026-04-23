@@ -128,6 +128,9 @@ function Dashboard() {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // Profile dropdown
+  const [showProfile, setShowProfile] = useState(false);
+
   // States 2FA MFA Verification
   const [adminPhoneCountryCode, setAdminPhoneCountryCode] = useState({});
   const [adminPhoneToVerify, setAdminPhoneToVerify] = useState({});
@@ -321,14 +324,30 @@ function Dashboard() {
               <Plus size={18} /> Alta Cliente
             </button>
           )}
-          {/* FIX 3: Limpiar también el token al hacer logout. */}
-          <button className="btn-logout" onClick={() => {
-            localStorage.removeItem('asisto_user');
-            localStorage.removeItem('asisto_token');
-            setUser(null);
-          }}>
-            <LogOut size={16} /> Salir
-          </button>
+          {/* Profile Avatar */}
+          <div style={{ position: 'relative' }}>
+            <div onClick={() => setShowProfile(!showProfile)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: '700', fontSize: '1rem', color: 'white', border: '2px solid var(--border)', userSelect: 'none' }}>
+              {(user.name || user.email || 'A').charAt(0).toUpperCase()}
+            </div>
+            {showProfile && (
+              <div style={{ position: 'absolute', top: '48px', right: 0, background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1rem', minWidth: '200px', zIndex: 9999, boxShadow: '0 10px 25px rgba(0,0,0,0.4)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '1.1rem', color: 'white', flexShrink: 0 }}>
+                    {(user.name || user.email || 'A').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>{user.name || user.email}</div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
+                      {user.role === 'admin' ? 'Administrador' : 'Usuario'}
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => { localStorage.removeItem('asisto_user'); localStorage.removeItem('asisto_token'); setUser(null); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '0.9rem', padding: '0.4rem 0' }}>
+                  <LogOut size={15} /> Cerrar sesión
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
