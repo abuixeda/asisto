@@ -271,6 +271,9 @@ export default function MerchantPanel() {
             <span style={{ fontSize: '1.1rem' }}>🧠</span>
             <h3>Comportamiento Psicológico de la IA</h3>
           </div>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.6rem' }}>
+            Definí la personalidad de tu asistente: cómo saluda, qué tono usa, si trata de "vos" o "usted", si es formal o relajado. Cuanto más detallado, mejor va a representar a tu negocio.
+          </p>
           <textarea
             className="prompt-textarea editable"
             value={prompt} onChange={e => setPrompt(e.target.value)}
@@ -317,9 +320,11 @@ export default function MerchantPanel() {
           {/* ── Base de Conocimientos ── */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
             <span style={{ fontSize: '1.1rem', color: '#10b981' }}>🔗</span>
-            <h3>Base de Conocimientos (Listas de Precio o Reglas del Local)</h3>
+            <h3>Base de Conocimientos</h3>
           </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem' }}>Pegá aquí texto libre con precios, links o detalles de servicios. La IA lo memorizará.</p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem' }}>
+            Todo lo que tu asistente necesita saber para responder correctamente: métodos de pago, zonas de envío, garantías, condiciones especiales. Organizá la info por secciones usando corchetes como <strong>[ENVIO]</strong>, <strong>[PAGOS]</strong>, <strong>[GARANTIA]</strong> para que la IA sepa dónde buscar cada dato.
+          </p>
           <textarea
             className="prompt-textarea editable"
             style={{ minHeight: '120px', borderColor: 'rgba(16,185,129,0.3)' }}
@@ -332,6 +337,9 @@ export default function MerchantPanel() {
             <span style={{ fontSize: '1.1rem' }}>🕐</span>
             <h3>Horario de Atención (Anti-Nocturno)</h3>
           </div>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem' }}>
+            Activá esta opción para que el bot solo responda dentro de tu horario comercial. Fuera de ese horario, enviará automáticamente el mensaje que escribas abajo.
+          </p>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
             <label className="ios-toggle">
               <input type="checkbox" checked={hours.active} onChange={e => setHours(h => ({ ...h, active: e.target.checked }))} />
