@@ -440,16 +440,27 @@ function Dashboard() {
                 </div>
                 <p className="shop-url">{bot.shopifyUrl}</p>
 
-                {bot.metrics && (
+                {bot.metrics && (() => {
+                  const inp = bot.metrics.tokensInput  || 0;
+                  const out = bot.metrics.tokensOutput || 0;
+                  const costUSD = ((inp * 0.075 + out * 0.30) / 1_000_000).toFixed(4);
+                  const totalTokens = inp + out;
+                  return (
                   <div className="metrics-row">
                     <div className="metric-chip" title="Mensajes de IA Generados">
-                      <MessageCircle size={14} className="icon-subtle" /> <span>{bot.metrics.messagesSent.toLocaleString()} msjs</span>
+                      <MessageCircle size={14} className="icon-subtle" /> <span>{(bot.metrics.messagesSent || 0).toLocaleString()} msjs</span>
                     </div>
                     <div className="metric-chip" title="Clientes Atendidos">
-                      <Users size={14} className="icon-subtle" /> <span>{bot.metrics.customersHelped.toLocaleString()} chats</span>
+                      <Users size={14} className="icon-subtle" /> <span>{(bot.metrics.customersHelped || 0).toLocaleString()} chats</span>
                     </div>
-                    <div className="metric-chip" title="Cierres de Ventas (Estimadas)">
-                      <TrendingUp size={14} className="icon-success" /> <span>{bot.metrics.weeklySales.toLocaleString()} conversiones</span>
+                    <div className="metric-chip" title="Conversiones estimadas">
+                      <TrendingUp size={14} className="icon-success" /> <span>{(bot.metrics.weeklySales || 0).toLocaleString()} conv.</span>
+                    </div>
+                    <div className="metric-chip" title="Tokens de Gemini consumidos (entrada + salida)" style={{background: 'rgba(245,158,11,0.08)', borderColor: 'rgba(245,158,11,0.3)'}}>
+                      <BrainCircuit size={14} color="#f59e0b" /> <span style={{color: '#f59e0b'}}>{totalTokens.toLocaleString()} tokens</span>
+                    </div>
+                    <div className="metric-chip" title={`Costo estimado Gemini: entrada $0.075/1M · salida $0.30/1M`} style={{background: 'rgba(16,185,129,0.08)', borderColor: 'rgba(16,185,129,0.3)'}}>
+                      <TrendingUp size={14} color="#10b981" /> <span style={{color: '#10b981'}}>USD ${costUSD}</span>
                     </div>
                     {bot.metrics.adminNumber && (
                       <div className="metric-chip" title="Teléfono autorizado para Campañas Masivas" style={{background: 'rgba(139, 92, 246, 0.1)', borderColor: 'rgba(139, 92, 246, 0.3)'}}>
@@ -457,7 +468,8 @@ function Dashboard() {
                       </div>
                     )}
                   </div>
-                )}
+                  );
+                })()}
               </div>
 
               <div className="bot-actions-section">

@@ -235,9 +235,18 @@ export default function MerchantPanel() {
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-              <span>💬 {(metrics.messagesSent || 0).toLocaleString()} msjs</span>
-              <span>👥 {(metrics.customersHelped || 0).toLocaleString()} chats</span>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              {[
+                { emoji: '💬', value: (metrics.messagesSent || 0).toLocaleString(), label: 'mensajes respondidos' },
+                { emoji: '👥', value: (metrics.customersHelped || 0).toLocaleString(), label: 'chats atendidos' },
+                { emoji: '🎯', value: (metrics.weeklySales || 0).toLocaleString(), label: 'conversiones' },
+              ].map((m, i) => (
+                <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.4rem 0.75rem', fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span>{m.emoji}</span>
+                  <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{m.value}</span>
+                  <span>{m.label}</span>
+                </div>
+              ))}
             </div>
           </div>
 
