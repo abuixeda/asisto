@@ -287,6 +287,10 @@ export default function LandingAgency() {
             {[['proceso','Cómo funciona'],['resultados','Resultados'],['cta','Contacto']].map(([id,label]) => (
               <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500 }}>{label}</button>
             ))}
+            <a href="/login" style={{ color: C.textSec, fontSize: '0.9rem', fontWeight: 500, textDecoration: 'none', padding: '0.5rem 0.75rem', borderRadius: '6px', border: `1px solid ${C.border}`, transition: 'border-color 0.2s' }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = C.accent}
+              onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
+            >Ingresar</a>
             <CTAButton text="Agendar llamada →" />
           </div>
           {/* Hamburger */}
@@ -299,6 +303,7 @@ export default function LandingAgency() {
             {[['proceso','Cómo funciona'],['resultados','Resultados'],['cta','Contacto']].map(([id,label]) => (
               <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', fontSize: '1rem', textAlign: 'left', padding: '0.2rem 0' }}>{label}</button>
             ))}
+            <a href="/login" style={{ color: C.accent, fontSize: '1rem', fontWeight: 600, textDecoration: 'none', padding: '0.2rem 0' }}>Ingresar →</a>
             <CTAButton text="Agendar llamada gratuita →" full />
           </div>
         )}
