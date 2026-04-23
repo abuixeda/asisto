@@ -730,14 +730,6 @@ function Dashboard() {
                   )}
                 </div>
 
-                <div className="prompt-footer-info">
-                  <p><strong>Fusión Algorítmica en vivo:</strong> Las respuestas de esta IA se componen uniendo tres ejes base:</p>
-                  <ul>
-                    <li><strong>1. Personalidad Nativa:</strong> El comportamiento o jerga que ingreses en la caja de arriba.</li>
-                    <li><strong>2. Coraza Catálogo:</strong> Lectura de stock de Shopify usando JSON-Feed Automático contra Alucinaciones.</li>
-                    <li><strong>3. Matemática Exacta:</strong> Si no hay stock, no vende. Si transfiere le calcula el -20% OFF en latidos.</li>
-                  </ul>
-                </div>
               </div>
             )}
 
