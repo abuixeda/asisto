@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function Onboarding() {
   const [params] = useSearchParams();
   const nav = useNavigate();
-  const token = localStorage.getItem('merchant_token');
-  const botId = localStorage.getItem('merchant_bot_id');
+  const [token, setToken] = useState(localStorage.getItem('merchant_token') || '');
+  const [botId, setBotId] = useState(localStorage.getItem('merchant_bot_id') || '');
+  const [tempPwd, setTempPwd] = useState('');
 
   // Steps: catalog | qr
   const [step, setStep] = useState('catalog');
@@ -22,11 +24,38 @@ export default function Onboarding() {
   const pollRef = useRef(null);
 
   useEffect(() => {
+    let currentToken = token;
+    
+    // Extraer token de la URL si venimos de Shopify OAuth
+    const urlToken = params.get('token');
+    if (urlToken) {
+      localStorage.setItem('merchant_token', urlToken);
+      setToken(urlToken);
+      currentToken = urlToken;
+      
+      try {
+        const payload = JSON.parse(atob(urlToken.split('.')[1]));
+        if (payload.botId) {
+          localStorage.setItem('merchant_bot_id', payload.botId);
+          setBotId(payload.botId);
+        }
+      } catch (e) {}
+
+      // Consumir la contraseña temporal segura (solo funciona 1 vez)
+      fetch(`${API}/api/merchant/temp-password`, {
+        headers: { Authorization: `Bearer ${urlToken}` }
+      })
+      .then(r => r.json())
+      .then(data => {
+         if (data.tempPwd) setTempPwd(data.tempPwd);
+      }).catch(() => {});
+    }
+
     // Si viene de Shopify callback ya tiene catálogo, saltar a QR
-    if (params.get('platform') !== 'other') {
+    if (params.get('platform') !== 'other' || params.get('shop')) {
       setStep('qr');
     }
-  }, []);
+  }, [params]);
 
   useEffect(() => {
     if (step === 'qr') startBot();
@@ -113,6 +142,21 @@ export default function Onboarding() {
           Asisto AI
         </div>
 
+        {/* Banner Contraseña Temporal (One-Time) */}
+        {tempPwd && (
+          <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', padding: '1.2rem', borderRadius: '12px', marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <h3 style={{ color: '#10b981', margin: 0, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>🔐</span> ¡Guarda tu contraseña!
+            </h3>
+            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+              Se ha creado tu cuenta con tu email de Shopify. Esta contraseña solo se mostrará una vez.
+            </p>
+            <div style={{ background: 'rgba(0,0,0,0.3)', padding: '0.8rem', borderRadius: '8px', fontFamily: 'monospace', fontSize: '1.2rem', color: '#fff', textAlign: 'center', letterSpacing: '2px', marginTop: '0.5rem', userSelect: 'all' }}>
+              {tempPwd}
+            </div>
+          </div>
+        )}
+
         {/* Stepper */}
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>
           {['catalog', 'qr'].map((s, i) => (
@@ -195,8 +239,10 @@ export default function Onboarding() {
               </div>
             ) : qrData ? (
               <div style={{ textAlign: 'center' }}>
-                <img src={qrData} alt="QR WhatsApp" style={{ width: '220px', height: '220px', borderRadius: '12px', border: '4px solid var(--accent)' }} />
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '1rem' }}>Esperando escaneo...</p>
+                <div style={{ background: 'white', padding: '10px', borderRadius: '12px', border: '4px solid var(--accent)', display: 'inline-block' }}>
+                  <QRCodeSVG value={qrData} size={200} />
+                </div>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '1rem 0 0' }}>Esperando escaneo...</p>
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>

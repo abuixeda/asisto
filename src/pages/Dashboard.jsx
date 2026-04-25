@@ -171,7 +171,7 @@ function Dashboard() {
       setBots(prev => prev.map(bot => bot.id === data.id ? { ...bot, ...data } : bot));
     });
     socket.on('bot_updated', (data) => {
-      setBots(prev => prev.map(bot => bot.id === data.id ? { ...bot, prompt: data.prompt, knowledgeBase: data.knowledgeBase, shopifyUrl: data.shopifyUrl, metrics: {...bot.metrics, workingHours: data.workingHours, hasDebtorsFeature: data.hasDebtorsFeature} } : bot));
+      setBots(prev => prev.map(bot => bot.id === data.id ? { ...bot, prompt: data.prompt, knowledgeBase: data.knowledgeBase, shopifyUrl: data.shopifyUrl, metrics: {...bot.metrics, workingHours: data.workingHours, hasDebtorsFeature: data.hasDebtorsFeature, hasSocialFeature: data.hasSocialFeature} } : bot));
     });
     socket.on('bot_added', fetchBots);
     socket.on('qr_code', (data) => {
@@ -740,6 +740,32 @@ function Dashboard() {
                         )}
                     </div>
                   )}
+
+                  <div style={{marginTop:'2rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
+                    <div className="prompt-header">
+                      <MessageCircle size={20} color="#e1306c" />
+                      <h3 style={{color: '#e1306c'}}>Integración Instagram DMs</h3>
+                    </div>
+
+                    {user.role === 'admin' && (
+                      <div style={{display:'flex', gap:'10px', alignItems:'center', marginBottom:'10px'}}>
+                        <label className="ios-toggle">
+                          <input
+                            type="checkbox"
+                            checked={bot.metrics?.hasSocialFeature || false}
+                            onChange={async (e) => {
+                                const val = e.target.checked;
+                                setBots(prev => prev.map(b => b.id === bot.id ? { ...b, metrics: { ...b.metrics, hasSocialFeature: val } } : b));
+                                await authFetch(`${API_URL}/api/bots/${bot.id}/prompt`, { method: 'PUT', body: JSON.stringify({ hasSocialFeature: val }) });
+                            }}
+                          />
+                          <span className="slider"></span>
+                        </label>
+                        <span style={{color: 'gray', fontWeight: 'bold'}}>Habilitar Servicio Elite (Solo Admin)</span>
+                      </div>
+                    )}
+                    <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:'0 0 0.5rem 0'}}>Permite al cliente conectar su cuenta de Instagram para que la IA responda Mensajes Directos.</p>
+                  </div>
                 </div>
 
               </div>

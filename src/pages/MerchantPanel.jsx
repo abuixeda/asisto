@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { QRCodeSVG } from 'qrcode.react';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -35,6 +36,14 @@ export default function MerchantPanel() {
   const [showProfile, setShowProfile] = useState(false);
   const pollRef = useRef(null);
 
+  // Meta Config (Instagram)
+  const [metaAccessToken, setMetaAccessToken] = useState('');
+  const [metaPageId, setMetaPageId] = useState('');
+  const [metaIgId, setMetaIgId] = useState('');
+  const [metaSaving, setMetaSaving] = useState(false);
+  const [metaMsg, setMetaMsg] = useState(null);
+  const [metaVerifyToken, setMetaVerifyToken] = useState('');
+
   useEffect(() => {
     if (!token || !botId) { nav('/registro'); return; }
     loadBot();
@@ -55,6 +64,10 @@ export default function MerchantPanel() {
       setKnowledgeBase(kb);
       const catMatch = kb.match(/\[CATALOGO\]([\s\S]*?)(?=\n\[|$)/i);
       setCatalog(catMatch ? catMatch[1].trim() : '');
+
+      if (data.metaAccessToken) setMetaAccessToken(data.metaAccessToken);
+      if (data.metaPageId) setMetaPageId(data.metaPageId);
+      if (data.metaIgId) setMetaIgId(data.metaIgId);
     } catch {
       nav('/registro');
     }
@@ -99,6 +112,29 @@ export default function MerchantPanel() {
     } finally {
       setSaving(false);
       setTimeout(() => setSaveMsg(''), 3000);
+    }
+  }
+
+  async function saveMetaConfig() {
+    setMetaSaving(true); setMetaMsg(null);
+    try {
+      const res = await authFetch(`${API}/api/merchant/meta-config`, {
+        method: 'POST',
+        body: JSON.stringify({ botId, metaAccessToken, metaPageId, metaIgId })
+      }, token);
+      const data = await res.json();
+      if (res.ok) {
+        setMetaVerifyToken(data.verifyToken || '');
+        setMetaMsg({ ok: true, text: '✅ Credenciales guardadas. Copiá el Verify Token de abajo para configurar el Webhook en Meta Developers.' });
+      } else {
+        setMetaMsg({ ok: false, text: `❌ ${data.error || 'Error al guardar.'}` });
+        setTimeout(() => setMetaMsg(null), 4000);
+      }
+    } catch {
+      setMetaMsg({ ok: false, text: '❌ Error de conexión.' });
+      setTimeout(() => setMetaMsg(null), 4000);
+    } finally {
+      setMetaSaving(false);
     }
   }
 
@@ -255,7 +291,9 @@ export default function MerchantPanel() {
             <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
               {qrData ? (
                 <>
-                  <img src={qrData} alt="QR WhatsApp" style={{ width: '200px', height: '200px', borderRadius: '12px', border: '4px solid var(--accent)' }} />
+                  <div style={{ background: 'white', padding: '10px', borderRadius: '12px', border: '4px solid var(--accent)' }}>
+                    <QRCodeSVG value={qrData} size={180} />
+                  </div>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0, textAlign: 'center' }}>
                     Abrí WhatsApp → Dispositivos vinculados → Escanear código QR
                   </p>
@@ -372,6 +410,65 @@ export default function MerchantPanel() {
               <textarea className="prompt-textarea editable" style={{ minHeight: '60px' }}
                 placeholder="Ej: Hola! Nuestro local está cerrado ahora, pero mañana a primera hora te asisto."
                 value={hours.autoReplyMsg} onChange={e => setHours(h => ({ ...h, autoReplyMsg: e.target.value }))} />
+            </div>
+          )}
+
+          {/* ── Integración Meta (Instagram) ── */}
+          <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+            <span style={{ fontSize: '1.1rem', color: '#e1306c' }}>📸</span>
+            <h3 style={{ color: '#e1306c' }}>Integración Instagram DMs</h3>
+          </div>
+          {metrics.hasSocialFeature ? (
+            <>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 1rem' }}>
+                Para que la IA responda Mensajes Directos de Instagram, ingresa las credenciales de la API de Meta Graph (Fase Beta).
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>ID de la Página de Facebook</label>
+              <input className="modal-input" type="text" placeholder="Ej: 1234567890" value={metaPageId} onChange={e => setMetaPageId(e.target.value)} style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>ID de la Cuenta de Instagram (Business)</label>
+              <input className="modal-input" type="text" placeholder="Ej: 9876543210" value={metaIgId} onChange={e => setMetaIgId(e.target.value)} style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Token de Acceso de Meta (System User)</label>
+              <input className="modal-input" type="password" placeholder="EAABw..." value={metaAccessToken} onChange={e => setMetaAccessToken(e.target.value)} style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
+            </div>
+            
+            {metaMsg && <p style={{ margin: '0.5rem 0 0', fontSize: '0.875rem', color: metaMsg.ok ? '#10b981' : '#f87171' }}>{metaMsg.text}</p>}
+
+            <button onClick={saveMetaConfig} disabled={metaSaving} className="btn-solid-blue" style={{ marginTop: '0.5rem', width: 'auto', alignSelf: 'flex-start', padding: '0.6rem 1rem' }}>
+              {metaSaving ? 'Guardando...' : 'Vincular Instagram'}
+            </button>
+
+            {metaVerifyToken && (
+              <div style={{ marginTop: '0.75rem', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '10px', padding: '0.85rem 1rem' }}>
+                <p style={{ margin: '0 0 0.4rem', fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                  🔑 Verify Token para Meta Developers → Webhooks:
+                </p>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <code style={{ flex: 1, background: 'rgba(0,0,0,0.2)', borderRadius: '6px', padding: '0.4rem 0.6rem', fontSize: '0.82rem', wordBreak: 'break-all', color: '#93c5fd' }}>
+                    {metaVerifyToken}
+                  </code>
+                  <button onClick={() => navigator.clipboard.writeText(metaVerifyToken)}
+                    style={{ background: 'rgba(59,130,246,0.2)', border: '1px solid rgba(59,130,246,0.4)', borderRadius: '6px', color: '#93c5fd', cursor: 'pointer', padding: '0.4rem 0.65rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
+                    Copiar
+                  </button>
+                </div>
+                <p style={{ margin: '0.4rem 0 0', fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.7 }}>
+                  Pegalo en el campo "Verify Token" al registrar el webhook en Meta Developers. Si recargás la página se regenerará al guardar de nuevo.
+                </p>
+              </div>
+            )}
+              </div>
+            </>
+          ) : (
+            <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px dashed rgba(255,255,255,0.1)', padding: '1.5rem', borderRadius: '8px', textAlign: 'center', width: '100%', boxSizing: 'border-box', opacity: '0.6' }}>
+                <span style={{ fontSize: '2rem', display: 'block', marginBottom: '10px' }}>🔒</span>
+                <h4 style={{ margin: '0 0 5px 0', color: 'gray' }}>Módulo de Redes Sociales Bloqueado</h4>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: 'gray' }}>Comunícate con Soporte para adquirir esta función Elite. La IA podrá responder todos los mensajes de tu Instagram automáticamente, capturando leads 24/7.</p>
             </div>
           )}
 
