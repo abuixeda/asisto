@@ -44,6 +44,14 @@ export default function MerchantPanel() {
   const [metaMsg, setMetaMsg] = useState(null);
   const [metaVerifyToken, setMetaVerifyToken] = useState('');
 
+  // Telegram Config
+  const [telegramBotToken, setTelegramBotToken] = useState('');
+  const [telegramSaving, setTelegramSaving] = useState(false);
+  const [telegramMsg, setTelegramMsg] = useState(null);
+
+  // Auto-prompt generation
+  const [generatingPrompt, setGeneratingPrompt] = useState(false);
+
   useEffect(() => {
     if (!token || !botId) { nav('/registro'); return; }
     loadBot();
@@ -68,6 +76,7 @@ export default function MerchantPanel() {
       if (data.metaAccessToken) setMetaAccessToken(data.metaAccessToken);
       if (data.metaPageId) setMetaPageId(data.metaPageId);
       if (data.metaIgId) setMetaIgId(data.metaIgId);
+      if (data.telegramBotToken) setTelegramBotToken(data.telegramBotToken);
     } catch {
       nav('/registro');
     }
@@ -95,6 +104,25 @@ export default function MerchantPanel() {
     } finally {
       setPwSaving(false);
       setTimeout(() => setPwMsg(null), 4000);
+    }
+  }
+
+  async function generatePrompt() {
+    const storeUrl = bot?.shopifyUrl;
+    if (!storeUrl) return alert('El bot no tiene URL de tienda configurada.');
+    setGeneratingPrompt(true);
+    try {
+      const res = await authFetch(`${API}/api/merchant/generate-prompt`, {
+        method: 'POST',
+        body: JSON.stringify({ storeUrl })
+      }, token);
+      const data = await res.json();
+      if (res.ok) setPrompt(data.prompt);
+      else alert(data.error || 'Error al generar el prompt.');
+    } catch {
+      alert('No se pudo conectar con el servidor.');
+    } finally {
+      setGeneratingPrompt(false);
     }
   }
 
@@ -135,6 +163,27 @@ export default function MerchantPanel() {
       setTimeout(() => setMetaMsg(null), 4000);
     } finally {
       setMetaSaving(false);
+    }
+  }
+
+  async function saveTelegramConfig() {
+    setTelegramSaving(true); setTelegramMsg(null);
+    try {
+      const res = await authFetch(`${API}/api/bots/${botId}/telegram`, {
+        method: 'PUT',
+        body: JSON.stringify({ token: telegramBotToken })
+      }, token);
+      const data = await res.json();
+      if (res.ok) {
+        setTelegramMsg({ ok: true, text: '✅ ' + data.message });
+      } else {
+        setTelegramMsg({ ok: false, text: `❌ ${data.error || 'Error al conectar.'}` });
+      }
+    } catch {
+      setTelegramMsg({ ok: false, text: '❌ Error de conexión.' });
+    } finally {
+      setTelegramSaving(false);
+      setTimeout(() => setTelegramMsg(null), 4000);
     }
   }
 
@@ -321,6 +370,13 @@ export default function MerchantPanel() {
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.6rem' }}>
             Definí la personalidad de tu asistente: cómo saluda, qué tono usa, si trata de "vos" o "usted", si es formal o relajado. Cuanto más detallado, mejor va a representar a tu negocio.
           </p>
+          <button
+            onClick={generatePrompt}
+            disabled={generatingPrompt}
+            style={{ marginBottom: '0.75rem', padding: '0.55rem 1.1rem', background: generatingPrompt ? '#6366f1aa' : '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', cursor: generatingPrompt ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.9rem' }}
+          >
+            {generatingPrompt ? '⏳ Generando...' : '✨ Generar con IA desde mi tienda'}
+          </button>
           <textarea
             className="prompt-textarea editable"
             value={prompt} onChange={e => setPrompt(e.target.value)}
@@ -471,6 +527,25 @@ export default function MerchantPanel() {
                 <p style={{ margin: 0, fontSize: '0.85rem', color: 'gray' }}>Comunícate con Soporte para adquirir esta función Elite. La IA podrá responder todos los mensajes de tu Instagram automáticamente, capturando leads 24/7.</p>
             </div>
           )}
+
+          {/* ── Integración Telegram ── */}
+          <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+            <span style={{ fontSize: '1.1rem', color: '#38bdf8' }}>✈️</span>
+            <h3 style={{ color: '#38bdf8' }}>Integración Telegram Bot</h3>
+          </div>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 1rem' }}>
+            Respondé a tus clientes por Telegram. Creá un bot con @BotFather y pegá el Token aquí. (Dejar vacío para desconectar)
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Bot Token de Telegram</label>
+              <input className="modal-input" type="password" placeholder="123456789:AAH..." value={telegramBotToken} onChange={e => setTelegramBotToken(e.target.value)} style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
+            </div>
+            {telegramMsg && <p style={{ margin: '0.5rem 0 0', fontSize: '0.875rem', color: telegramMsg.ok ? '#10b981' : '#f87171' }}>{telegramMsg.text}</p>}
+            <button onClick={saveTelegramConfig} disabled={telegramSaving} className="btn-solid-blue" style={{ marginTop: '0.5rem', width: 'auto', alignSelf: 'flex-start', padding: '0.6rem 1rem' }}>
+              {telegramSaving ? 'Conectando...' : 'Guardar y Conectar'}
+            </button>
+          </div>
 
           {/* ── Celular del Dueño ── */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
