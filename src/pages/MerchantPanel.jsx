@@ -49,8 +49,6 @@ export default function MerchantPanel() {
   const [telegramSaving, setTelegramSaving] = useState(false);
   const [telegramMsg, setTelegramMsg] = useState(null);
 
-  // Auto-prompt generation
-  const [generatingPrompt, setGeneratingPrompt] = useState(false);
 
   useEffect(() => {
     if (!token || !botId) { nav('/registro'); return; }
@@ -104,25 +102,6 @@ export default function MerchantPanel() {
     } finally {
       setPwSaving(false);
       setTimeout(() => setPwMsg(null), 4000);
-    }
-  }
-
-  async function generatePrompt() {
-    const storeUrl = bot?.shopifyUrl;
-    if (!storeUrl) return alert('El bot no tiene URL de tienda configurada.');
-    setGeneratingPrompt(true);
-    try {
-      const res = await authFetch(`${API}/api/merchant/generate-prompt`, {
-        method: 'POST',
-        body: JSON.stringify({ storeUrl })
-      }, token);
-      const data = await res.json();
-      if (res.ok) setPrompt(data.prompt);
-      else alert(data.error || 'Error al generar el prompt.');
-    } catch {
-      alert('No se pudo conectar con el servidor.');
-    } finally {
-      setGeneratingPrompt(false);
     }
   }
 
@@ -370,13 +349,6 @@ export default function MerchantPanel() {
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.6rem' }}>
             Definí la personalidad de tu asistente: cómo saluda, qué tono usa, si trata de "vos" o "usted", si es formal o relajado. Cuanto más detallado, mejor va a representar a tu negocio.
           </p>
-          <button
-            onClick={generatePrompt}
-            disabled={generatingPrompt}
-            style={{ marginBottom: '0.75rem', padding: '0.55rem 1.1rem', background: generatingPrompt ? '#6366f1aa' : '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', cursor: generatingPrompt ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.9rem' }}
-          >
-            {generatingPrompt ? '⏳ Generando...' : '✨ Generar con IA desde mi tienda'}
-          </button>
           <textarea
             className="prompt-textarea editable"
             value={prompt} onChange={e => setPrompt(e.target.value)}
