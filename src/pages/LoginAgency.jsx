@@ -37,7 +37,7 @@ export default function LoginAgency() {
       if (!res.ok) { setError(data.error || 'Error al ingresar.'); return; }
       localStorage.setItem('merchant_token', data.token);
       localStorage.setItem('merchant_bot_id', data.user.botId);
-      nav('/mi-panel');
+      nav(data.user.role === 'admin' ? '/admin' : '/mi-panel');
     } catch {
       setError('No se pudo conectar con el servidor.');
     } finally {
