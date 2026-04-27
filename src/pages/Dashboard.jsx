@@ -812,7 +812,30 @@ function Dashboard() {
                         <span style={{color: 'gray', fontWeight: 'bold'}}>Habilitar Servicio Elite (Solo Admin)</span>
                       </div>
                     )}
-                    <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:'0 0 0.5rem 0'}}>Permite al cliente conectar su cuenta de Instagram para que la IA responda Mensajes Directos.</p>
+                    <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:'0 0 0.75rem 0'}}>Conectá la cuenta de Facebook/Instagram del cliente para que la IA responda mensajes automáticamente.</p>
+
+                    {bot.metrics?.hasSocialFeature && (
+                      <div style={{display:'flex', alignItems:'center', gap:'0.75rem', flexWrap:'wrap'}}>
+                        {bot.metaPageId ? (
+                          <div style={{display:'flex', alignItems:'center', gap:'0.5rem', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'8px', padding:'0.5rem 0.85rem', fontSize:'0.82rem', color:'#10b981'}}>
+                            ✅ Página conectada: {bot.metaPageId} {bot.metaIgId && `· IG: ${bot.metaIgId}`}
+                          </div>
+                        ) : null}
+                        <button
+                          onClick={async () => {
+                            try {
+                              const res = await authFetch(`${API_URL}/api/oauth/meta/init`, { method: 'POST', body: JSON.stringify({ botId: bot.id }) });
+                              const data = await res.json();
+                              if (data.url) window.location.href = data.url;
+                              else alert(data.error || 'Error al iniciar conexión');
+                            } catch { alert('Error de conexión'); }
+                          }}
+                          style={{display:'flex', alignItems:'center', gap:'0.5rem', background:'#1877f2', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.85rem', fontWeight:600}}
+                        >
+                          <span style={{fontWeight:900}}>f</span> {bot.metaPageId ? 'Reconectar Facebook' : 'Conectar con Facebook'}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* ── Integración Telegram ── */}
