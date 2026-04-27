@@ -34,6 +34,7 @@ export default function MerchantPanel() {
   const [pwSaving, setPwSaving] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [expandedField, setExpandedField] = useState(null); // 'prompt' | 'kb'
   const pollRef = useRef(null);
 
   // Meta Config (Instagram)
@@ -231,8 +232,30 @@ export default function MerchantPanel() {
   const metrics = (() => { try { return JSON.parse(bot.metrics || '{}'); } catch { return {}; } })();
   const isOn = bot.status === 'ON';
 
+  const expandedValue = expandedField === 'prompt' ? prompt : knowledgeBase;
+  const expandedSetter = expandedField === 'prompt' ? setPrompt : setKnowledgeBase;
+  const expandedTitle = expandedField === 'prompt' ? '🧠 Comportamiento Psicológico' : '🔗 Base de Conocimientos';
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-color)', padding: '2rem' }}>
+
+      {/* Modal expandido */}
+      {expandedField && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 10000, display: 'flex', flexDirection: 'column', padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-primary)' }}>{expandedTitle}</span>
+            <button onClick={() => setExpandedField(null)} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.4rem 0.9rem', fontSize: '0.9rem' }}>
+              Cerrar ✕
+            </button>
+          </div>
+          <textarea
+            className="prompt-textarea editable"
+            style={{ flex: 1, resize: 'none', fontSize: '0.9rem', lineHeight: 1.6 }}
+            value={expandedValue}
+            onChange={e => expandedSetter(e.target.value)}
+          />
+        </div>
+      )}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '900px', margin: '0 auto 2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: '800', fontSize: '1.3rem' }}>
           <div className="brand-logo" style={{ width: '32px', height: '32px', fontSize: '1rem', margin: 0, boxShadow: 'none' }}>TJ</div>
@@ -344,7 +367,8 @@ export default function MerchantPanel() {
           {/* ── Comportamiento ── */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
             <span style={{ fontSize: '1.1rem' }}>🧠</span>
-            <h3>Comportamiento Psicológico de la IA</h3>
+            <h3 style={{ flex: 1 }}>Comportamiento Psicológico de la IA</h3>
+            <button onClick={() => setExpandedField('prompt')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}>⛶ Expandir</button>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.6rem' }}>
             Definí la personalidad de tu asistente: cómo saluda, qué tono usa, si trata de "vos" o "usted", si es formal o relajado. Cuanto más detallado, mejor va a representar a tu negocio.
@@ -395,7 +419,8 @@ export default function MerchantPanel() {
           {/* ── Base de Conocimientos ── */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
             <span style={{ fontSize: '1.1rem', color: '#10b981' }}>🔗</span>
-            <h3>Base de Conocimientos</h3>
+            <h3 style={{ flex: 1 }}>Base de Conocimientos</h3>
+            <button onClick={() => setExpandedField('kb')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}>⛶ Expandir</button>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem' }}>
             Todo lo que tu asistente necesita saber para responder correctamente: métodos de pago, zonas de envío, garantías, condiciones especiales. Organizá la info por secciones usando corchetes como <strong>[ENVIO]</strong>, <strong>[PAGOS]</strong>, <strong>[GARANTIA]</strong> para que la IA sepa dónde buscar cada dato.

@@ -119,6 +119,7 @@ function Dashboard() {
   const [editingKnowledge, setEditingKnowledge] = useState({});
   const [editingShopify, setEditingShopify] = useState({});
   const [editingWorkingHours, setEditingWorkingHours] = useState({});
+  const [expandedField, setExpandedField] = useState(null); // { botId, field: 'prompt'|'kb' }
 
   // States Modal Add Client
   const [showAddModal, setShowAddModal] = useState(false);
@@ -299,8 +300,38 @@ function Dashboard() {
     }
   };
 
+  const expandedValue = expandedField
+    ? (expandedField.field === 'prompt'
+        ? (editingPrompt[expandedField.botId] ?? '')
+        : (editingKnowledge[expandedField.botId] ?? ''))
+    : '';
+  const expandedSetter = expandedField
+    ? (expandedField.field === 'prompt'
+        ? v => setEditingPrompt(p => ({ ...p, [expandedField.botId]: v }))
+        : v => setEditingKnowledge(k => ({ ...k, [expandedField.botId]: v })))
+    : null;
+  const expandedTitle = expandedField?.field === 'prompt' ? '🧠 Comportamiento Psicológico' : '🔗 Base de Conocimientos';
+
   return (
     <div className="dashboard-container">
+      {/* Modal expandido */}
+      {expandedField && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 10000, display: 'flex', flexDirection: 'column', padding: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-primary)' }}>{expandedTitle}</span>
+            <button onClick={() => setExpandedField(null)} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.4rem 0.9rem', fontSize: '0.9rem' }}>
+              Cerrar ✕
+            </button>
+          </div>
+          <textarea
+            className="prompt-textarea editable"
+            style={{ flex: 1, resize: 'none', fontSize: '0.9rem', lineHeight: 1.6 }}
+            value={expandedValue}
+            onChange={e => expandedSetter(e.target.value)}
+          />
+        </div>
+      )}
+
       <header className="header header-flex">
         <div className="header-titles">
           <h1>Bot Manager <span className="badge">PRO</span></h1>
@@ -528,7 +559,8 @@ function Dashboard() {
                   <>
                     <div className="prompt-header">
                       <BrainCircuit size={20} className="icon-purple" />
-                      <h3>Comportamiento Psicológico de la IA</h3>
+                      <h3 style={{ flex: 1 }}>Comportamiento Psicológico de la IA</h3>
+                      <button onClick={() => { if (editingPrompt[bot.id] === undefined) setEditingPrompt(p => ({...p, [bot.id]: bot.prompt || ''})); setExpandedField({ botId: bot.id, field: 'prompt' }); }} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}>⛶ Expandir</button>
                     </div>
                     <textarea
                       className="prompt-textarea editable"
@@ -553,7 +585,8 @@ function Dashboard() {
 
                 <div className="prompt-header" style={{marginTop:'1.5rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
                   <BrainCircuit size={20} className="icon-success" style={{color: '#10b981'}} />
-                  <h3>Base de Conocimientos (Listas de Precio o Reglas del Local)</h3>
+                  <h3 style={{ flex: 1 }}>Base de Conocimientos (Listas de Precio o Reglas del Local)</h3>
+                  <button onClick={() => { if (editingKnowledge[bot.id] === undefined) setEditingKnowledge(k => ({...k, [bot.id]: bot.knowledgeBase || ''})); setExpandedField({ botId: bot.id, field: 'kb' }); }} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}>⛶ Expandir</button>
                 </div>
                 <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:'0 0 0.5rem 0'}}>Pega aquí texto libre con precios, links o detalles de servicios. La IA lo memorizará.</p>
                 <textarea
