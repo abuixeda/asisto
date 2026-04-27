@@ -219,6 +219,11 @@ function Dashboard() {
     await authFetch(`${API_URL}/api/bots/${id}/stop`, { method: 'POST' });
     setQrCodes(prev => ({ ...prev, [id]: null }));
   };
+  const handleLogout = async (id) => {
+    if (!confirm('¿Desvincular WhatsApp? Se borrará la sesión y deberás escanear el QR nuevamente.')) return;
+    await authFetch(`${API_URL}/api/bots/${id}/logout`, { method: 'POST' });
+    setQrCodes(prev => ({ ...prev, [id]: null }));
+  };
 
   const handleSavePrompt = async (botId) => {
     const promptText = editingPrompt[botId];
@@ -554,6 +559,11 @@ function Dashboard() {
                     <span className="slider"></span>
                   </label>
                 </div>
+                {bot.status !== 'OFF' && (
+                  <button onClick={() => handleLogout(bot.id)} title="Desvincular WhatsApp" style={{ background: 'transparent', border: '1px solid #4b5563', borderRadius: '6px', color: '#9ca3af', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.75rem' }}>
+                    Desvincular
+                  </button>
+                )}
               </div>
             </div>
 

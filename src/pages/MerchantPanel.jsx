@@ -23,6 +23,7 @@ export default function MerchantPanel() {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
   const [starting, setStarting] = useState(false);
+  const [unlinking, setUnlinking] = useState(false);
   const [sheetsUrl, setSheetsUrl] = useState('');
   const [importing, setImporting] = useState(false);
   const [importMsg, setImportMsg] = useState(null);
@@ -204,6 +205,17 @@ export default function MerchantPanel() {
     if (pollRef.current) clearInterval(pollRef.current);
   }
 
+  async function unlinkWhatsApp() {
+    if (!confirm('¿Cerrar sesión de WhatsApp? Deberás escanear el QR nuevamente para reconectar.')) return;
+    setUnlinking(true);
+    await authFetch(`${API}/api/bots/${botId}/logout`, { method: 'POST' }, token);
+    setBot(b => ({ ...b, status: 'OFF' }));
+    setQrData(null);
+    setStarting(false);
+    if (pollRef.current) clearInterval(pollRef.current);
+    setUnlinking(false);
+  }
+
   async function pollStatus() {
     try {
       const res = await authFetch(`${API}/api/bots/${botId}/status`, {}, token);
@@ -297,9 +309,14 @@ export default function MerchantPanel() {
             </div>
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
               {isOn ? (
-                <button onClick={stopBot} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #ef4444', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '0.9rem' }}>
-                  Detener bot
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button onClick={stopBot} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #ef4444', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '0.9rem' }}>
+                    Detener bot
+                  </button>
+                  <button onClick={unlinkWhatsApp} disabled={unlinking} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #6b7280', background: 'transparent', color: '#9ca3af', cursor: 'pointer', fontSize: '0.9rem' }}>
+                    {unlinking ? 'Desvinculando...' : 'Desvincular WhatsApp'}
+                  </button>
+                </div>
               ) : (
                 <button onClick={startBot} disabled={starting} className="btn-solid-blue" style={{ margin: 0, width: 'auto', padding: '0.6rem 1.2rem', fontSize: '0.9rem', opacity: starting ? 0.7 : 1 }}>
                   {starting ? 'Iniciando...' : 'Conectar WhatsApp'}
