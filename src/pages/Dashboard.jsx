@@ -873,7 +873,17 @@ function Dashboard() {
                       <div style={{display:'flex', alignItems:'center', gap:'0.75rem', flexWrap:'wrap'}}>
                         {bot.metaPageId ? (
                           <div style={{display:'flex', alignItems:'center', gap:'0.5rem', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'8px', padding:'0.5rem 0.85rem', fontSize:'0.82rem', color:'#10b981'}}>
-                            ✅ Página conectada: {bot.metaPageId} {bot.metaIgId && `· IG: ${bot.metaIgId}`}
+                            ✅ Página conectada: <strong>{bot.metaPageName || bot.metaPageId}</strong>
+                            {bot.metaIgId && <span style={{color:'#c084fc'}}> · IG vinculado</span>}
+                            <button
+                              onClick={async () => {
+                                if (!confirm(`¿Desconectar la página "${bot.metaPageName || bot.metaPageId}"?`)) return;
+                                await authFetch(`${API_URL}/api/bots/${bot.id}/meta/disconnect`, { method: 'POST' });
+                                setBots(prev => prev.map(b => b.id === bot.id ? { ...b, metaPageId: null, metaPageName: null, metaIgId: null } : b));
+                              }}
+                              style={{background:'transparent', border:'none', color:'#ef4444', cursor:'pointer', padding:'0 0.25rem', fontSize:'1rem', lineHeight:1}}
+                              title="Desconectar"
+                            >✕</button>
                           </div>
                         ) : null}
                         <button
