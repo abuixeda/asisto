@@ -138,6 +138,11 @@ function Dashboard() {
   const [verificationCode, setVerificationCode] = useState({});
   const [isVerifyingMFA, setIsVerifyingMFA] = useState({});
 
+  // States Telegram
+  const [telegramTokens, setTelegramTokens] = useState({});
+  const [telegramSaving, setTelegramSaving] = useState({});
+  const [telegramMsg, setTelegramMsg] = useState({});
+
   // States Debtors
   const [debtors, setDebtors] = useState({});
   const [newDebtor, setNewDebtor] = useState({});
@@ -799,6 +804,49 @@ function Dashboard() {
                     )}
                     <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:'0 0 0.5rem 0'}}>Permite al cliente conectar su cuenta de Instagram para que la IA responda Mensajes Directos.</p>
                   </div>
+
+                  {/* ── Integración Telegram ── */}
+                  <div style={{marginTop:'2rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
+                    <div className="prompt-header">
+                      <span style={{fontSize:'1.1rem'}}>✈️</span>
+                      <h3 style={{color:'#38bdf8', flex: 1}}>Integración Telegram Bot</h3>
+                      {bot.telegramBotToken && <span style={{fontSize:'0.75rem', background:'rgba(16,185,129,0.15)', color:'#10b981', padding:'2px 8px', borderRadius:'6px', border:'1px solid rgba(16,185,129,0.3)'}}>● Conectado</span>}
+                    </div>
+                    <p style={{fontSize:'0.85rem', color:'var(--text-secondary)', margin:'0 0 0.75rem'}}>
+                      El cliente crea un bot en @BotFather y pega el token aquí. La IA responderá automáticamente en Telegram sin necesidad de escanear QR.
+                    </p>
+                    <div style={{display:'flex', gap:'0.75rem', flexWrap:'wrap'}}>
+                      <input
+                        className="modal-input"
+                        type="password"
+                        placeholder="Token de Telegram (123456789:AAH...)"
+                        value={telegramTokens[bot.id] ?? (bot.telegramBotToken || '')}
+                        onChange={e => setTelegramTokens(t => ({...t, [bot.id]: e.target.value}))}
+                        style={{flex:1, marginBottom:0, background:'var(--bg-card)'}}
+                      />
+                      <button
+                        disabled={telegramSaving[bot.id]}
+                        onClick={async () => {
+                          const tkn = telegramTokens[bot.id] ?? '';
+                          setTelegramSaving(s => ({...s, [bot.id]: true}));
+                          setTelegramMsg(m => ({...m, [bot.id]: null}));
+                          try {
+                            const res = await authFetch(`${API_URL}/api/bots/${bot.id}/telegram`, { method: 'PUT', body: JSON.stringify({ token: tkn }) });
+                            const data = await res.json();
+                            setTelegramMsg(m => ({...m, [bot.id]: { ok: res.ok, text: res.ok ? '✅ ' + data.message : '❌ ' + (data.error || 'Error') }}));
+                            if (res.ok) setBots(prev => prev.map(b => b.id === bot.id ? {...b, telegramBotToken: tkn || null} : b));
+                          } catch { setTelegramMsg(m => ({...m, [bot.id]: { ok: false, text: '❌ Error de conexión' }})); }
+                          finally { setTelegramSaving(s => ({...s, [bot.id]: false})); setTimeout(() => setTelegramMsg(m => ({...m, [bot.id]: null})), 4000); }
+                        }}
+                        className="btn-solid-blue"
+                        style={{margin:0, width:'auto', padding:'0.6rem 1rem', whiteSpace:'nowrap'}}
+                      >
+                        {telegramSaving[bot.id] ? 'Conectando...' : (bot.telegramBotToken ? 'Actualizar' : 'Conectar')}
+                      </button>
+                    </div>
+                    {telegramMsg[bot.id] && <p style={{margin:'0.5rem 0 0', fontSize:'0.875rem', color: telegramMsg[bot.id].ok ? '#10b981' : '#f87171'}}>{telegramMsg[bot.id].text}</p>}
+                  </div>
+
                 </div>
 
               </div>
