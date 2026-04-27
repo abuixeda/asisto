@@ -899,6 +899,19 @@ function Dashboard() {
                         >
                           <span style={{fontWeight:900}}>f</span> {bot.metaPageId ? 'Reconectar Facebook' : 'Conectar con Facebook'}
                         </button>
+                        <button
+                          onClick={async () => {
+                            try {
+                              const res = await authFetch(`${API_URL}/api/oauth/instagram/init`, { method: 'POST', body: JSON.stringify({ botId: bot.id }) });
+                              const data = await res.json();
+                              if (data.url) window.location.href = data.url;
+                              else alert(data.error || 'Error al iniciar conexión');
+                            } catch { alert('Error de conexión'); }
+                          }}
+                          style={{display:'flex', alignItems:'center', gap:'0.5rem', background:'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.85rem', fontWeight:600}}
+                        >
+                          📷 {bot.metaPageId ? 'Reconectar Instagram' : 'Conectar con Instagram'}
+                        </button>
                       </div>
                     )}
                   </div>
