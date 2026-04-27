@@ -150,6 +150,10 @@ function Dashboard() {
   // Delete confirmation
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
+  // Meta page selector
+  const [metaPageSelect, setMetaPageSelect] = useState(null); // { token, pages: [{id,name,hasIg}] }
+  const [metaConnecting, setMetaConnecting] = useState(false);
+
   // FIX 3: Todos los fetches del dashboard usan authFetch para enviar el token.
   const fetchBots = () => {
     authFetch(`${API_URL}/api/bots`)
@@ -199,6 +203,17 @@ function Dashboard() {
       };
       setNotifications(prev => [newNotif, ...prev]);
     });
+
+    // Manejar retorno del OAuth de Meta (selector de páginas)
+    const params = new URLSearchParams(window.location.search);
+    const selToken = params.get('meta_select');
+    if (selToken) {
+      window.history.replaceState({}, '', window.location.pathname);
+      authFetch(`${API_URL}/api/oauth/meta/pages?token=${selToken}`)
+        .then(r => r.json())
+        .then(data => { if (data.pages) setMetaPageSelect({ token: selToken, pages: data.pages }); })
+        .catch(() => {});
+    }
 
     return () => {
       socket.off('connect', fetchBots);
@@ -322,8 +337,48 @@ function Dashboard() {
     : null;
   const expandedTitle = expandedField?.field === 'prompt' ? '🧠 Comportamiento Psicológico' : '🔗 Base de Conocimientos';
 
+  const handleConnectMetaPage = async (pageId) => {
+    if (!metaPageSelect) return;
+    setMetaConnecting(true);
+    try {
+      const res = await authFetch(`${API_URL}/api/oauth/meta/connect-page`, {
+        method: 'POST', body: JSON.stringify({ token: metaPageSelect.token, pageId })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setMetaPageSelect(null);
+        fetchBots();
+        alert(`✅ Página "${data.pageName}" conectada correctamente.`);
+      } else {
+        alert(data.error || 'Error al conectar la página.');
+      }
+    } catch { alert('Error de conexión.'); }
+    setMetaConnecting(false);
+  };
+
   return (
     <div className="dashboard-container">
+      {/* Modal selector de páginas de Facebook */}
+      {metaPageSelect && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', maxWidth: '420px', width: '90%' }}>
+            <h3 style={{ margin: '0 0 0.5rem', color: 'var(--text-primary)' }}>Seleccioná la página de Facebook</h3>
+            <p style={{ margin: '0 0 1.25rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Elegí la página que quieras conectar al bot.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              {metaPageSelect.pages.map(p => (
+                <button key={p.id} onClick={() => handleConnectMetaPage(p.id)} disabled={metaConnecting}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(24,119,242,0.1)', border: '1px solid rgba(24,119,242,0.4)', borderRadius: '10px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.85rem 1rem', fontSize: '0.95rem', fontWeight: 500 }}>
+                  <span><span style={{ fontWeight: 900, color: '#1877f2', marginRight: '0.5rem' }}>f</span>{p.name}</span>
+                  {p.hasIg && <span style={{ fontSize: '0.75rem', background: 'rgba(131,58,180,0.2)', color: '#c084fc', padding: '2px 7px', borderRadius: '6px' }}>+ Instagram</span>}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setMetaPageSelect(null)} style={{ marginTop: '1rem', width: '100%', background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.5rem' }}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
       {/* Modal expandido */}
       {expandedField && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 10000, display: 'flex', flexDirection: 'column', padding: '1.5rem' }}>
