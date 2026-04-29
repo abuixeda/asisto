@@ -1561,6 +1561,23 @@ function Dashboard() {
                                   } catch { alert('Error de conexión'); }
                                 }} style={{background:'transparent', border:'none', color:'var(--text-2)', cursor:'pointer', fontSize:'0.72rem', padding:'0', whiteSpace:'nowrap', textDecoration:'underline'}}>reconectar</button>
                               </div>
+                            ) : bot.metaPageId ? (
+                              <div style={{display:'flex', flexDirection:'column', gap:'0.25rem'}}>
+                                <button onClick={async () => {
+                                  try {
+                                    const res = await authFetch(`${API_URL}/api/bots/${bot.id}/meta/link-instagram`, { method: 'POST' });
+                                    const data = await res.json();
+                                    if (data.ok) {
+                                      setBots(prev => prev.map(b => b.id === bot.id ? { ...b, metaIgId: data.igId, metaIgUsername: data.igUsername } : b));
+                                    } else {
+                                      alert(data.error || 'No se pudo vincular Instagram.');
+                                    }
+                                  } catch { alert('Error de conexión'); }
+                                }} style={{display:'flex', alignItems:'center', gap:'0.5rem', background:'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.85rem', fontWeight:600}}>
+                                  📷 Detectar Instagram
+                                </button>
+                                <span style={{fontSize:'0.7rem', color:'var(--text-2)', paddingLeft:'0.2rem'}}>Usa la página de Facebook ya conectada</span>
+                              </div>
                             ) : (
                               <div style={{display:'flex', flexDirection:'column', gap:'0.25rem'}}>
                                 <button onClick={async () => {
@@ -1573,7 +1590,7 @@ function Dashboard() {
                                 }} style={{display:'flex', alignItems:'center', gap:'0.5rem', background:'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.85rem', fontWeight:600}}>
                                   📷 Vincular Instagram
                                 </button>
-                                <span style={{fontSize:'0.7rem', color:'var(--text-2)', paddingLeft:'0.2rem'}}>Se abre vía Facebook</span>
+                                <span style={{fontSize:'0.7rem', color:'var(--text-2)', paddingLeft:'0.2rem'}}>Primero conectá Facebook</span>
                               </div>
                             )}
                           </div>
