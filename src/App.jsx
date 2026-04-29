@@ -7,6 +7,7 @@ import Onboarding from './pages/Onboarding';
 import MerchantPanel from './pages/MerchantPanel';
 import Login from './pages/Login';
 import LoginAgency from './pages/LoginAgency';
+import OAuthCallback from './pages/OAuthCallback';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/login-premium" element={<LoginAgency />} />
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/mi-panel" element={<MerchantPanel />} />
+          <Route path="/oauth-callback" element={<OAuthCallback />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
     </Router>
