@@ -25,7 +25,13 @@ export default function Login() {
       if (!res.ok) { setError(data.error || 'Error al ingresar.'); return; }
       localStorage.setItem('merchant_token', data.token);
       localStorage.setItem('merchant_bot_id', data.user.botId);
-      nav('/mi-panel');
+      localStorage.setItem('asisto_token', data.token);
+      localStorage.setItem('asisto_user', JSON.stringify(data.user));
+      if (data.user.role === 'admin') {
+        nav('/admin');
+      } else {
+        nav('/mi-panel');
+      }
     } catch {
       setError('No se pudo conectar con el servidor.');
     } finally {
