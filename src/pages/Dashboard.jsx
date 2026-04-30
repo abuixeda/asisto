@@ -712,6 +712,9 @@ function Dashboard() {
   const [telegramTokens, setTelegramTokens] = useState({});
   const [telegramSaving, setTelegramSaving] = useState({});
   const [telegramMsg, setTelegramMsg] = useState({});
+  const [igManualInputs, setIgManualInputs] = useState({}); // botId → username string
+  const [igManualShow, setIgManualShow] = useState({});     // botId → bool (show manual input)
+  const [igManualSaving, setIgManualSaving] = useState({});
 
   const [debtors, setDebtors] = useState({});
   const [newDebtor, setNewDebtor] = useState({});
@@ -1571,25 +1574,64 @@ function Dashboard() {
                               </div>
                             ) : bot.metaPageId ? (
                               <div style={{display:'flex', flexDirection:'column', gap:'0.35rem'}}>
-                                <button onClick={async () => {
-                                  try {
-                                    const res = await authFetch(`${API_URL}/api/bots/${bot.id}/meta/link-instagram`, { method: 'POST' });
-                                    const data = await res.json();
-                                    if (data.ok) {
-                                      setBots(prev => prev.map(b => b.id === bot.id ? { ...b, metaIgId: data.igId, metaIgUsername: data.igUsername } : b));
-                                    } else {
-                                      const isNotPro = data.error?.includes('No hay cuenta');
-                                      if (isNotPro) {
-                                        alert('⚠️ No se encontró Instagram vinculado.\n\nPara que funcione necesitás:\n1. Que el Instagram sea una cuenta Profesional (Empresa o Creador)\n2. Que esté vinculada a la página de Facebook desde Configuración → Instagram\n\nEn Instagram: Configuración → Cuenta → Cambiar a cuenta profesional');
-                                      } else {
-                                        alert(data.error || 'No se pudo vincular Instagram.');
-                                      }
-                                    }
-                                  } catch { alert('Error de conexión'); }
-                                }} style={{display:'flex', alignItems:'center', gap:'0.5rem', background:'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.85rem', fontWeight:600}}>
-                                  📷 Detectar Instagram
-                                </button>
-                                <span style={{fontSize:'0.7rem', color:'var(--text-2)', paddingLeft:'0.2rem'}}>Requiere cuenta profesional (Empresa/Creador) en IG</span>
+                                {!igManualShow[bot.id] ? (
+                                  <>
+                                    <button onClick={async () => {
+                                      try {
+                                        const res = await authFetch(`${API_URL}/api/bots/${bot.id}/meta/link-instagram`, { method: 'POST' });
+                                        const data = await res.json();
+                                        if (data.ok) {
+                                          setBots(prev => prev.map(b => b.id === bot.id ? { ...b, metaIgId: data.igId, metaIgUsername: data.igUsername } : b));
+                                        } else {
+                                          setIgManualShow(s => ({ ...s, [bot.id]: true }));
+                                        }
+                                      } catch { setIgManualShow(s => ({ ...s, [bot.id]: true })); }
+                                    }} style={{display:'flex', alignItems:'center', gap:'0.5rem', background:'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.85rem', fontWeight:600}}>
+                                      📷 Detectar Instagram
+                                    </button>
+                                    <span style={{fontSize:'0.7rem', color:'var(--text-2)', paddingLeft:'0.2rem'}}>Requiere cuenta profesional (Empresa/Creador) en IG</span>
+                                  </>
+                                ) : (
+                                  <div style={{display:'flex', flexDirection:'column', gap:'0.4rem'}}>
+                                    <span style={{fontSize:'0.72rem', color:'var(--text-2)'}}>No se detectó automáticamente. Ingresá el usuario de Instagram:</span>
+                                    <div style={{display:'flex', gap:'0.4rem', alignItems:'center'}}>
+                                      <span style={{color:'var(--text-2)', fontSize:'0.9rem', lineHeight:1}}>@</span>
+                                      <input
+                                        className="modal-input"
+                                        type="text"
+                                        placeholder="usuario_de_instagram"
+                                        value={igManualInputs[bot.id] || ''}
+                                        onChange={e => setIgManualInputs(s => ({ ...s, [bot.id]: e.target.value.replace(/^@/, '').trim() }))}
+                                        style={{flex:1, marginBottom:0, background:'var(--surface)', fontSize:'0.85rem', padding:'0.4rem 0.6rem'}}
+                                      />
+                                      <button
+                                        disabled={igManualSaving[bot.id] || !igManualInputs[bot.id]}
+                                        onClick={async () => {
+                                          const username = (igManualInputs[bot.id] || '').trim();
+                                          if (!username) return;
+                                          setIgManualSaving(s => ({ ...s, [bot.id]: true }));
+                                          try {
+                                            const res = await authFetch(`${API_URL}/api/bots/${bot.id}/meta/set-instagram`, { method: 'POST', body: JSON.stringify({ igUsername: username }) });
+                                            const data = await res.json();
+                                            if (data.ok) {
+                                              setBots(prev => prev.map(b => b.id === bot.id ? { ...b, metaIgId: data.igId, metaIgUsername: data.igUsername } : b));
+                                              setIgManualShow(s => ({ ...s, [bot.id]: false }));
+                                              setIgManualInputs(s => ({ ...s, [bot.id]: '' }));
+                                            } else {
+                                              alert(data.error || 'Error al guardar.');
+                                            }
+                                          } catch { alert('Error de conexión'); }
+                                          finally { setIgManualSaving(s => ({ ...s, [bot.id]: false })); }
+                                        }}
+                                        style={{background:'linear-gradient(135deg,#833ab4,#fd1d1d)', border:'none', borderRadius:'7px', color:'#fff', cursor:'pointer', padding:'0.4rem 0.8rem', fontSize:'0.82rem', fontWeight:600, whiteSpace:'nowrap', opacity: igManualSaving[bot.id] ? 0.6 : 1}}
+                                      >
+                                        {igManualSaving[bot.id] ? '...' : 'Guardar'}
+                                      </button>
+                                      <button onClick={() => setIgManualShow(s => ({ ...s, [bot.id]: false }))} style={{background:'transparent', border:'none', color:'var(--text-2)', cursor:'pointer', fontSize:'0.85rem', padding:'0.2rem 0.3rem'}}>✕</button>
+                                    </div>
+                                    <span style={{fontSize:'0.68rem', color:'var(--text-2)', paddingLeft:'1rem'}}>Asegurate que sea cuenta Profesional (Empresa o Creador)</span>
+                                  </div>
+                                )}
                               </div>
                             ) : (
                               <div style={{display:'flex', flexDirection:'column', gap:'0.25rem'}}>
