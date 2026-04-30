@@ -1,0 +1,178 @@
+{
+  "nav": {
+    "features": "Funktionen",
+    "howItWorks": "So funktioniert es",
+    "pricing": "Preise",
+    "login": "Anmelden",
+    "start": "Kostenlos starten"
+  },
+  "hero": {
+    "badge": "Automatisierter Support auf WhatsApp & Instagram",
+    "title": "Ihr Unternehmen antwortet automatisch,",
+    "titleHighlight": "auch während Sie schlafen",
+    "subtitle": "Asisto beantwortet Kundennachrichten auf WhatsApp und Instagram — rund um die Uhr, 7 Tage die Woche.",
+    "cta": "14 Tage kostenlos testen",
+    "ctaSecondary": "Live-Demo ansehen",
+    "stats": {
+      "responses": "automatische Antworten",
+      "uptime": "verfügbar",
+      "satisfaction": "Kundenzufriedenheit"
+    }
+  },
+  "demo": {
+    "online": "● jetzt online",
+    "title": "Demo — Asisto AI",
+    "placeholder": "Ihre Frage eingeben...",
+    "greeting": "Hallo! Ich bin Ihr virtueller Assistent. Fragen Sie mich nach Preisen, Verfügbarkeit, Versand oder allem anderen 😊",
+    "responses": {
+      "price": "Hallo! Die Preise variieren je nach Modell. Unsere Bestseller beginnen ab 29,99 €. Soll ich Ihnen mehr über ein bestimmtes Produkt erzählen?",
+      "stock": "Ja, wir haben Lagerbestand 👌 Welche Größe, Farbe oder welches Modell interessiert Sie?",
+      "shipping": "Wir liefern europaweit 🚚 Die Lieferzeit beträgt 2-5 Werktage.",
+      "payment": "Wir akzeptieren Kreditkarte, PayPal und Banküberweisung 💳",
+      "hours": "Asisto antwortet automatisch 24 Stunden am Tag, 7 Tage die Woche, auch an Feiertagen 😄",
+      "returns": "Wir bieten 30 Tage Garantie. Bei beschädigter Ware tauschen wir kostenlos aus.",
+      "default": "Hallo! Stellen Sie mir gerne Fragen zu Preisen, Verfügbarkeit, Versand, Zahlungsoptionen oder anderen Themen 😊"
+    }
+  },
+  "brands": [
+    { "icon": "👕", "name": "Modeshop Berlin" },
+    { "icon": "📱", "name": "Elektronik Hamburg" },
+    { "icon": "💎", "name": "Schmuck Online" },
+    { "icon": "🔧", "name": "Werkzeughandel" },
+    { "icon": "💄", "name": "Kosmetik München" },
+    { "icon": "💪", "name": "Supplements Shop" },
+    { "icon": "🛋️", "name": "Möbelhaus" },
+    { "icon": "📚", "name": "Online-Buchhandlung" }
+  ],
+  "features": {
+    "title": "Alles was Sie brauchen,",
+    "titleHighlight": "ohne Komplexität",
+    "subtitle": "Asisto passt sich Ihrem Unternehmen an, nicht umgekehrt.",
+    "items": [
+      { "icon": "💬", "title": "Antwortet wie ein Mensch", "desc": "Keine Menüs, keine Schaltflächen. Es versteht den Kontext, erinnert sich an das Gespräch und antwortet natürlich." },
+      { "icon": "🕐", "title": "24 Stunden verfügbar", "desc": "Ihr Mitbewerber braucht 2 Stunden zum Antworten. Asisto macht es in 3 Sekunden, um 3 Uhr morgens. Jede unbeantwortete Nachricht ist ein verlorener Verkauf." },
+      { "icon": "⚡", "title": "Kennt Ihren Katalog live", "desc": "Verbindet sich mit Ihrem Shop und kennt in Echtzeit den Bestand, den Preis und die Eigenschaften. Erfindet nie einen Preis." },
+      { "icon": "🛡️", "title": "Lernt Ihre Geschäftsregeln", "desc": "Sie erklären, wie Ihr Geschäft funktioniert, Ihre Verkaufsbedingungen, Ihre Richtlinien. Er wendet sie in jedem Gespräch an." },
+      { "icon": "📈", "title": "Verwandelt Anfragen in Verkäufe", "desc": "Es informiert nicht nur — es führt Kunden zum Kauf. Schlägt Produkte vor, berechnet Preise und schließt das Geschäft ab." },
+      { "icon": "🎛️", "title": "Volle Kontrolle über Ihr Panel", "desc": "Ändern Sie das Bot-Verhalten, aktualisieren Sie den Katalog und überprüfen Sie Metriken in einem einfachen Dashboard." }
+    ]
+  },
+  "beforeAfter": {
+    "title": "Vorher und nachher",
+    "before": "Vorher",
+    "after": "Mit Asisto",
+    "items": [
+      { "bad": "Sie verlieren Verkäufe im Schlaf", "good": "Antwortet in 3 Sekunden um 3 Uhr" },
+      { "bad": "Sie nennen Preise, die Sie nicht haben", "good": "Zeigt immer den echten Bestand" },
+      { "bad": "Stunden zum Antworten auf Nachrichten", "good": "Sofortige Antwort, immer" },
+      { "bad": "Jede Anfrage unterbricht Sie", "good": "Nur die sehen, die Sie brauchen" },
+      { "bad": "Fixkosten auch ohne Verkäufe", "good": "Fixkosten, keine Überraschungen" }
+    ]
+  },
+  "howItWorks": {
+    "title": "Drei Schritte und",
+    "titleHighlight": "Sie sind live",
+    "steps": [
+      { "n": "1", "title": "Konto erstellen", "desc": "In weniger als 60 Sekunden mit Ihrer E-Mail registrieren.", "icon": "👤" },
+      { "n": "2", "title": "Bot konfigurieren", "desc": "Sagen Sie ihm, wie er sprechen soll: Ton, Name, Sprache, was er sagen darf und was nicht.", "icon": "🧠" },
+      { "n": "3", "title": "Katalog verbinden", "desc": "Shop-Link oder Google Sheets einfügen und der Bot lernt ihn automatisch.", "icon": "⚡" },
+      { "n": "4", "title": "WhatsApp QR scannen", "desc": "Verknüpfen Sie Ihre Nummer und fertig. Der Bot beginnt in Sekunden zu antworten.", "icon": "📱" }
+    ]
+  },
+  "reviews": {
+    "title": "Was unsere",
+    "titleHighlight": "Kunden sagen",
+    "items": [
+      { "name": "Markus R.", "biz": "Modeshop Berlin", "text": "Ich hatte Angst, dass es wie ein generischer Bot wirkt, aber Asisto versteht den Kontext. Meine Kunden wissen nicht, dass sie mit einer KI sprechen. Wir haben die Antwortquote im ersten Monat verdreifacht." },
+      { "name": "Sabine K.", "biz": "Supplement-Shop", "text": "Ich verlor früher Verkäufe, weil ich nachts nicht antworten konnte. Jetzt bedient der Bot um 3 Uhr genauso gut wie um 15 Uhr. Die nächtlichen Verkäufe allein haben das Abo bezahlt." },
+      { "name": "Thomas M.", "biz": "Elektronik Hamburg", "text": "Was mich am meisten überraschte, ist, dass er weiß, was vorrätig ist und was nicht. Er hat einem Kunden nie etwas versprochen, das wir nicht hatten. Das allein ist den Preis wert." },
+      { "name": "Julia F.", "biz": "Schmuck Online", "text": "Meine Kunden sind anspruchsvoll und ich dachte, sie würden merken, dass es ein Bot ist. Nichts. Der Ton, den ich eingestellt habe, ist genau unsere Markenstimme." },
+      { "name": "Stefan B.", "biz": "Werkzeughandel", "text": "Ich verwalte über 2.000 Produkte und Asisto kennt sie alle. Preis, Verfügbarkeit, Beschreibung. Mein Vertriebsteam konzentriert sich jetzt auf die großen Aufträge." },
+      { "name": "Lena P.", "biz": "Kosmetik München", "text": "Innerhalb von zwei Wochen hatte ich bereits zurückverdient, was ich bezahlt hatte. Kunden schreiben, der Bot antwortet, ich bestätige nur die Bestellung." }
+    ]
+  },
+  "pricing": {
+    "title": "Einfache Pläne,",
+    "titleHighlight": "keine Überraschungen",
+    "monthly": "Monat",
+    "popular": "Beliebteste",
+    "plans": [
+      { "name": "Starter", "price": 29, "desc": "Für Unternehmen, die mit der Automatisierung beginnen", "features": ["1 WhatsApp-Nummer", "Bis zu 500 Nachrichten/Monat", "Synchronisierter Katalog", "Kontrollpanel", "E-Mail-Support"], "cta": "Kostenlos starten" },
+      { "name": "Pro", "price": 59, "desc": "Der beliebteste für wachsende Unternehmen", "features": ["Alles aus Starter", "Bis zu 2.000 Nachrichten/Monat", "Prioritätssupport", "Außerhalb der Geschäftszeiten", "Erweiterte Wissensdatenbank"], "cta": "Kostenlos starten" },
+      { "name": "Business", "price": 99, "desc": "Für Unternehmen mit hohem Nachrichtenvolumen", "features": ["Alles aus Pro", "Unbegrenzte Nachrichten", "Instagram DMs", "Direkter WhatsApp-Support", "Mehrsprachig"], "cta": "Kostenlos starten" }
+    ]
+  },
+  "faq": {
+    "title": "Häufig gestellte Fragen",
+    "items": [
+      { "q": "Kann ich jederzeit kündigen?", "a": "Ja, ohne Vertrag oder Strafe. Kündigen Sie jederzeit über Ihr Dashboard." },
+      { "q": "Was passiert, wenn ich das Nachrichtenlimit überschreite?", "a": "Wir benachrichtigen Sie, bevor Sie das Limit erreichen. Sie können upgraden oder auf den nächsten Monat warten." },
+      { "q": "Funktioniert es mit jeder WhatsApp-Nummer?", "a": "Funktioniert mit WhatsApp Business und persönlichen Nummern. Sie müssen Ihre aktuelle Nummer nicht ändern." },
+      { "q": "Kann ich den Plan wechseln?", "a": "Ja, jederzeit über Ihr Dashboard. Die Änderung tritt sofort in Kraft." },
+      { "q": "Wie schnell kann ich loslegen?", "a": "In weniger als 10 Minuten. Die geführte Einrichtung führt Sie Schritt für Schritt, bis der Bot live ist." }
+    ]
+  },
+  "cta": {
+    "title": "Ihr Unternehmen kann in",
+    "titleHighlight": "10 Minuten antworten",
+    "subtitle": "Keine Verträge, kein technisches Setup. 14 Tage kostenlos testen und jederzeit kündigen.",
+    "button": "Kostenloses Konto erstellen →",
+    "trust": "Keine Kreditkarte erforderlich · Jederzeit kündigen · 14 Tage kostenlos"
+  },
+  "footer": {
+    "rights": "Alle Rechte vorbehalten."
+  },
+  "login": {
+    "title": "Anmelden",
+    "subtitle": "Zugang zu Ihrem Kontrollpanel.",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "passwordPlaceholder": "Ihr Passwort",
+    "submit": "Anmelden →",
+    "loading": "Anmelden...",
+    "noAccount": "Noch kein Konto?",
+    "createAccount": "Konto erstellen",
+    "errors": {
+      "fillAll": "Bitte füllen Sie alle Felder aus.",
+      "connection": "Verbindung zum Server konnte nicht hergestellt werden."
+    }
+  },
+  "register": {
+    "title": "Konto erstellen",
+    "subtitle": "Starten Sie Ihre 14-tägige kostenlose Testphase.",
+    "businessName": "Unternehmensname",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "submit": "Konto erstellen →",
+    "loading": "Erstellen...",
+    "hasAccount": "Haben Sie bereits ein Konto?",
+    "login": "Anmelden",
+    "errors": {
+      "fillAll": "Bitte füllen Sie alle Felder aus.",
+      "connection": "Verbindung zum Server konnte nicht hergestellt werden."
+    }
+  },
+  "merchant": {
+    "title": "Mein Panel",
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "connecting": "Verbinden...",
+      "waitingQR": "Warte auf QR"
+    },
+    "qr": {
+      "title": "QR scannen",
+      "instructions": "WhatsApp öffnen → Verknüpfte Geräte → Gerät verknüpfen und diesen QR-Code scannen.",
+      "generating": "QR wird generiert..."
+    },
+    "stats": {
+      "messages": "Beantwortete Nachrichten",
+      "conversations": "Gespräche",
+      "uptime": "Verfügbarkeit"
+    },
+    "logout": "Abmelden"
+  },
+  "langSwitcher": {
+    "language": "Sprache"
+  }
+}

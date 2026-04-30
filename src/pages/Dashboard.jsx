@@ -715,6 +715,7 @@ function Dashboard() {
   const [igManualInputs, setIgManualInputs] = useState({}); // botId → username string
   const [igManualShow, setIgManualShow] = useState({});     // botId → bool (show manual input)
   const [igManualSaving, setIgManualSaving] = useState({});
+  const [editingLanguage, setEditingLanguage] = useState({});
 
   const [debtors, setDebtors] = useState({});
   const [newDebtor, setNewDebtor] = useState({});
@@ -845,6 +846,7 @@ function Dashboard() {
     if (editingKnowledge[botId] !== undefined) bodyData.knowledgeBase = editingKnowledge[botId];
     if (editingShopify[botId] !== undefined) bodyData.shopifyUrl = editingShopify[botId];
     if (editingWorkingHours[botId] !== undefined) bodyData.workingHours = editingWorkingHours[botId];
+    if (editingLanguage[botId] !== undefined) bodyData.language = editingLanguage[botId];
     if (Object.keys(bodyData).length === 0) return;
     await authFetch(`${API_URL}/api/bots/${botId}/prompt`, { method: 'PUT', body: JSON.stringify(bodyData) });
     const btn = document.getElementById(`save-btn-${botId}`);
@@ -1403,6 +1405,25 @@ function Dashboard() {
                       <button className="btn-solid-blue" style={{background:'var(--success)', width:'auto', padding:'0.6rem 1rem', marginTop:0}} onClick={() => handleVerifyMFA(bot.id)}>Confirmar</button>
                     </div>
                   )}
+
+                  {/* Idioma del bot */}
+                  <div className="prompt-header" style={{marginTop:'1.5rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
+                    <span style={{fontSize:'1rem'}}>🌐</span>
+                    <h3 style={{flex:1}}>Idioma del Bot</h3>
+                    <span style={{fontSize:'0.72rem', color:'var(--text-2)'}}>La IA responderá siempre en este idioma</span>
+                  </div>
+                  <select
+                    className="modal-input"
+                    value={editingLanguage[bot.id] !== undefined ? editingLanguage[bot.id] : (bot.language || 'es')}
+                    onChange={e => setEditingLanguage(l => ({ ...l, [bot.id]: e.target.value }))}
+                    style={{background:'var(--surface-2)', color:'var(--text-1)', border:'1px solid var(--border-strong)', fontSize:'0.9rem', marginBottom:'0.5rem'}}
+                  >
+                    <option value="es">🇦🇷 Español</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="pt">🇧🇷 Português</option>
+                    <option value="ar">🇦🇪 العربية</option>
+                  </select>
 
                   <div style={{display:'flex', justifyContent:'flex-end', width:'100%', marginTop:'1rem'}}>
                     <button id={`save-btn-${bot.id}`} className="btn-solid-blue" onClick={() => handleSavePrompt(bot.id)} style={{width:'auto', padding:'0.6rem 1.25rem', marginTop:0}}>

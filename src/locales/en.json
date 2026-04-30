@@ -1,0 +1,178 @@
+{
+  "nav": {
+    "features": "Features",
+    "howItWorks": "How it works",
+    "pricing": "Pricing",
+    "login": "Log in",
+    "start": "Start free"
+  },
+  "hero": {
+    "badge": "Automated support on WhatsApp & Instagram",
+    "title": "Your business replies automatically,",
+    "titleHighlight": "even while you sleep",
+    "subtitle": "Asisto handles customer messages on WhatsApp and Instagram — answering questions, sharing prices, and closing sales 24/7.",
+    "cta": "Try free for 14 days",
+    "ctaSecondary": "See live demo",
+    "stats": {
+      "responses": "automated replies",
+      "uptime": "available",
+      "satisfaction": "customer satisfaction"
+    }
+  },
+  "demo": {
+    "online": "● online now",
+    "title": "Demo — Asisto AI",
+    "placeholder": "Type your question...",
+    "greeting": "Hi! I'm your virtual assistant. Ask me about prices, availability, shipping, or anything else 😊",
+    "responses": {
+      "price": "Hi! Prices vary by model. Our best-sellers start from $29.99. Want me to tell you more about a specific one?",
+      "stock": "Yes, we have stock available 👌 Which size, color or model are you interested in?",
+      "shipping": "We ship worldwide 🚚 Delivery takes 2-5 business days depending on your location.",
+      "payment": "We accept credit/debit cards, PayPal and bank transfer 💳",
+      "hours": "Asisto replies automatically 24 hours a day, 7 days a week, including holidays 😄",
+      "returns": "We offer a 30-day guarantee. If the product arrives damaged, we'll replace it at no cost.",
+      "default": "Hi! Feel free to ask me about prices, availability, shipping, payment options, or anything else 😊"
+    }
+  },
+  "brands": [
+    { "icon": "👕", "name": "Fashion store" },
+    { "icon": "📱", "name": "Electronics shop" },
+    { "icon": "💎", "name": "Online jewelry" },
+    { "icon": "🔧", "name": "Hardware wholesaler" },
+    { "icon": "💄", "name": "Cosmetics brand" },
+    { "icon": "💪", "name": "Supplements store" },
+    { "icon": "🛋️", "name": "Furniture shop" },
+    { "icon": "📚", "name": "Online bookstore" }
+  ],
+  "features": {
+    "title": "Everything you need,",
+    "titleHighlight": "without the complexity",
+    "subtitle": "Asisto adapts to your business, not the other way around.",
+    "items": [
+      { "icon": "💬", "title": "Replies like a human", "desc": "No menus, no buttons. It understands context, remembers the conversation and responds naturally every time." },
+      { "icon": "🕐", "title": "Available 24 hours", "desc": "Your competitor takes 2 hours to reply. Asisto does it in 3 seconds, at 3am on Sunday. Every unanswered message is a lost sale." },
+      { "icon": "⚡", "title": "Knows your catalog live", "desc": "Connects to your store and knows in real-time what's in stock, at what price, and with what features. Never makes up a price." },
+      { "icon": "🛡️", "title": "Learns your business rules", "desc": "You tell it how your store works, your sales conditions, your policies. It applies them in every conversation." },
+      { "icon": "📈", "title": "Turns inquiries into sales", "desc": "It doesn't just inform — it guides customers toward purchase. Suggests products, calculates prices and closes the deal when the customer is ready." },
+      { "icon": "🎛️", "title": "Full control from your panel", "desc": "Modify the bot's behavior, update the catalog and review metrics from a simple dashboard. You decide how it responds." }
+    ]
+  },
+  "beforeAfter": {
+    "title": "Before and after",
+    "before": "Before",
+    "after": "With Asisto",
+    "items": [
+      { "bad": "You lose sales while you sleep", "good": "Replies in 3 seconds at 3am" },
+      { "bad": "You quote prices you don't have", "good": "Always shows real stock info" },
+      { "bad": "Hours to respond to messages", "good": "Instant reply, always" },
+      { "bad": "Every inquiry interrupts you", "good": "Only see the ones that need you" },
+      { "bad": "Fixed staff cost even with no sales", "good": "Fixed cost, no surprises" }
+    ]
+  },
+  "howItWorks": {
+    "title": "Three steps and",
+    "titleHighlight": "you're live",
+    "steps": [
+      { "n": "1", "title": "Create your account", "desc": "Sign up with your email in under 60 seconds.", "icon": "👤" },
+      { "n": "2", "title": "Configure the bot", "desc": "Tell it how to speak: tone, name, language, what it can and can't say.", "icon": "🧠" },
+      { "n": "3", "title": "Connect your catalog", "desc": "Paste your store link or Google Sheets and the bot learns it automatically.", "icon": "⚡" },
+      { "n": "4", "title": "Scan the WhatsApp QR", "desc": "Link your number and you're done. The bot starts replying in seconds.", "icon": "📱" }
+    ]
+  },
+  "reviews": {
+    "title": "What our",
+    "titleHighlight": "customers say",
+    "items": [
+      { "name": "Michael R.", "biz": "Fashion Store UK", "text": "I was worried it would feel robotic, but Asisto understands context. My customers don't realize they're talking to AI. We tripled our response rate in the first month." },
+      { "name": "Sarah K.", "biz": "Supplements Shop", "text": "I used to lose sales because I couldn't reply at night. Now the bot handles 3am just as well as 3pm. The overnight sales alone paid for the subscription." },
+      { "name": "James T.", "biz": "Electronics Berlin", "text": "What surprised me most is that it knows when something is in stock and when it isn't. It never promised a customer something we didn't have. That alone is worth the price." },
+      { "name": "Emma L.", "biz": "Jewelry Online", "text": "My customers are demanding and I thought they'd notice it was a bot. Nothing. The tone I set is exactly our brand voice. Incredible results from day one." },
+      { "name": "Chris M.", "biz": "Hardware Wholesaler", "text": "I manage over 2,000 products and Asisto knows all of them. Price, availability, description. My sales team now focuses on closing the big orders." },
+      { "name": "Laura P.", "biz": "Cosmetics Brand", "text": "Within two weeks I'd already recovered what I paid. Customers message, the bot replies, I just confirm the order. I can't believe I didn't have this before." }
+    ]
+  },
+  "pricing": {
+    "title": "Simple plans,",
+    "titleHighlight": "no surprises",
+    "monthly": "month",
+    "popular": "Most popular",
+    "plans": [
+      { "name": "Starter", "price": 29, "desc": "For businesses starting to automate", "features": ["1 WhatsApp number", "Up to 500 messages/month", "Synced catalog", "Control panel", "Email support"], "cta": "Start free" },
+      { "name": "Pro", "price": 59, "desc": "The most popular for growing businesses", "features": ["Everything in Starter", "Up to 2,000 messages/month", "Priority support", "After-hours mode", "Advanced knowledge base"], "cta": "Start free" },
+      { "name": "Business", "price": 99, "desc": "For businesses with high message volume", "features": ["Everything in Pro", "Unlimited messages", "Instagram DMs", "Direct WhatsApp support", "Multi-language"], "cta": "Start free" }
+    ]
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "items": [
+      { "q": "Can I cancel at any time?", "a": "Yes, no contracts or penalties. Cancel from your dashboard at any time." },
+      { "q": "What happens if I exceed the message limit?", "a": "We'll notify you before you reach the limit. You can upgrade or wait for next month." },
+      { "q": "Does it work with any WhatsApp number?", "a": "Works with WhatsApp Business and personal numbers. You don't need to change your current number." },
+      { "q": "Can I change plans?", "a": "Yes, at any time from your dashboard. The change takes effect immediately." },
+      { "q": "How quickly can I get it running?", "a": "In under 10 minutes. The guided setup walks you through every step until the bot is live." }
+    ]
+  },
+  "cta": {
+    "title": "Your business can start replying",
+    "titleHighlight": "in 10 minutes",
+    "subtitle": "No contracts, no technical setup. Try it free for 14 days and cancel anytime.",
+    "button": "Create my free account →",
+    "trust": "No credit card required · Cancel anytime · 14 days free"
+  },
+  "footer": {
+    "rights": "All rights reserved."
+  },
+  "login": {
+    "title": "Log in",
+    "subtitle": "Access your control panel.",
+    "email": "Email",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "submit": "Log in →",
+    "loading": "Logging in...",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create account",
+    "errors": {
+      "fillAll": "Please fill in all fields.",
+      "connection": "Could not connect to the server."
+    }
+  },
+  "register": {
+    "title": "Create account",
+    "subtitle": "Start your 14-day free trial.",
+    "businessName": "Business name",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Create account →",
+    "loading": "Creating...",
+    "hasAccount": "Already have an account?",
+    "login": "Log in",
+    "errors": {
+      "fillAll": "Please fill in all fields.",
+      "connection": "Could not connect to the server."
+    }
+  },
+  "merchant": {
+    "title": "My Panel",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "connecting": "Connecting...",
+      "waitingQR": "Waiting for QR"
+    },
+    "qr": {
+      "title": "Scan QR",
+      "instructions": "Open WhatsApp → Linked Devices → Link a Device and scan this QR code.",
+      "generating": "Generating QR..."
+    },
+    "stats": {
+      "messages": "Messages answered",
+      "conversations": "Conversations",
+      "uptime": "Uptime"
+    },
+    "logout": "Log out"
+  },
+  "langSwitcher": {
+    "language": "Language"
+  }
+}
