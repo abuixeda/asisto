@@ -1,0 +1,155 @@
+{
+  "nav": {
+    "features": "Fonctionnalités",
+    "howItWorks": "Comment ça marche",
+    "pricing": "Tarifs",
+    "login": "Se connecter",
+    "start": "Commencer gratuitement"
+  },
+  "hero": {
+    "badge": "Support automatisé sur WhatsApp et Instagram",
+    "title": "Votre entreprise répond toute seule,",
+    "titleHighlight": "même pendant que vous dormez",
+    "subtitle": "Asisto gère les messages clients sur WhatsApp et Instagram — répond aux questions, partage les prix et conclut des ventes 24h/24, 7j/7.",
+    "cta": "Essayer gratuitement 14 jours",
+    "ctaSecondary": "Voir la démo en direct",
+    "stats": {
+      "responses": "réponses automatiques",
+      "uptime": "disponible",
+      "satisfaction": "satisfaction client"
+    }
+  },
+  "demo": {
+    "online": "● en ligne maintenant",
+    "title": "Démo — Asisto AI",
+    "placeholder": "Tapez votre question...",
+    "greeting": "Bonjour ! Je suis votre assistant virtuel. Posez-moi des questions sur les prix, la disponibilité, la livraison ou autre chose 😊",
+    "responses": {
+      "price": "Bonjour ! Les prix varient selon le modèle. Nos meilleures ventes commencent à partir de 29,99 €. Voulez-vous en savoir plus sur un produit en particulier ?",
+      "stock": "Oui, nous avons du stock disponible 👌 Quelle taille, couleur ou modèle vous intéresse ?",
+      "shipping": "Nous livrons partout en France 🚚 La livraison prend 2-4 jours ouvrables par Colissimo ou Chronopost.",
+      "payment": "Nous acceptons les cartes de crédit, PayPal et le virement bancaire 💳",
+      "hours": "Asisto répond automatiquement 24h/24, 7j/7, jours fériés inclus 😄",
+      "returns": "Nous offrons 30 jours de garantie. Si le produit arrive endommagé, nous le remplaçons gratuitement.",
+      "default": "Bonjour ! Posez-moi des questions sur les prix, la disponibilité, la livraison, les modes de paiement ou autre chose 😊"
+    }
+  },
+  "brands": [
+    { "icon": "👕", "name": "Mode Paris" },
+    { "icon": "📱", "name": "Électronique Lyon" },
+    { "icon": "💎", "name": "Bijouterie en ligne" },
+    { "icon": "🔧", "name": "Quincaillerie gros" },
+    { "icon": "💄", "name": "Cosmétiques Marseille" },
+    { "icon": "💪", "name": "Compléments sportifs" },
+    { "icon": "🛋️", "name": "Meubles Bordeaux" },
+    { "icon": "📚", "name": "Librairie en ligne" }
+  ],
+  "features": {
+    "title": "Tout ce dont vous avez besoin,",
+    "titleHighlight": "sans complexité",
+    "subtitle": "Asisto s'adapte à votre entreprise, pas l'inverse.",
+    "items": [
+      { "icon": "💬", "title": "Répond comme un humain", "desc": "Pas de menus, pas de boutons. Il comprend le contexte, se souvient de la conversation et répond naturellement à chaque fois." },
+      { "icon": "🕐", "title": "Disponible 24 heures", "desc": "Votre concurrent met 2 heures à répondre. Asisto le fait en 3 secondes, à 3h du matin. Chaque message sans réponse est une vente perdue." },
+      { "icon": "⚡", "title": "Connaît votre catalogue en direct", "desc": "Se connecte à votre boutique et sait en temps réel ce qui est en stock, à quel prix et avec quelles caractéristiques. N'invente jamais un prix." },
+      { "icon": "🛡️", "title": "Apprend les règles de votre entreprise", "desc": "Vous lui expliquez comment fonctionne votre commerce, vos conditions de vente, vos politiques. Il les applique dans chaque conversation." },
+      { "icon": "📈", "title": "Transforme les demandes en ventes", "desc": "Il ne fait pas que informer — il guide le client vers l'achat. Suggère des produits, calcule les prix et conclut la vente." },
+      { "icon": "🎛️", "title": "Contrôle total depuis votre tableau de bord", "desc": "Modifiez le comportement du bot, mettez à jour le catalogue et consultez les métriques depuis un tableau de bord simple." }
+    ]
+  },
+  "beforeAfter": {
+    "title": "Avant et après",
+    "before": "Avant",
+    "after": "Avec Asisto",
+    "items": [
+      { "bad": "Vous perdez des ventes pendant que vous dormez", "good": "Répond en 3 secondes à 3h du matin" },
+      { "bad": "Vous citez des prix que vous n'avez pas", "good": "Affiche toujours les vraies infos de stock" },
+      { "bad": "Des heures pour répondre aux messages", "good": "Réponse immédiate, toujours" },
+      { "bad": "Chaque demande vous interrompt", "good": "Ne voir que celles qui nécessitent votre attention" },
+      { "bad": "Coût fixe même sans ventes", "good": "Coût fixe, sans surprises" }
+    ]
+  },
+  "howItWorks": {
+    "title": "Trois étapes et",
+    "titleHighlight": "vous êtes en ligne",
+    "steps": [
+      { "n": "1", "title": "Créez votre compte", "desc": "Inscrivez-vous avec votre email en moins de 60 secondes.", "icon": "👤" },
+      { "n": "2", "title": "Configurez le bot", "desc": "Dites-lui comment parler : ton, nom, langue, ce qu'il peut et ne peut pas dire.", "icon": "🧠" },
+      { "n": "3", "title": "Connectez votre catalogue", "desc": "Collez le lien de votre boutique ou Google Sheets et le bot l'apprend automatiquement.", "icon": "⚡" },
+      { "n": "4", "title": "Scannez le QR WhatsApp", "desc": "Liez votre numéro et c'est parti. Le bot commence à répondre en quelques secondes.", "icon": "📱" }
+    ]
+  },
+  "reviews": {
+    "title": "Ce que disent nos",
+    "titleHighlight": "clients",
+    "items": [
+      { "name": "Marc R.", "biz": "Mode Paris", "text": "Je craignais que ce soit un bot générique, mais Asisto comprend le contexte. Mes clients ne savent pas qu'ils parlent à une IA. Nous avons triplé notre taux de réponse le premier mois." },
+      { "name": "Sophie K.", "biz": "Boutique compléments", "text": "Je perdais des ventes parce que je ne pouvais pas répondre la nuit. Maintenant le bot gère les 3h du matin aussi bien que 15h. Les ventes nocturnes seules ont remboursé l'abonnement." },
+      { "name": "Thomas M.", "biz": "Électronique Lyon", "text": "Ce qui m'a le plus surpris, c'est qu'il sait quand quelque chose est en stock et quand non. Il n'a jamais promis à un client quelque chose qu'on n'avait pas. Ça seul vaut le prix." },
+      { "name": "Camille F.", "biz": "Bijouterie en ligne", "text": "Mes clients sont exigeants et je pensais qu'ils remarqueraient que c'était un bot. Rien. Le ton que j'ai configuré est exactement la voix de notre marque." },
+      { "name": "Pierre B.", "biz": "Quincaillerie gros", "text": "Je gère plus de 2 000 produits et Asisto les connaît tous. Prix, disponibilité, description. Mon équipe se concentre maintenant sur les grosses commandes." },
+      { "name": "Lucie P.", "biz": "Cosmétiques Marseille", "text": "En deux semaines j'avais déjà récupéré ce que j'avais payé. Les clients écrivent, le bot répond, je confirme juste la commande. Je n'arrive pas à croire que je n'avais pas ça avant." }
+    ]
+  },
+  "pricing": {
+    "title": "Des forfaits simples,",
+    "titleHighlight": "sans surprises",
+    "monthly": "mois",
+    "popular": "Le plus choisi",
+    "plans": [
+      { "name": "Starter", "price": 29, "desc": "Pour les entreprises qui commencent à automatiser", "features": ["1 numéro WhatsApp", "Jusqu'à 500 messages/mois", "Catalogue synchronisé", "Tableau de bord", "Support par email"], "cta": "Commencer gratuitement" },
+      { "name": "Pro", "price": 59, "desc": "Le plus choisi par les entreprises en croissance", "features": ["Tout de Starter", "Jusqu'à 2 000 messages/mois", "Support prioritaire", "Mode hors heures", "Base de connaissances avancée"], "cta": "Commencer gratuitement" },
+      { "name": "Business", "price": 99, "desc": "Pour les entreprises avec un volume élevé de messages", "features": ["Tout de Pro", "Messages illimités", "Instagram DMs", "Support direct WhatsApp", "Multilingue"], "cta": "Commencer gratuitement" }
+    ]
+  },
+  "faq": {
+    "title": "Questions fréquentes",
+    "items": [
+      { "q": "Puis-je annuler quand je veux ?", "a": "Oui, sans contrat ni pénalités. Annulez depuis votre tableau de bord à tout moment." },
+      { "q": "Que se passe-t-il si je dépasse la limite de messages ?", "a": "Nous vous avertissons avant d'atteindre la limite. Vous pouvez upgrader ou attendre le mois prochain." },
+      { "q": "Fonctionne-t-il avec n'importe quel numéro WhatsApp ?", "a": "Fonctionne avec WhatsApp Business et les numéros personnels. Vous n'avez pas besoin de changer votre numéro actuel." },
+      { "q": "Puis-je changer de forfait ?", "a": "Oui, à tout moment depuis votre tableau de bord. Le changement prend effet immédiatement." },
+      { "q": "En combien de temps puis-je démarrer ?", "a": "En moins de 10 minutes. La configuration guidée vous accompagne étape par étape jusqu'à ce que le bot soit actif." }
+    ]
+  },
+  "cta": {
+    "title": "Votre entreprise peut commencer à répondre",
+    "titleHighlight": "en 10 minutes",
+    "subtitle": "Sans contrat, sans configuration technique. Essayez gratuitement 14 jours et annulez quand vous voulez.",
+    "button": "Créer mon compte gratuit →",
+    "trust": "Pas de carte de crédit · Annulez quand vous voulez · 14 jours gratuits"
+  },
+  "footer": { "rights": "Tous droits réservés." },
+  "login": {
+    "title": "Se connecter",
+    "subtitle": "Accédez à votre tableau de bord.",
+    "email": "Email",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Votre mot de passe",
+    "submit": "Se connecter →",
+    "loading": "Connexion en cours...",
+    "noAccount": "Pas de compte ?",
+    "createAccount": "Créer un compte",
+    "errors": { "fillAll": "Veuillez remplir tous les champs.", "connection": "Impossible de se connecter au serveur." }
+  },
+  "register": {
+    "title": "Créer un compte",
+    "subtitle": "Commencez votre essai gratuit de 14 jours.",
+    "businessName": "Nom de l'entreprise",
+    "email": "Email",
+    "password": "Mot de passe",
+    "submit": "Créer un compte →",
+    "loading": "Création en cours...",
+    "hasAccount": "Vous avez déjà un compte ?",
+    "login": "Se connecter",
+    "errors": { "fillAll": "Veuillez remplir tous les champs.", "connection": "Impossible de se connecter au serveur." }
+  },
+  "merchant": {
+    "title": "Mon tableau de bord",
+    "status": { "active": "Actif", "inactive": "Inactif", "connecting": "Connexion...", "waitingQR": "En attente du QR" },
+    "qr": { "title": "Scanner le QR", "instructions": "Ouvrez WhatsApp → Appareils liés → Lier un appareil et scannez ce QR.", "generating": "Génération du QR..." },
+    "stats": { "messages": "Messages répondus", "conversations": "Conversations", "uptime": "Disponibilité" },
+    "logout": "Se déconnecter"
+  },
+  "langSwitcher": { "language": "Langue" }
+}
