@@ -934,14 +934,22 @@ function Dashboard() {
       {metaPageSelect && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', maxWidth: '420px', width: '90%' }}>
-            <h3 style={{ margin: '0 0 0.5rem', color: 'var(--text-1)' }}>Seleccioná la página de Facebook</h3>
-            <p style={{ margin: '0 0 1.25rem', fontSize: '0.85rem', color: 'var(--text-2)' }}>Elegí la página que quieras conectar al bot.</p>
+            <h3 style={{ margin: '0 0 0.4rem', color: 'var(--text-1)' }}>Seleccioná la página de Facebook</h3>
+            <p style={{ margin: '0 0 0.6rem', fontSize: '0.85rem', color: 'var(--text-2)' }}>Elegí la página que quieras conectar al bot.</p>
+            {metaPageSelect.pages.some(p => p.hasIg) && (
+              <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', background: 'rgba(131,58,180,0.12)', border: '1px solid rgba(131,58,180,0.3)', borderRadius: '8px', padding: '0.5rem 0.75rem', color: '#c084fc' }}>
+                📷 Para recibir DMs de Instagram, elegí la página que tiene el badge <strong>+ Instagram</strong>
+              </p>
+            )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               {metaPageSelect.pages.map(p => (
                 <button key={p.id} onClick={() => handleConnectMetaPage(p.id)} disabled={metaConnecting}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(24,119,242,0.1)', border: '1px solid rgba(24,119,242,0.4)', borderRadius: '10px', color: 'var(--text-1)', cursor: 'pointer', padding: '0.85rem 1rem', fontSize: '0.95rem', fontWeight: 500 }}>
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: p.hasIg ? 'rgba(131,58,180,0.08)' : 'rgba(24,119,242,0.08)', border: `1px solid ${p.hasIg ? 'rgba(131,58,180,0.4)' : 'rgba(24,119,242,0.3)'}`, borderRadius: '10px', color: 'var(--text-1)', cursor: 'pointer', padding: '0.85rem 1rem', fontSize: '0.95rem', fontWeight: 500 }}>
                   <span><span style={{ fontWeight: 900, color: '#1877f2', marginRight: '0.5rem' }}>f</span>{p.name}</span>
-                  {p.hasIg && <span style={{ fontSize: '0.75rem', background: 'rgba(131,58,180,0.2)', color: '#c084fc', padding: '2px 7px', borderRadius: '6px' }}>+ Instagram</span>}
+                  {p.hasIg
+                    ? <span style={{ fontSize: '0.75rem', background: 'rgba(131,58,180,0.25)', color: '#c084fc', padding: '3px 9px', borderRadius: '6px', fontWeight: 600 }}>📷 Instagram</span>
+                    : <span style={{ fontSize: '0.72rem', color: 'var(--text-2)' }}>Sin Instagram</span>
+                  }
                 </button>
               ))}
             </div>
