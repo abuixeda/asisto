@@ -151,7 +151,7 @@ function WhatsAppMockup() {
         <div style={{ background: '#f0f0f0', borderRadius: '24px', overflow: 'hidden' }}>
           {/* WA header */}
           <div style={{ background: '#075e54', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '9px' }}>
-            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#128c7e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.85rem', color: 'white', flexShrink: 0 }}>A</div>
+            <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#128c7e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>🤖</div>
             <div>
               <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white' }}>Asisto · Bot</div>
               <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.75)' }}>{typing ? 'escribiendo...' : 'en línea'}</div>
@@ -527,7 +527,8 @@ export default function LandingAgency() {
               {[['proceso','Cómo funciona'],['resultados','Resultados'],['cta','Contacto']].map(([id,label]) => (
                 <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textMuted, cursor: 'pointer', fontSize: '0.85rem' }}>{label}</button>
               ))}
-              <a href="mailto:hola@asisto.ai" style={{ color: C.textMuted, textDecoration: 'none', fontSize: '0.85rem' }}>Política de privacidad</a>
+              <a href="/privacidad" style={{ color: C.textMuted, textDecoration: 'none', fontSize: '0.85rem' }}>Política de privacidad</a>
+              <a href="/terminos" style={{ color: C.textMuted, textDecoration: 'none', fontSize: '0.85rem' }}>Términos y condiciones</a>
             </div>
           </div>
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>

@@ -8,6 +8,8 @@ import MerchantPanel from './pages/MerchantPanel';
 import Login from './pages/Login';
 import LoginAgency from './pages/LoginAgency';
 import OAuthCallback from './pages/OAuthCallback';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/mi-panel" element={<MerchantPanel />} />
           <Route path="/oauth-callback" element={<OAuthCallback />} />
+          <Route path="/privacidad" element={<PrivacyPolicy />} />
+          <Route path="/terminos" element={<TermsOfService />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
     </Router>

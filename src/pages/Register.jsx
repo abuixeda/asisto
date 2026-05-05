@@ -30,8 +30,13 @@ export default function Register() {
       localStorage.setItem('merchant_token', data.token);
       localStorage.setItem('merchant_bot_id', data.botId);
       setStep(2);
-    } catch {
-      setError('No se pudo conectar con el servidor.');
+    } catch (err) {
+      console.error('[Register] fetch error:', err, '| API URL:', API);
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError(`No se pudo conectar con el servidor. (${API})`);
+      } else {
+        setError(`Error: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -43,7 +48,7 @@ export default function Register() {
     } else if (platform === 'tiendanube') {
       window.location.href = 'https://www.tiendanube.com/tienda-aplicaciones-nube';
     } else {
-      nav('/mi-panel');
+      nav('/onboarding');
     }
   }
 

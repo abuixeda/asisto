@@ -1,117 +1,52 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  ChevronRight, Check, Star, MessageCircle, Clock, Zap, Shield,
-  TrendingUp, Users, Menu, X, ChevronDown, Send,
+  ChevronRight, Check, Star, Menu, X, ChevronDown, Send,
 } from 'lucide-react';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 /* ─── Paleta ─────────────────────────────────────────── */
 const C = {
-  bg:        '#0a0f1e',
-  bgCard:    '#111827',
-  bgCard2:   '#0f1629',
-  border:    '#1e2d45',
-  text:      '#ffffff',
-  textSec:   '#94a3b8',
-  textMuted: '#64748b',
-  blue:      '#3b82f6',
-  violet:    '#8b5cf6',
-  green:     '#10b981',
+  bg:        '#0a0a12',
+  bgCard:    '#111120',
+  bgCard2:   '#0d0d1a',
+  bgCardEl:  '#161628',
+  border:    '#1e1e35',
+  borderStr: '#272745',
+  text:      '#f0f0ff',
+  textSec:   '#8888aa',
+  textMuted: '#44445a',
+  pink:      '#e040fb',
+  cyan:      '#00d4ff',
+  grad:      'linear-gradient(135deg, #e040fb 0%, #7c3aed 50%, #00d4ff 100%)',
+  gradBtn:   'linear-gradient(135deg, #e040fb, #9333ea)',
+  gradText:  'linear-gradient(90deg, #e040fb, #00d4ff)',
+  green:     '#22d07a',
   waGreen:   '#25d366',
   waDark:    '#128c7e',
-  grad:      'linear-gradient(135deg,#3b82f6,#8b5cf6)',
 };
 
-/* ─── Datos ───────────────────────────────────────────── */
-const WA_MESSAGES = [
-  { from: 'client', text: 'Hola! tienen la campera de cuero en talle M?' },
-  { from: 'bot',    text: '¡Hola! Sí, tenemos la campera de cuero negra en talle M. El precio es $89.990. ¿Querés que te reserve una?' },
-  { from: 'client', text: 'Si! Cuanto tarda el envío?' },
-  { from: 'bot',    text: 'El envío demora entre 24 y 48hs hábiles. Hacemos envíos a todo el país por Correo Argentino o Andreani. ¿Seguimos?' },
-  { from: 'client', text: 'Dale, perfecto!' },
-  { from: 'bot',    text: '🎉 ¡Listo! Te mando los datos de pago ahora.' },
+/* ─── Visual props not in JSON ────────────────────────── */
+const FEATURE_STYLES = [
+  { borderColor: '#e040fb', iconBg: 'rgba(224,64,251,0.12)' },
+  { borderColor: '#00d4ff', iconBg: 'rgba(0,212,255,0.10)'  },
+  { borderColor: '#a855f7', iconBg: 'rgba(168,85,247,0.12)' },
+  { borderColor: '#e040fb', iconBg: 'rgba(224,64,251,0.12)' },
+  { borderColor: '#00d4ff', iconBg: 'rgba(0,212,255,0.10)'  },
+  { borderColor: '#a855f7', iconBg: 'rgba(168,85,247,0.12)' },
 ];
 
-const BRANDS = [
-  { icon: '👕', name: 'Indumentaria CABA' },
-  { icon: '📱', name: 'Electrónica Rosario' },
-  { icon: '💎', name: 'Joyería online' },
-  { icon: '🔧', name: 'Ferretería mayorista' },
-  { icon: '💄', name: 'Cosméticos MdP' },
-  { icon: '💪', name: 'Suplementos' },
-  { icon: '🛋️', name: 'Mueblería Córdoba' },
-  { icon: '📚', name: 'Librería online' },
-];
+const PLAN_HIGHLIGHTS = [false, true, false];
 
-const FEATURES = [
-  { icon: '💬', color: C.blue,   title: 'Responde como humano',          desc: 'No hay menús, no hay botones. Entiende el contexto, recuerda lo que se habló y responde de forma natural en cada conversación.' },
-  { icon: '🕐', color: C.green,  title: 'Disponible las 24 horas',       desc: 'Tu competidor tarda 2 horas en responder. Asisto lo hace en 3 segundos, a las 3am del domingo. Cada mensaje sin respuesta es una venta que se va.' },
-  { icon: '⚡', color: '#f59e0b', title: 'Conoce tu catálogo en vivo',    desc: 'Se conecta con tu tienda y sabe en tiempo real qué hay en stock, a qué precio y con qué características. Nunca inventa un precio.' },
-  { icon: '🛡️', color: C.violet, title: 'Aprende las reglas de tu negocio', desc: 'Le explicás cómo funciona tu local, tus condiciones de venta, tus políticas. Él las aplica en cada conversación.' },
-  { icon: '📈', color: '#ef4444', title: 'Convierte consultas en ventas', desc: 'No solo informa — guía al cliente hacia la compra. Sugiere productos, calcula precios y cierra el trato cuando el cliente está listo.' },
-  { icon: '🎛️', color: '#06b6d4', title: 'Control total desde tu panel',  desc: 'Modificá el comportamiento del bot, actualizá el catálogo y revisá métricas desde un panel simple. Vos decidís cómo responde.' },
-];
-
-const BEFORE_AFTER = [
-  { bad: 'Perdés ventas mientras dormís',              good: 'Respondés en 3 segundos a las 3am' },
-  { bad: 'Prometés precios que no tenés',              good: 'Siempre informa el stock real' },
-  { bad: 'Tardás horas en responder',                  good: 'Respuesta inmediata, siempre' },
-  { bad: 'Cada consulta te interrumpe',                good: 'Solo ves las que necesitan tu atención' },
-  { bad: 'Pagás sueldo aunque no haya ventas',         good: 'Costo fijo, sin sorpresas' },
-];
-
-const STEPS = [
-  { n: '1', title: 'Creás tu cuenta',             desc: 'Registrate con tu email en menos de 60 segundos.', icon: '👤' },
-  { n: '2', title: 'Configurás la personalidad',  desc: 'Le decís cómo tiene que hablar: tono, nombre, idioma, qué puede y qué no puede decir.', icon: '🧠' },
-  { n: '3', title: 'Conectás tu catálogo',        desc: 'Pegás el link de tu tienda Shopify o Google Sheets y el bot lo aprende automáticamente.', icon: '⚡' },
-  { n: '4', title: 'Escaneás el QR de WhatsApp', desc: 'Vinculás tu número y listo. El bot empieza a responder en segundos.', icon: '📱' },
-];
-
-const REVIEWS = [
-  { name: 'Marcelo R.',  biz: 'Indumentaria CABA',         text: 'Tenía miedo de que fuera un bot genérico, pero Asisto entiende el contexto. Mis clientes no saben que están hablando con una IA. Triplicamos las consultas respondidas en el primer mes.' },
-  { name: 'Valentina G.',biz: 'Tienda de suplementos',     text: 'Antes perdía ventas porque no podía responder a la noche. Ahora el bot atiende a las 3am igual que a las 3pm. Las ventas de madrugada solas amortizaron el costo del plan.' },
-  { name: 'Diego M.',    biz: 'Electrónica Rosario',       text: 'Lo que más me sorprendió es que sabe cuándo hay stock y cuándo no. Nunca le prometió algo a un cliente que no teníamos. Eso solo ya vale el precio.' },
-  { name: 'Carolina F.', biz: 'Joyería online',            text: 'Mis clientes son exigentes y pensé que iban a notar que era un bot. Nada. El tono que configuré es exactamente el de nuestra marca. Resultados increíbles desde el día 1.' },
-  { name: 'Tomás B.',    biz: 'Ferretería mayorista',      text: 'Manejo más de 2000 productos y Asisto los conoce todos. Precio, disponibilidad, descripción. Mis vendedores ahora se enfocan en cerrar los pedidos grandes.' },
-  { name: 'Lucía P.',    biz: 'Cosméticos Mar del Plata',  text: 'En dos semanas ya recuperé lo que pagué. Los clientes escriben, el bot responde, yo solo confirmo el pedido. No puedo creer que antes no lo tenía.' },
-];
-
-const PLANS = [
-  {
-    name: 'Starter', price: 49, desc: 'Para negocios que empiezan a automatizar',
-    features: ['1 número WhatsApp', 'Hasta 500 mensajes/mes', 'Catálogo sincronizado', 'Panel de control', 'Soporte por email'],
-    highlight: false, cta: 'Empezar gratis',
-  },
-  {
-    name: 'Pro', price: 89, desc: 'El más elegido por negocios en crecimiento',
-    features: ['Todo lo de Starter', 'Hasta 2.000 mensajes/mes', 'Soporte prioritario', 'Horario anti-nocturno', 'Base de conocimientos avanzada'],
-    highlight: true, cta: 'Empezar gratis',
-  },
-  {
-    name: 'Business', price: 149, desc: 'Para negocios con alto volumen de consultas',
-    features: ['Todo lo de Pro', 'Mensajes ilimitados', 'Soporte directo WhatsApp', '+Instagram próximamente'],
-    highlight: false, cta: 'Empezar gratis',
-  },
-];
-
-const FAQS = [
-  { q: '¿Puedo cancelar cuando quiero?',               a: 'Sí, sin permanencia ni penalidades. Cancelás desde tu panel en cualquier momento.' },
-  { q: '¿Qué pasa si supero el límite de mensajes?',   a: 'Te avisamos antes de llegar al límite. Podés upgradear o esperar el próximo mes sin que el servicio se corte abruptamente.' },
-  { q: '¿Funciona con cualquier número de WhatsApp?',  a: 'Funciona con WhatsApp Business y números personales. No necesitás cambiar tu número actual.' },
-  { q: '¿Puedo cambiar de plan?',                      a: 'Sí, en cualquier momento desde tu panel. El cambio se aplica de forma inmediata.' },
+const LIVE_TOASTS = [
+  { name: 'Valentina G.', action: 'activó su bot',              city: 'Córdoba'      },
+  { name: 'Diego M.',     action: 'recibió 47 consultas hoy',   city: 'Rosario'      },
+  { name: 'Marcelo R.',   action: 'cerró una venta con el bot', city: 'CABA'         },
+  { name: 'Carolina F.',  action: 'configuró su catálogo',      city: 'Mendoza'      },
+  { name: 'Lucía P.',     action: 'acaba de registrarse',       city: 'Mar del Plata'},
 ];
 
 /* ─── Helpers ─────────────────────────────────────────── */
-function getDemoResponse(input) {
-  const t = input.toLowerCase();
-  if (/precio|cuanto|cuesta|vale|costo/.test(t))      return '¡Hola! El precio varía según el modelo. Los más vendidos arrancan desde $29.990. ¿Querés que te cuente más sobre alguno en particular?';
-  if (/stock|tienen|hay|disponible/.test(t))           return 'Sí, tenemos stock disponible 👌 ¿En qué talle, color o modelo te interesa?';
-  if (/envío|mandan|llega|despacho/.test(t))           return 'Enviamos a todo el país 🚚 El envío demora 24-48hs hábiles por Correo Argentino o Andreani.';
-  if (/pago|transferencia|mercadopago|tarjeta/.test(t)) return 'Aceptamos transferencia bancaria, Mercado Pago y tarjeta de crédito en cuotas 💳';
-  if (/horario|atienden|cuando|abierto/.test(t))       return 'Asisto responde automáticamente las 24 horas, los 7 días de la semana, feriados incluidos 😄';
-  if (/devolución|cambio|garantía/.test(t))            return 'Tenemos 30 días de garantía. Si el producto llega en mal estado, el cambio es sin costo.';
-  return '¡Hola! Podés preguntarme sobre precios, stock, envíos, formas de pago o cualquier duda sobre los productos 😊';
-}
-
 function useInView(threshold = 0.15) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
@@ -128,87 +63,120 @@ function AnimatedCounter({ target, suffix = '' }) {
   const [ref, inView] = useInView();
   useEffect(() => {
     if (!inView) return;
-    const steps = 60;
-    let i = 0;
-    const id = setInterval(() => {
-      i++;
-      setVal(Math.round((target * i) / steps));
-      if (i >= steps) clearInterval(id);
-    }, 30);
+    const steps = 60; let i = 0;
+    const id = setInterval(() => { i++; setVal(Math.round((target * i) / steps)); if (i >= steps) clearInterval(id); }, 30);
     return () => clearInterval(id);
   }, [inView, target]);
-  return <span ref={ref}>{typeof target === 'number' ? val.toLocaleString() : target}{suffix}</span>;
+  return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
 }
 
-/* ─── WhatsApp Mockup ─────────────────────────────────── */
-function WhatsAppMockup() {
-  const [visible, setVisible] = useState([]);
-  const [typing, setTyping] = useState(false);
-
+/* ─── Particle Canvas ─────────────────────────────────── */
+function ParticleField() {
+  const canvasRef = useRef(null);
   useEffect(() => {
-    let idx = 0;
-    function next() {
-      if (idx >= WA_MESSAGES.length) return;
-      const msg = WA_MESSAGES[idx];
-      if (msg.from === 'bot') {
-        setTyping(true);
-        setTimeout(() => {
-          setTyping(false);
-          setVisible(v => [...v, msg]);
-          idx++;
-          setTimeout(next, 1200);
-        }, 1500);
-      } else {
-        setVisible(v => [...v, msg]);
-        idx++;
-        setTimeout(next, 900);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animId;
+    const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
+    resize();
+    window.addEventListener('resize', resize);
+    const COLORS = ['#e040fb', '#00d4ff', '#c084fc', '#7c3aed', '#38bdf8'];
+    const N = 55;
+    const pts = Array.from({ length: N }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.35,
+      r: Math.random() * 2 + 1,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+    }));
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < N; i++) {
+        for (let j = i + 1; j < N; j++) {
+          const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 160) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(180,100,255,${(1 - d / 160) * 0.13})`;
+            ctx.lineWidth = 0.6;
+            ctx.moveTo(pts[i].x, pts[i].y);
+            ctx.lineTo(pts[j].x, pts[j].y);
+            ctx.stroke();
+          }
+        }
       }
+      pts.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+      });
+      animId = requestAnimationFrame(draw);
     }
-    setTimeout(next, 600);
+    draw();
+    return () => { cancelAnimationFrame(animId); window.removeEventListener('resize', resize); };
   }, []);
+  return <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.75 }} />;
+}
 
-  const now = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-
+/* ─── Live Toast ──────────────────────────────────────── */
+function LiveToast() {
+  const [idx, setIdx] = useState(0);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setVisible(true), 2500); return () => clearTimeout(t); }, []);
+  useEffect(() => {
+    if (!visible) return;
+    const id = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => { setIdx(i => (i + 1) % LIVE_TOASTS.length); setVisible(true); }, 600);
+    }, 4500);
+    return () => clearInterval(id);
+  }, [visible]);
+  const t = LIVE_TOASTS[idx];
   return (
-    <div style={{ width: '100%', maxWidth: '340px', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 32px 64px rgba(0,0,0,0.6)', border: '6px solid #1a1a2e', background: '#0b141a', fontFamily: 'system-ui, sans-serif' }}>
-      {/* Header WA */}
-      <div style={{ background: '#202c33', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: C.grad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 800, color: 'white', flexShrink: 0 }}>A</div>
-        <div>
-          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'white' }}>Asisto AI Bot</div>
-          <div style={{ fontSize: '0.72rem', color: '#8696a0' }}>{typing ? 'escribiendo...' : 'en línea'}</div>
-        </div>
+    <div style={{ position: 'fixed', bottom: '1.5rem', left: '1.5rem', zIndex: 200, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.97)', transition: 'all 0.5s cubic-bezier(0.16,1,0.3,1)', background: 'rgba(10,10,20,0.96)', backdropFilter: 'blur(12px)', border: '1px solid rgba(224,64,251,0.2)', borderRadius: '14px', padding: '0.7rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', maxWidth: '290px', pointerEvents: 'none' }}>
+      <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(224,64,251,0.12)', border: '1px solid rgba(224,64,251,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: C.pink, fontWeight: 800, fontSize: '0.9rem' }}>{t.name[0]}</div>
+      <div>
+        <div style={{ fontSize: '0.8rem', color: '#dde', fontWeight: 600 }}><span style={{ color: C.pink }}>{t.name}</span>{' '}{t.action}</div>
+        <div style={{ fontSize: '0.68rem', color: C.textMuted, marginTop: '2px' }}>📍 {t.city} · ahora</div>
       </div>
-      {/* Chat body */}
-      <div style={{ background: '#0b141a', padding: '12px', minHeight: '300px', display: 'flex', flexDirection: 'column', gap: '8px', backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3C/svg%3E\")" }}>
-        {visible.map((m, i) => (
-          <div key={i} style={{ display: 'flex', justifyContent: m.from === 'bot' ? 'flex-start' : 'flex-end', animation: 'fadeSlideUp 0.3s ease' }}>
-            <div style={{
-              maxWidth: '80%', padding: '7px 10px 5px', borderRadius: m.from === 'bot' ? '0 10px 10px 10px' : '10px 0 10px 10px',
-              background: m.from === 'bot' ? '#202c33' : '#005c4b',
-              fontSize: '0.82rem', color: 'white', lineHeight: 1.5, position: 'relative',
-            }}>
-              {m.text}
-              <div style={{ fontSize: '0.65rem', color: '#8696a0', textAlign: 'right', marginTop: '3px' }}>
-                {now} {m.from === 'bot' ? '' : '✓✓'}
-              </div>
+      <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, flexShrink: 0, boxShadow: `0 0 6px ${C.green}` }} />
+    </div>
+  );
+}
+
+/* ─── Animated Bar Chart ──────────────────────────────── */
+function BarChart() {
+  const [ref, inView] = useInView(0.3);
+  const bars = [
+    { label: 'Con Asisto',      pct: 97, color: 'linear-gradient(90deg,#e040fb,#9333ea)' },
+    { label: 'Atención manual', pct: 42, color: 'linear-gradient(90deg,#7c3aed,#a855f7)' },
+    { label: 'Chatbot básico',  pct: 61, color: 'linear-gradient(90deg,#00d4ff,#38bdf8)' },
+    { label: 'Sin atención',    pct: 18, color: 'linear-gradient(90deg,#e040fb,#00d4ff)' },
+  ];
+  return (
+    <div ref={ref} style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '16px', padding: '1.5rem' }}>
+      <div style={{ fontSize: '0.72rem', color: C.textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '1.25rem', fontWeight: 600 }}>
+        <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: C.pink, marginRight: 6 }} />
+        Tasa de conversión (consultas → ventas)
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        {bars.map((b, i) => (
+          <div key={i}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem', fontSize: '0.8rem' }}>
+              <span style={{ color: C.textSec }}>{b.label}</span>
+              <span style={{ color: C.text, fontWeight: 700 }}>{b.pct}%</span>
+            </div>
+            <div style={{ background: C.bgCard2, borderRadius: '99px', height: 10, overflow: 'hidden' }}>
+              <div style={{ height: '100%', borderRadius: '99px', background: b.color, width: inView ? `${b.pct}%` : '0%', transition: `width 1.2s cubic-bezier(0.16,1,0.3,1) ${i * 0.15}s` }} />
             </div>
           </div>
         ))}
-        {typing && (
-          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-            <div style={{ background: '#202c33', borderRadius: '0 10px 10px 10px', padding: '10px 14px', display: 'flex', gap: '4px', alignItems: 'center' }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#8696a0', animation: `bounce 1.2s ${i * 0.2}s infinite` }} />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-      {/* Input WA */}
-      <div style={{ background: '#202c33', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div style={{ flex: 1, background: '#2a3942', borderRadius: '20px', padding: '8px 14px', fontSize: '0.82rem', color: '#8696a0' }}>Escribí un mensaje</div>
-        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: C.waDark, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}>🎤</div>
       </div>
     </div>
   );
@@ -216,13 +184,28 @@ function WhatsAppMockup() {
 
 /* ─── Demo Interactivo ────────────────────────────────── */
 function DemoChat() {
-  const [messages, setMessages] = useState([
-    { from: 'bot', text: '¡Hola! Soy el asistente virtual. Preguntame sobre precios, stock, envíos o lo que necesites 😊' }
-  ]);
+  const { t } = useTranslation();
+
+  function getDemoResponse(input) {
+    const txt = input.toLowerCase();
+    if (/precio|price|cuanto|cost|cuesta|vale|costo/.test(txt))       return t('demo.responses.price');
+    if (/stock|tienen|hay|disponible|available|have/.test(txt))        return t('demo.responses.stock');
+    if (/envío|shipping|mandan|llega|despacho|deliver/.test(txt))      return t('demo.responses.shipping');
+    if (/pago|payment|transferencia|mercadopago|tarjeta|card/.test(txt)) return t('demo.responses.payment');
+    if (/horario|hour|atienden|cuando|abierto|open/.test(txt))         return t('demo.responses.hours');
+    if (/devolución|return|cambio|garantía|guarantee/.test(txt))        return t('demo.responses.returns');
+    return t('demo.responses.default');
+  }
+
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
   const now = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+  useEffect(() => {
+    setMessages([{ from: 'bot', text: t('demo.greeting') }]);
+  }, [t]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
@@ -232,50 +215,92 @@ function DemoChat() {
     setInput('');
     setMessages(m => [...m, { from: 'client', text: txt }]);
     setLoading(true);
-    setTimeout(() => {
-      setMessages(m => [...m, { from: 'bot', text: getDemoResponse(txt) }]);
-      setLoading(false);
-    }, 1200);
+    setTimeout(() => { setMessages(m => [...m, { from: 'bot', text: getDemoResponse(txt) }]); setLoading(false); }, 1200);
   }
 
   return (
-    <div style={{ maxWidth: '420px', margin: '0 auto', borderRadius: '24px', overflow: 'hidden', border: '1px solid #1e2d45', boxShadow: '0 24px 48px rgba(0,0,0,0.5)' }}>
+    <div style={{ maxWidth: '420px', margin: '0 auto', borderRadius: '20px', overflow: 'hidden', border: `1px solid ${C.borderStr}`, boxShadow: `0 0 0 1px rgba(224,64,251,0.1), 0 24px 60px rgba(0,0,0,0.5)` }}>
       <div style={{ background: '#202c33', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: C.grad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, color: 'white' }}>A</div>
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: C.gradBtn, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>🤖</div>
         <div>
-          <div style={{ fontWeight: 700, color: 'white', fontSize: '0.95rem' }}>Demo — Asisto AI</div>
-          <div style={{ fontSize: '0.75rem', color: C.waGreen }}>● en línea ahora</div>
+          <div style={{ fontWeight: 700, color: 'white', fontSize: '0.95rem' }}>{t('demo.title')}</div>
+          <div style={{ fontSize: '0.72rem', color: C.waGreen }}>{t('demo.online')}</div>
         </div>
       </div>
-      <div style={{ background: '#0b141a', padding: '14px', height: '280px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ background: '#0b141a', padding: '14px', height: '260px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {messages.map((m, i) => (
           <div key={i} style={{ display: 'flex', justifyContent: m.from === 'bot' ? 'flex-start' : 'flex-end' }}>
             <div style={{ maxWidth: '80%', padding: '8px 11px 5px', borderRadius: m.from === 'bot' ? '0 10px 10px 10px' : '10px 0 10px 10px', background: m.from === 'bot' ? '#202c33' : '#005c4b', fontSize: '0.85rem', color: 'white', lineHeight: 1.5 }}>
               {m.text}
-              <div style={{ fontSize: '0.65rem', color: '#8696a0', textAlign: 'right', marginTop: '3px' }}>{now}</div>
+              <div style={{ fontSize: '0.6rem', color: '#8696a0', textAlign: 'right', marginTop: '3px' }}>{now}</div>
             </div>
           </div>
         ))}
-        {loading && (
-          <div style={{ display: 'flex' }}>
-            <div style={{ background: '#202c33', borderRadius: '0 10px 10px 10px', padding: '10px 14px', display: 'flex', gap: '4px' }}>
-              {[0,1,2].map(i => <div key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#8696a0', animation: `bounce 1.2s ${i*0.2}s infinite` }} />)}
-            </div>
-          </div>
-        )}
+        {loading && <div style={{ display: 'flex' }}><div style={{ background: '#202c33', borderRadius: '0 10px 10px 10px', padding: '10px 14px', display: 'flex', gap: '4px' }}>{[0,1,2].map(i => <div key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#8696a0', animation: `bounce 1.2s ${i*0.2}s infinite` }} />)}</div></div>}
         <div ref={bottomRef} />
       </div>
       <div style={{ background: '#202c33', padding: '10px 12px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && send()}
-          placeholder="Escribí tu consulta..."
-          style={{ flex: 1, background: '#2a3942', border: 'none', borderRadius: '20px', padding: '9px 16px', color: 'white', fontSize: '0.88rem', outline: 'none' }}
-        />
-        <button onClick={send} style={{ width: '38px', height: '38px', borderRadius: '50%', background: C.waDark, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Send size={16} color="white" />
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder={t('demo.placeholder')} style={{ flex: 1, background: '#2a3942', border: 'none', borderRadius: '20px', padding: '9px 16px', color: 'white', fontSize: '0.88rem', outline: 'none', fontFamily: 'inherit' }} />
+        <button onClick={send} style={{ width: '38px', height: '38px', borderRadius: '50%', background: C.gradBtn, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Send size={15} color="white" />
         </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Product Demo browser ────────────────────────────── */
+function ProductDemo() {
+  const METRICS = [
+    { label: 'Consultas hoy',     val: '247', delta: '+18%', color: C.pink },
+    { label: 'Tasa de respuesta', val: '99.8%', delta: 'óptimo', color: C.cyan },
+    { label: 'Ventas asistidas',  val: '34',  delta: '+6 vs ayer', color: '#a855f7' },
+  ];
+  const CONV = [
+    { from: 'client', text: 'Hola, tienen zapatillas Nike en el 42?' },
+    { from: 'bot',    text: 'Sí! Tenemos Air Max en blanco y negro en el 42. $94.900. ¿Te interesa?' },
+    { from: 'client', text: 'El blanco, lo reservo' },
+    { from: 'bot',    text: '¡Perfecto! 🎉 Te mando el link de pago ahora mismo.' },
+  ];
+  const [shown, setShown] = useState(0);
+  const [ref, inView] = useInView(0.2);
+  useEffect(() => {
+    if (!inView) return;
+    const id = setInterval(() => setShown(s => s < CONV.length ? s + 1 : s), 950);
+    return () => clearInterval(id);
+  }, [inView]);
+  return (
+    <div ref={ref} style={{ borderRadius: '16px', overflow: 'hidden', border: `1px solid ${C.borderStr}`, boxShadow: `0 0 80px rgba(224,64,251,0.07), 0 40px 80px rgba(0,0,0,0.4)` }}>
+      <div style={{ background: '#0d0d1a', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ display: 'flex', gap: '5px' }}>
+          {['#ff5f57','#febc2e','#28c840'].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />)}
+        </div>
+        <div style={{ flex: 1, background: C.bgCard2, borderRadius: '6px', padding: '4px 12px', fontSize: '0.7rem', color: C.textMuted, marginLeft: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ color: C.green, fontSize: '0.6rem' }}>🔒</span> app.asisto.ai/dashboard
+        </div>
+      </div>
+      <div style={{ padding: '1.25rem', background: '#090912' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '0.75rem', marginBottom: '1.25rem' }}>
+          {METRICS.map((m, i) => (
+            <div key={i} style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '0.85rem 1rem', borderTop: `2px solid ${m.color}` }}>
+              <div style={{ fontSize: '0.66rem', color: C.textMuted, marginBottom: '0.3rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{m.label}</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: C.text, letterSpacing: '-0.02em' }}>{m.val}</div>
+              <div style={{ fontSize: '0.68rem', color: m.color, fontWeight: 700, marginTop: '0.2rem' }}>{m.delta}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden' }}>
+          <div style={{ background: C.bgCard2, padding: '0.7rem 1rem', fontSize: '0.73rem', color: C.textSec, fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: `1px solid ${C.border}` }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, display: 'inline-block', boxShadow: `0 0 6px ${C.green}` }} /> Conversación en vivo
+          </div>
+          <div style={{ padding: '0.85rem', background: '#0b141a', display: 'flex', flexDirection: 'column', gap: '7px', minHeight: '120px' }}>
+            {CONV.slice(0, shown).map((m, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: m.from === 'bot' ? 'flex-start' : 'flex-end', animation: 'fadeSlideUp 0.35s ease' }}>
+                <div style={{ maxWidth: '80%', padding: '5px 9px 4px', borderRadius: m.from === 'bot' ? '0 8px 8px 8px' : '8px 0 8px 8px', background: m.from === 'bot' ? '#202c33' : '#005c4b', fontSize: '0.72rem', color: 'white', lineHeight: 1.45 }}>{m.text}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -285,28 +310,36 @@ function DemoChat() {
 function Accordion({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ border: `1px solid ${open ? C.blue : C.border}`, borderRadius: '12px', overflow: 'hidden', transition: 'border-color 0.2s', marginBottom: '0.75rem' }}>
-      <button onClick={() => setOpen(!open)} style={{ width: '100%', background: C.bgCard, border: 'none', padding: '1rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', color: C.text, fontSize: '0.97rem', fontWeight: 600, textAlign: 'left' }}>
+    <div style={{ borderBottom: `1px solid ${C.border}` }}>
+      <button onClick={() => setOpen(!open)} style={{ width: '100%', background: 'none', border: 'none', padding: '1.1rem 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', color: C.text, fontSize: '0.95rem', fontWeight: 600, textAlign: 'left', gap: '1rem', fontFamily: 'inherit' }}>
         {q}
-        <ChevronDown size={18} color={C.textSec} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }} />
+        <ChevronDown size={17} color={C.textSec} style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.22s', flexShrink: 0 }} />
       </button>
-      {open && <div style={{ background: C.bgCard2, padding: '0 1.25rem 1rem', color: C.textSec, fontSize: '0.92rem', lineHeight: 1.65 }}>{a}</div>}
+      <div style={{ overflow: 'hidden', maxHeight: open ? '180px' : '0', transition: 'max-height 0.35s cubic-bezier(0.16,1,0.3,1)', paddingBottom: open ? '1rem' : 0 }}>
+        <p style={{ margin: 0, color: C.textSec, fontSize: '0.9rem', lineHeight: 1.72 }}>{a}</p>
+      </div>
     </div>
   );
 }
 
-/* ─── FadeIn wrapper ──────────────────────────────────── */
+/* ─── FadeIn ──────────────────────────────────────────── */
 function FadeIn({ children, delay = 0, style = {} }) {
   const [ref, inView] = useInView();
   return (
-    <div ref={ref} style={{ opacity: inView ? 1 : 0, transform: inView ? 'none' : 'translateY(28px)', transition: `opacity 0.6s ${delay}s, transform 0.6s ${delay}s`, ...style }}>
+    <div ref={ref} style={{ opacity: inView ? 1 : 0, transform: inView ? 'none' : 'translateY(24px)', transition: `opacity 0.65s ${delay}s, transform 0.65s ${delay}s`, ...style }}>
       {children}
     </div>
   );
 }
 
+/* ─── GradientText ────────────────────────────────────── */
+function GradText({ children, style = {} }) {
+  return <span style={{ background: C.gradText, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', ...style }}>{children}</span>;
+}
+
 /* ─── MAIN ────────────────────────────────────────────── */
 export default function LandingVolume() {
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   function scrollTo(id) {
@@ -314,151 +347,194 @@ export default function LandingVolume() {
     setMenuOpen(false);
   }
 
-  return (
-    <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: "'Inter', system-ui, sans-serif" }}>
+  const brands    = t('brands',           { returnObjects: true });
+  const features  = t('features.items',   { returnObjects: true });
+  const baItems   = t('beforeAfter.items',{ returnObjects: true });
+  const steps     = t('howItWorks.steps', { returnObjects: true });
+  const reviews   = t('reviews.items',    { returnObjects: true });
+  const plans     = t('pricing.plans',    { returnObjects: true });
+  const faqs      = t('faq.items',        { returnObjects: true });
 
-      {/* ── Keyframes ── */}
+  return (
+    <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }}>
+
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
         @keyframes fadeSlideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
-        @keyframes bounce { 0%,80%,100% { transform:translateY(0); } 40% { transform:translateY(-6px); } }
-        @keyframes marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
-        @keyframes shimmer { 0%,100% { box-shadow:0 0 0 0 rgba(59,130,246,0); } 50% { box-shadow:0 0 24px 8px rgba(59,130,246,0.35); } }
-        @keyframes glow { 0%,100% { opacity:1; } 50% { opacity:0.7; } }
-        .btn-cta:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(59,130,246,0.4); }
-        .btn-ghost:hover { background:rgba(255,255,255,0.06); }
-        .feature-card:hover { border-color:${C.blue} !important; transform:translateY(-4px); box-shadow:0 12px 28px rgba(0,0,0,0.4); }
-        .review-card:hover { transform:translateY(-3px); }
-        .plan-card:hover { transform:translateY(-4px); }
+        @keyframes bounce      { 0%,80%,100% { transform:translateY(0); } 40% { transform:translateY(-6px); } }
+        @keyframes marquee     { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+        @keyframes heroGlow    { 0%,100% { opacity:0.6; transform:scale(1); } 50% { opacity:1; transform:scale(1.08); } }
+        @keyframes btnPulse    { 0%,100% { box-shadow:0 0 0 0 rgba(224,64,251,0); } 50% { box-shadow:0 0 28px 6px rgba(224,64,251,0.25); } }
+        * { box-sizing: border-box; }
+        .btn-primary { background: linear-gradient(135deg,#e040fb,#9333ea); color:white; border:none; font-weight:700; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+        .btn-primary:hover { opacity:0.88; transform:translateY(-2px); box-shadow:0 10px 32px rgba(224,64,251,0.35); }
+        .btn-ghost   { background:rgba(255,255,255,0.04); border:1px solid ${C.borderStr}; color:${C.text}; cursor:pointer; font-family:inherit; transition:all 0.2s; font-weight:600; }
+        .btn-ghost:hover   { background:rgba(255,255,255,0.08); }
+        .feature-card { transition:all 0.22s; }
+        .feature-card:hover { transform:translateY(-5px); background:${C.bgCardEl} !important; }
+        .plan-card  { transition:transform 0.2s; }
+        .plan-card:hover  { transform:translateY(-5px); }
+        .review-card { transition:transform 0.2s; }
+        .review-card:hover { transform:translateY(-4px); }
+        .step-row { transition:all 0.2s; }
+        .step-row:hover { border-color:${C.pink} !important; background:${C.bgCardEl} !important; }
+        @media (max-width:900px) {
+          .desktop-nav { display:none !important; }
+          .hamburger   { display:flex !important; }
+          .ba-grid,.review-grid,.plan-grid,.footer-grid,.platform-grid,.perf-grid { grid-template-columns:1fr !important; }
+        }
+        @media (max-width:600px) {
+          .stats-grid { grid-template-columns:1fr !important; }
+        }
       `}</style>
 
+      <LiveToast />
+
       {/* ════════════ NAVBAR ════════════ */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(10,15,30,0.88)', backdropFilter: 'blur(18px)', borderBottom: `1px solid ${C.border}`, padding: '0 2rem' }}>
-        <div style={{ maxWidth: '1140px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '66px' }}>
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 800, fontSize: '1.2rem', cursor: 'pointer' }} onClick={() => scrollTo('hero')}>
-            <div style={{ width: '34px', height: '34px', borderRadius: '9px', background: C.grad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1rem', color: 'white' }}>A</div>
-            Asisto AI
+      <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(10,10,18,0.9)', backdropFilter: 'blur(16px)', borderBottom: `1px solid ${C.border}`, padding: '0 2rem' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '62px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }} onClick={() => scrollTo('hero')}>
+            <span style={{ fontSize: '1.4rem' }}>🤖</span>
+            <span style={{ fontWeight: 800, fontSize: '1.05rem', color: C.text }}>Asisto AI</span>
           </div>
-          {/* Desktop links */}
-          <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }} className="desktop-nav">
-            {['features|Funciones','pricing|Precios','reviews|Casos de éxito'].map(s => {
-              const [id, label] = s.split('|');
-              return <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', fontSize: '0.92rem', fontWeight: 500 }}>{label}</button>;
-            })}
-            <a href="/login" style={{ color: C.textSec, textDecoration: 'none', fontSize: '0.92rem', fontWeight: 500 }}>Ingresar</a>
-            <button onClick={() => scrollTo('cta')} className="btn-cta" style={{ background: C.blue, border: 'none', color: 'white', padding: '0.5rem 1.2rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 700, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              Empezar gratis <ChevronRight size={15} />
+          <div className="desktop-nav" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+            {[['features', t('nav.features')],['pricing', t('nav.pricing')],['reviews', t('nav.clients')]].map(([id, label]) => (
+              <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500, fontFamily: 'inherit' }}>{label}</button>
+            ))}
+            <a href="/login" style={{ color: C.textSec, textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>{t('nav.login')}</a>
+            <LanguageSwitcher />
+            <button onClick={() => scrollTo('cta')} className="btn-primary" style={{ padding: '0.48rem 1.15rem', borderRadius: '8px', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              {t('nav.start')} <ChevronRight size={14} />
             </button>
           </div>
-          {/* Mobile hamburger */}
-          <button onClick={() => setMenuOpen(!menuOpen)} style={{ display: 'none', background: 'none', border: 'none', color: C.text, cursor: 'pointer' }} className="hamburger">
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
+          <button onClick={() => setMenuOpen(!menuOpen)} className="hamburger" style={{ display: 'none', background: 'none', border: 'none', color: C.text, cursor: 'pointer' }}>
+            {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
-        {/* Mobile menu */}
         {menuOpen && (
-          <div style={{ borderTop: `1px solid ${C.border}`, padding: '1rem 2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {['features|Funciones','pricing|Precios','reviews|Casos de éxito'].map(s => {
-              const [id, label] = s.split('|');
-              return <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', fontSize: '1rem', textAlign: 'left', padding: '0.25rem 0' }}>{label}</button>;
-            })}
-            <a href="/login" style={{ color: C.textSec, textDecoration: 'none', fontSize: '1rem' }}>Ingresar</a>
-            <button onClick={() => scrollTo('cta')} className="btn-cta" style={{ background: C.blue, border: 'none', color: 'white', padding: '0.75rem', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', fontWeight: 700, transition: 'all 0.2s' }}>
-              Empezar gratis →
-            </button>
+          <div style={{ borderTop: `1px solid ${C.border}`, padding: '1rem 2rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: C.bgCard }}>
+            {[['features', t('nav.features')],['pricing', t('nav.pricing')],['reviews', t('nav.clients')]].map(([id, label]) => (
+              <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', fontSize: '1rem', textAlign: 'left', padding: '0.2rem 0', fontFamily: 'inherit' }}>{label}</button>
+            ))}
+            <a href="/login" style={{ color: C.textSec, textDecoration: 'none', fontSize: '1rem' }}>{t('nav.login')}</a>
+            <button onClick={() => scrollTo('cta')} className="btn-primary" style={{ padding: '0.85rem', borderRadius: '10px', fontSize: '1rem', textAlign: 'center' }}>{t('nav.start')} →</button>
           </div>
         )}
       </nav>
 
       {/* ════════════ HERO ════════════ */}
-      <section id="hero" style={{ padding: 'clamp(4rem,10vw,8rem) 2rem clamp(3rem,6vw,5rem)', background: `radial-gradient(ellipse 80% 55% at 50% -5%, rgba(59,130,246,0.14) 0%, transparent 70%)` }}>
-        <div style={{ maxWidth: '1140px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr auto', gap: '4rem', alignItems: 'center' }}>
-          <div>
-            {/* Badge */}
-            <FadeIn>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '99px', padding: '0.35rem 1rem', fontSize: '0.82rem', color: '#93c5fd', marginBottom: '1.75rem' }}>
-                <Zap size={13} /> Nuevo · Asisto AI 2.0 ya disponible
-              </div>
-            </FadeIn>
-            {/* Headline */}
-            <FadeIn delay={0.05}>
-              <h1 style={{ fontSize: 'clamp(2.4rem,5vw,4.2rem)', fontWeight: 900, lineHeight: 1.08, letterSpacing: '-2.5px', marginBottom: '1.5rem', margin: '0 0 1.5rem' }}>
-                Tu negocio responde solo.<br />
-                <span style={{ background: C.grad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  24 horas. Sin errores. Sin sueldo.
-                </span>
-              </h1>
-            </FadeIn>
-            {/* Sub */}
-            <FadeIn delay={0.1}>
-              <p style={{ fontSize: '1.15rem', color: C.textSec, lineHeight: 1.7, maxWidth: '520px', marginBottom: '2.25rem' }}>
-                Asisto AI es un empleado virtual que atiende por WhatsApp, conoce tu catálogo al detalle y responde como un humano — sin que vos estés presente.
-              </p>
-            </FadeIn>
-            {/* CTAs */}
-            <FadeIn delay={0.15}>
-              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-                <button onClick={() => scrollTo('cta')} className="btn-cta" style={{ background: C.grad, border: 'none', color: 'white', padding: '0.9rem 1.8rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.05rem', fontWeight: 700, transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem', animation: 'shimmer 2.5s infinite' }}>
-                  Empezar gratis <ChevronRight size={18} />
-                </button>
-                <button onClick={() => scrollTo('demo')} className="btn-ghost" style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`, color: C.text, padding: '0.9rem 1.8rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1.05rem', fontWeight: 500, transition: 'all 0.2s' }}>
-                  Ver demo en vivo
-                </button>
-              </div>
-              <p style={{ fontSize: '0.82rem', color: C.textMuted }}>Sin tarjeta de crédito · Configuración en 5 minutos</p>
-            </FadeIn>
-          </div>
+      <section id="hero" style={{ position: 'relative', overflow: 'hidden', padding: 'clamp(2rem,4vw,3.5rem) 2rem clamp(3rem,6vw,5rem)', textAlign: 'center' }}>
+        <ParticleField />
+        <div style={{ position: 'absolute', top: '-15%', left: '50%', transform: 'translateX(-50%)', width: '900px', height: '600px', background: 'radial-gradient(ellipse at center, rgba(90,20,120,0.55) 0%, rgba(40,0,80,0.3) 35%, transparent 70%)', animation: 'heroGlow 8s ease-in-out infinite', pointerEvents: 'none', zIndex: 0 }} />
 
-          {/* WhatsApp Mockup */}
-          <FadeIn delay={0.2} style={{ display: 'flex', justifyContent: 'center' }}>
-            <WhatsAppMockup />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '800px', margin: '0 auto' }}>
+          <FadeIn>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(224,64,251,0.1)', border: '1px solid rgba(224,64,251,0.25)', borderRadius: '99px', padding: '0.3rem 1rem', fontSize: '0.8rem', color: C.pink, marginBottom: '1.5rem', fontWeight: 700 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.pink, display: 'inline-block', boxShadow: `0 0 8px ${C.pink}` }} />
+              {t('hero.badge')}
+            </div>
           </FadeIn>
-        </div>
 
-        {/* Metrics bar */}
-        <div style={{ maxWidth: '700px', margin: '4.5rem auto 0', display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1px', background: C.border, borderRadius: '16px', overflow: 'hidden', border: `1px solid ${C.border}` }}>
-          {[
-            { n: 2400, suffix: '+', label: 'Consultas respondidas', pre: '' },
-            { n: null, label: 'Tiempo de respuesta', pre: '< 3 seg' },
-            { n: 98, suffix: '%', label: 'Satisfacción de clientes', pre: '' },
-          ].map((s, i) => (
-            <FadeIn key={i} delay={0.25 + i * 0.07} style={{ background: C.bgCard, padding: '1.5rem', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.9rem', fontWeight: 800, color: C.text }}>
-                {s.n !== null ? <><AnimatedCounter target={s.n} />{s.suffix}</> : s.pre}
-              </div>
-              <div style={{ fontSize: '0.82rem', color: C.textSec, marginTop: '0.3rem' }}>{s.label}</div>
-            </FadeIn>
-          ))}
+          <FadeIn delay={0.05}>
+            <h1 style={{ fontSize: 'clamp(2.8rem,6vw,5rem)', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-0.04em', marginBottom: '1.5rem' }}>
+              {t('hero.title')}<br />
+              <GradText>{t('hero.titleHighlight')}</GradText>
+            </h1>
+          </FadeIn>
+
+          <FadeIn delay={0.1}>
+            <p style={{ fontSize: '1.15rem', color: C.textSec, lineHeight: 1.75, maxWidth: '560px', margin: '0 auto 0.75rem', fontWeight: 500 }}>
+              {t('hero.subtitle')}
+            </p>
+            <p style={{ fontSize: '0.9rem', color: C.textMuted, marginBottom: '2rem' }}>
+              {t('hero.hint')}
+            </p>
+          </FadeIn>
+
+          <FadeIn delay={0.15}>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+              <button onClick={() => scrollTo('cta')} className="btn-primary" style={{ padding: '0.95rem 2rem', borderRadius: '10px', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem', animation: 'btnPulse 3s infinite' }}>
+                {t('hero.cta')} <ChevronRight size={18} />
+              </button>
+              <button onClick={() => scrollTo('demo')} className="btn-ghost" style={{ padding: '0.95rem 2rem', borderRadius: '10px', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {t('hero.ctaSecondary')}
+              </button>
+            </div>
+            <p style={{ fontSize: '0.8rem', color: C.textMuted }}>{t('hero.noCc')}</p>
+          </FadeIn>
+
+          <FadeIn delay={0.22}>
+            <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1px', background: C.borderStr, borderRadius: '14px', overflow: 'hidden', border: `1px solid ${C.borderStr}`, maxWidth: '580px', margin: '3rem auto 0' }}>
+              {[
+                { n: 2400, suffix: '+', label: t('hero.stats.responses') },
+                { n: null, pre: '< 3 seg', label: t('hero.stats.uptime') },
+                { n: 98,   suffix: '%',    label: t('hero.stats.satisfaction') },
+              ].map((s, i) => (
+                <div key={i} style={{ background: C.bgCard, padding: '1.25rem', textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.03em', background: C.gradText, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    {s.n !== null ? <><AnimatedCounter target={s.n} />{s.suffix}</> : s.pre}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: C.textMuted, marginTop: '0.3rem', fontWeight: 500 }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </FadeIn>
         </div>
       </section>
 
-      {/* ════════════ SOCIAL PROOF BAR ════════════ */}
-      <section style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '2rem 0', overflow: 'hidden', background: C.bgCard2 }}>
-        <p style={{ textAlign: 'center', fontSize: '0.82rem', color: C.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '1.25rem' }}>Negocios que ya confían en Asisto AI</p>
+      {/* ════════════ SOCIAL PROOF ════════════ */}
+      <section style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '1.75rem 0', overflow: 'hidden', background: C.bgCard2 }}>
+        <p style={{ textAlign: 'center', fontSize: '0.72rem', color: C.textMuted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.1rem', fontWeight: 700 }}>Negocios que ya confían en Asisto AI</p>
         <div style={{ display: 'flex', width: 'max-content', animation: 'marquee 22s linear infinite' }}>
-          {[...BRANDS, ...BRANDS].map((b, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '99px', padding: '0.4rem 1rem', marginRight: '1rem', whiteSpace: 'nowrap', fontSize: '0.85rem', color: C.textSec }}>
-              <span style={{ fontSize: '1rem' }}>{b.icon}</span> {b.name}
+          {[...brands, ...brands].map((b, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '99px', padding: '0.38rem 1rem', marginRight: '0.75rem', whiteSpace: 'nowrap', fontSize: '0.82rem', color: C.textSec, fontWeight: 500 }}>
+              <span>{b.icon}</span> {b.name}
             </div>
           ))}
         </div>
       </section>
 
+      {/* ════════════ PLATAFORMAS ════════════ */}
+      <section style={{ padding: '2.75rem 2rem', borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ fontSize: '0.72rem', color: C.textMuted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.5rem', fontWeight: 700 }}>También disponible en</div>
+          <div className="platform-grid" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            {[
+              { emoji: '🛍️', name: 'Shopify App Store', sub: 'Instalación con 1 click', soon: true },
+              { emoji: '☁️', name: 'Tienda Nube',       sub: 'Integración nativa LATAM', soon: true },
+              { emoji: '📊', name: 'Google Sheets',     sub: 'Catálogo desde tu planilla', soon: false },
+            ].map((p, i) => (
+              <div key={i} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '0.85rem', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '0.9rem 1.35rem', textAlign: 'left' }}>
+                <div style={{ fontSize: '1.7rem' }}>{p.emoji}</div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: C.text }}>{p.name}</div>
+                  <div style={{ fontSize: '0.73rem', color: C.textMuted }}>{p.sub}</div>
+                </div>
+                {p.soon  && <div style={{ position: 'absolute', top: '-10px', right: '10px', background: C.gradBtn, color: 'white', fontSize: '0.6rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', letterSpacing: '0.05em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Próximamente</div>}
+                {!p.soon && <div style={{ position: 'absolute', top: '-10px', right: '10px', background: C.green, color: 'white', fontSize: '0.6rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Disponible</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ════════════ FEATURES ════════════ */}
       <section id="features" style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <FadeIn style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.9rem)', fontWeight: 800, letterSpacing: '-1.5px', marginBottom: '1rem' }}>No es un bot. Es un empleado que nunca falta.</h2>
-            <p style={{ color: C.textSec, fontSize: '1.1rem', maxWidth: '520px', margin: '0 auto' }}>La diferencia entre perder una venta y cerrarla está en los primeros 3 minutos de respuesta.</p>
+            <div style={{ fontSize: '0.72rem', color: C.pink, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>{t('nav.features').toUpperCase()}</div>
+            <h2 style={{ fontSize: 'clamp(1.9rem,3.5vw,3rem)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '0.75rem', lineHeight: 1.1 }}>
+              {t('features.title')}<br /><GradText>{t('features.titleHighlight')}</GradText>
+            </h2>
+            <p style={{ color: C.textSec, fontSize: '1.05rem', maxWidth: '500px', margin: '0 auto' }}>{t('features.subtitle')}</p>
           </FadeIn>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: '1.25rem' }}>
-            {FEATURES.map((f, i) => (
-              <FadeIn key={i} delay={i * 0.06}>
-                <div className="feature-card" style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '16px', padding: '1.75rem', transition: 'all 0.25s', height: '100%' }}>
-                  <div style={{ width: '46px', height: '46px', borderRadius: '12px', background: `${f.color}18`, border: `1px solid ${f.color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', marginBottom: '1.1rem' }}>{f.icon}</div>
-                  <h3 style={{ fontSize: '1.08rem', fontWeight: 700, marginBottom: '0.5rem' }}>{f.title}</h3>
-                  <p style={{ color: C.textSec, fontSize: '0.92rem', lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: '1px', background: C.border, borderRadius: '16px', overflow: 'hidden', border: `1px solid ${C.border}` }}>
+            {features.map((f, i) => (
+              <FadeIn key={i} delay={i * 0.05}>
+                <div className="feature-card" style={{ background: C.bgCard, padding: '2rem', height: '100%', borderTop: `2px solid ${FEATURE_STYLES[i % FEATURE_STYLES.length].borderColor}` }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: FEATURE_STYLES[i % FEATURE_STYLES.length].iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', marginBottom: '1.1rem' }}>{f.icon}</div>
+                  <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.55rem', color: C.text }}>{f.title}</h3>
+                  <p style={{ color: C.textSec, fontSize: '0.88rem', lineHeight: 1.7, margin: 0 }}>{f.desc}</p>
                 </div>
               </FadeIn>
             ))}
@@ -466,29 +542,63 @@ export default function LandingVolume() {
         </div>
       </section>
 
-      {/* ════════════ ANTES / DESPUÉS ════════════ */}
+      {/* ════════════ PERFORMANCE ════════════ */}
       <section style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', background: C.bgCard2, borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-          <FadeIn style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', fontWeight: 800, letterSpacing: '-1px', marginBottom: '0.75rem' }}>Lo que cambia cuando Asisto trabaja para vos</h2>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <FadeIn style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+            <div style={{ fontSize: '0.72rem', color: C.cyan, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>PLATAFORMA</div>
+            <h2 style={{ fontSize: 'clamp(1.9rem,3.5vw,3rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1 }}>
+              Diseñado para <GradText>resultados reales</GradText>
+            </h2>
           </FadeIn>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <div className="perf-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem', alignItems: 'center' }}>
             <FadeIn delay={0.05}>
-              <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '16px', padding: '1.5rem' }}>
-                <div style={{ fontWeight: 700, color: '#f87171', marginBottom: '1.25rem', fontSize: '0.9rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>❌ Sin Asisto AI</div>
-                {BEFORE_AFTER.map((r, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', marginBottom: '0.85rem', fontSize: '0.92rem', color: C.textSec }}>
-                    <span style={{ color: '#f87171', flexShrink: 0, marginTop: '1px' }}>✕</span> {r.bad}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                  <div style={{ width: 42, height: 42, borderRadius: '10px', background: 'rgba(224,64,251,0.12)', border: '1px solid rgba(224,64,251,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>⚡</div>
+                  <h3 style={{ fontWeight: 800, fontSize: '1.3rem', color: C.text }}>Velocidad de respuesta</h3>
+                </div>
+                <p style={{ color: C.textSec, fontSize: '1rem', lineHeight: 1.75, marginBottom: '1.5rem' }}>
+                  Mientras la atención manual promedia 2 horas de espera, Asisto responde en menos de 3 segundos — los 7 días de la semana, sin importar el horario.
+                </p>
+                <div style={{ display: 'flex', gap: '2rem' }}>
+                  {[{ n: '< 3', unit: 'seg', label: 'respuesta' }, { n: '24/7', unit: '', label: 'disponible' }, { n: '0', unit: '', label: 'errores por cansancio' }].map((m, i) => (
+                    <div key={i}>
+                      <div style={{ fontSize: '1.4rem', fontWeight: 900, color: C.text, letterSpacing: '-0.03em' }}>{m.n}<span style={{ fontSize: '0.9rem', color: C.pink }}>{m.unit}</span></div>
+                      <div style={{ fontSize: '0.72rem', color: C.textMuted, fontWeight: 600 }}>{m.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </FadeIn>
+            <FadeIn delay={0.1}><BarChart /></FadeIn>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════ ANTES / DESPUÉS ════════════ */}
+      <section style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ maxWidth: '860px', margin: '0 auto' }}>
+          <FadeIn style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.7rem)', fontWeight: 900, letterSpacing: '-0.04em' }}>{t('beforeAfter.title')}</h2>
+          </FadeIn>
+          <div className="ba-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+            <FadeIn delay={0.05}>
+              <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.15)', borderRadius: '16px', padding: '1.5rem', borderTop: '2px solid rgba(239,68,68,0.5)' }}>
+                <div style={{ fontWeight: 800, color: '#f87171', marginBottom: '1.25rem', fontSize: '0.78rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>✕ {t('beforeAfter.before')}</div>
+                {baItems.map((r, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '0.6rem', marginBottom: '0.85rem', fontSize: '0.9rem', color: C.textSec }}>
+                    <span style={{ color: '#f87171', flexShrink: 0 }}>✕</span> {r.bad}
                   </div>
                 ))}
               </div>
             </FadeIn>
             <FadeIn delay={0.1}>
-              <div style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '16px', padding: '1.5rem' }}>
-                <div style={{ fontWeight: 700, color: C.green, marginBottom: '1.25rem', fontSize: '0.9rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>✅ Con Asisto AI</div>
-                {BEFORE_AFTER.map((r, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', marginBottom: '0.85rem', fontSize: '0.92rem', color: C.textSec }}>
-                    <span style={{ color: C.green, flexShrink: 0, marginTop: '1px' }}>✓</span> {r.good}
+              <div style={{ background: 'rgba(224,64,251,0.04)', border: '1px solid rgba(224,64,251,0.2)', borderRadius: '16px', padding: '1.5rem', borderTop: `2px solid ${C.pink}` }}>
+                <div style={{ fontWeight: 800, color: C.pink, marginBottom: '1.25rem', fontSize: '0.78rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>✓ {t('beforeAfter.after')}</div>
+                {baItems.map((r, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '0.6rem', marginBottom: '0.85rem', fontSize: '0.9rem', color: C.textSec }}>
+                    <span style={{ color: C.cyan, flexShrink: 0 }}>✓</span> {r.good}
                   </div>
                 ))}
               </div>
@@ -497,25 +607,36 @@ export default function LandingVolume() {
         </div>
       </section>
 
+      {/* ════════════ PANEL EN VIVO ════════════ */}
+      <section style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', background: C.bgCard2, borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <FadeIn style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <div style={{ fontSize: '0.72rem', color: C.pink, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>PANEL DE CONTROL</div>
+            <h2 style={{ fontSize: 'clamp(1.9rem,3.5vw,3rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1 }}>Tu negocio en tiempo real</h2>
+            <p style={{ color: C.textSec, fontSize: '1.05rem', maxWidth: '460px', margin: '0.75rem auto 0' }}>Métricas, conversaciones y comportamiento del bot desde un panel simple y claro.</p>
+          </FadeIn>
+          <FadeIn delay={0.1}><ProductDemo /></FadeIn>
+        </div>
+      </section>
+
       {/* ════════════ CÓMO FUNCIONA ════════════ */}
       <section style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ maxWidth: '860px', margin: '0 auto' }}>
-          <FadeIn style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', fontWeight: 800, letterSpacing: '-1px', marginBottom: '0.75rem' }}>En 5 minutos tu bot está activo</h2>
-            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>Sin instalar nada, sin programar nada, sin conocimientos técnicos.</p>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <FadeIn style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <div style={{ fontSize: '0.72rem', color: C.cyan, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>CÓMO FUNCIONA</div>
+            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.7rem)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '0.5rem' }}>{t('howItWorks.title')} <GradText>{t('howItWorks.titleHighlight')}</GradText></h2>
+            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>Sin instalar nada. Sin programar nada.</p>
           </FadeIn>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {STEPS.map((s, i) => (
-              <FadeIn key={i} delay={i * 0.08}>
-                <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '1.4rem 1.6rem', transition: 'border-color 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = C.blue}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: C.grad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.1rem', flexShrink: 0, color: 'white' }}>{s.n}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            {steps.map((s, i) => (
+              <FadeIn key={i} delay={i * 0.07}>
+                <div className="step-row" style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '1.25rem 1.5rem' }}>
+                  <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(224,64,251,0.1)', border: '1px solid rgba(224,64,251,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1rem', flexShrink: 0, color: C.pink }}>{s.n}</div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: '0.2rem' }}>{s.title}</div>
-                    <div style={{ color: C.textSec, fontSize: '0.92rem' }}>{s.desc}</div>
+                    <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.2rem', color: C.text }}>{s.title}</div>
+                    <div style={{ color: C.textSec, fontSize: '0.9rem' }}>{s.desc}</div>
                   </div>
-                  <div style={{ fontSize: '1.6rem', flexShrink: 0 }}>{s.icon}</div>
+                  <div style={{ fontSize: '1.5rem', flexShrink: 0 }}>{s.icon}</div>
                 </div>
               </FadeIn>
             ))}
@@ -525,20 +646,16 @@ export default function LandingVolume() {
 
       {/* ════════════ DEMO INTERACTIVO ════════════ */}
       <section id="demo" style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', background: C.bgCard2, borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
           <FadeIn style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.3)', borderRadius: '99px', padding: '0.3rem 0.9rem', fontSize: '0.8rem', color: C.waGreen, marginBottom: '1rem' }}>
-              ● Demo en vivo
-            </div>
-            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', fontWeight: 800, letterSpacing: '-1px', marginBottom: '0.75rem' }}>Probalo ahora, sin registrarte</h2>
-            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>Escribile un mensaje como si fueras un cliente. Mirá cómo responde.</p>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.22)', borderRadius: '99px', padding: '0.3rem 0.9rem', fontSize: '0.78rem', color: C.waGreen, marginBottom: '1rem', fontWeight: 700 }}>● Demo en vivo</div>
+            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.5rem)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '0.6rem' }}>Probalo ahora, sin registrarte</h2>
+            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>Escribile como si fueras un cliente. Mirá cómo responde.</p>
           </FadeIn>
-          <FadeIn delay={0.1}>
-            <DemoChat />
-          </FadeIn>
+          <FadeIn delay={0.1}><DemoChat /></FadeIn>
           <FadeIn delay={0.15} style={{ textAlign: 'center', marginTop: '2rem' }}>
-            <button onClick={() => scrollTo('cta')} className="btn-cta" style={{ background: C.grad, border: 'none', color: 'white', padding: '0.85rem 2rem', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: 700, transition: 'all 0.2s', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-              ¿Te gustó? Creá tu propio bot gratis <ChevronRight size={17} />
+            <button onClick={() => scrollTo('cta')} className="btn-primary" style={{ padding: '0.85rem 2rem', borderRadius: '10px', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+              ¿Te gustó? {t('nav.start')} <ChevronRight size={17} />
             </button>
           </FadeIn>
         </div>
@@ -546,36 +663,33 @@ export default function LandingVolume() {
 
       {/* ════════════ TESTIMONIOS ════════════ */}
       <section id="reviews" style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <FadeIn style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', fontWeight: 800, letterSpacing: '-1px', marginBottom: '0.75rem' }}>Lo que dicen los que ya lo usan</h2>
-            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>Negocios reales, resultados reales.</p>
+            <div style={{ fontSize: '0.72rem', color: C.pink, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>{t('nav.clients').toUpperCase()}</div>
+            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.7rem)', fontWeight: 900, letterSpacing: '-0.04em' }}>{t('reviews.title')} <GradText>{t('reviews.titleHighlight')}</GradText></h2>
           </FadeIn>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: '1.25rem', marginBottom: '3rem' }}>
-            {REVIEWS.map((r, i) => (
-              <FadeIn key={i} delay={i * 0.07}>
-                <div className="review-card" style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '16px', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%', transition: 'transform 0.2s' }}>
-                  <div style={{ display: 'flex', gap: '2px' }}>
-                    {Array.from({length:5}).map((_,j) => <Star key={j} size={14} fill="#f59e0b" color="#f59e0b" />)}
-                  </div>
-                  <p style={{ color: C.textSec, lineHeight: 1.65, margin: 0, fontSize: '0.92rem', fontStyle: 'italic', flex: 1 }}>"{r.text}"</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: C.grad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.9rem', color: 'white', flexShrink: 0 }}>{r.name[0]}</div>
+          <div className="review-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: '1px', background: C.border, borderRadius: '16px', overflow: 'hidden', border: `1px solid ${C.border}`, marginBottom: '2.5rem' }}>
+            {reviews.map((r, i) => (
+              <FadeIn key={i} delay={i * 0.06}>
+                <div className="review-card" style={{ background: C.bgCard, padding: '1.75rem', height: '100%', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                  <div style={{ display: 'flex', gap: '2px' }}>{Array.from({length:5}).map((_,j) => <Star key={j} size={13} fill="#f59e0b" color="#f59e0b" />)}</div>
+                  <p style={{ color: C.textSec, lineHeight: 1.68, margin: 0, fontSize: '0.9rem', flex: 1 }}>"{r.text}"</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+                    <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(224,64,251,0.1)', border: '1px solid rgba(224,64,251,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.85rem', color: C.pink, flexShrink: 0 }}>{r.name[0]}</div>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{r.name}</div>
-                      <div style={{ fontSize: '0.78rem', color: C.textMuted }}>{r.biz}</div>
+                      <div style={{ fontWeight: 700, fontSize: '0.88rem', color: C.text }}>{r.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: C.textMuted }}>{r.biz}</div>
                     </div>
                   </div>
                 </div>
               </FadeIn>
             ))}
           </div>
-          {/* Métricas globales */}
           <FadeIn>
-            <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '14px', padding: '1.1rem 2rem', display: 'flex', justifyContent: 'center', gap: '3rem', flexWrap: 'wrap', fontSize: '0.88rem', color: C.textSec }}>
-              {['10.000+ mensajes respondidos esta semana', '4.9/5 promedio de satisfacción', '340+ negocios activos'].map((t,i) => (
-                <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <span style={{ color: C.green }}>●</span> {t}
+            <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '1rem 1.75rem', display: 'flex', justifyContent: 'center', gap: '2.5rem', flexWrap: 'wrap' }}>
+              {['10.000+ mensajes respondidos esta semana', '4.9/5 satisfacción promedio', '340+ negocios activos'].map((t,i) => (
+                <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: C.textSec }}>
+                  <span style={{ color: C.pink, fontSize: '0.6rem' }}>●</span> {t}
                 </span>
               ))}
             </div>
@@ -587,116 +701,106 @@ export default function LandingVolume() {
       <section id="pricing" style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', background: C.bgCard2, borderBottom: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <FadeIn style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', fontWeight: 800, letterSpacing: '-1px', marginBottom: '0.75rem' }}>Precios claros. Sin sorpresas.</h2>
+            <div style={{ fontSize: '0.72rem', color: C.cyan, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>{t('nav.pricing').toUpperCase()}</div>
+            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.7rem)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '0.6rem' }}>{t('pricing.title')} <GradText>{t('pricing.titleHighlight')}</GradText></h2>
             <p style={{ color: C.textSec, fontSize: '1.05rem' }}>Todos los planes incluyen 7 días de prueba gratis.</p>
           </FadeIn>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(270px,1fr))', gap: '1.5rem', alignItems: 'stretch', marginBottom: '2rem' }}>
-            {PLANS.map((p, i) => (
-              <FadeIn key={i} delay={i * 0.07}>
-                <div className="plan-card" style={{ background: C.bgCard, border: `1px solid ${p.highlight ? C.blue : C.border}`, borderRadius: '20px', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', boxShadow: p.highlight ? '0 0 40px rgba(59,130,246,0.14)' : 'none', transition: 'transform 0.2s', height: '100%' }}>
-                  {p.highlight && <div style={{ position: 'absolute', top: '-13px', left: '50%', transform: 'translateX(-50%)', background: C.grad, borderRadius: '99px', padding: '0.25rem 1rem', fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap', color: 'white' }}>MÁS POPULAR</div>}
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: C.textSec, marginBottom: '0.5rem' }}>{p.name}</div>
-                    <div style={{ fontSize: '2.6rem', fontWeight: 900, letterSpacing: '-1.5px' }}>USD {p.price}<span style={{ fontSize: '1rem', fontWeight: 400, color: C.textSec }}>/mes</span></div>
-                    <div style={{ fontSize: '0.88rem', color: C.textMuted, marginTop: '0.25rem' }}>{p.desc}</div>
+          <div className="plan-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(265px,1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+            {plans.map((p, i) => {
+              const highlight = PLAN_HIGHLIGHTS[i] || false;
+              return (
+                <FadeIn key={i} delay={i * 0.07}>
+                  <div className="plan-card" style={{ background: C.bgCard, border: `1px solid ${highlight ? C.pink : C.border}`, borderTop: `2px solid ${highlight ? C.pink : i === 0 ? '#7c3aed' : C.cyan}`, borderRadius: '16px', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.2rem', position: 'relative', boxShadow: highlight ? '0 0 48px rgba(224,64,251,0.08)' : 'none', height: '100%' }}>
+                    {highlight && <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: C.gradBtn, color: 'white', borderRadius: '99px', padding: '0.2rem 1rem', fontSize: '0.72rem', fontWeight: 800, whiteSpace: 'nowrap' }}>{t('pricing.popular').toUpperCase()}</div>}
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: '0.8rem', color: highlight ? C.pink : C.textSec, marginBottom: '0.4rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{p.name}</div>
+                      <div style={{ fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.03em', color: C.text }}>USD {p.price}<span style={{ fontSize: '1rem', fontWeight: 500, color: C.textSec }}>/{t('pricing.monthly')}</span></div>
+                      <div style={{ fontSize: '0.85rem', color: C.textMuted, marginTop: '0.25rem' }}>{p.desc}</div>
+                    </div>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem', flex: 1 }}>
+                      {p.features.map((f, j) => (
+                        <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.88rem', color: C.textSec }}>
+                          <Check size={14} color={highlight ? C.pink : C.cyan} style={{ flexShrink: 0, marginTop: '2px' }} /> {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <button onClick={() => scrollTo('cta')} className={highlight ? 'btn-primary' : 'btn-ghost'} style={{ padding: '0.85rem', borderRadius: '10px', fontSize: '0.95rem', fontWeight: 700 }}>{p.cta}</button>
                   </div>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.65rem', flex: 1 }}>
-                    {p.features.map((f, j) => (
-                      <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', fontSize: '0.9rem' }}>
-                        <Check size={14} color={C.green} style={{ flexShrink: 0, marginTop: '2px' }} /> {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <button onClick={() => scrollTo('cta')} className={p.highlight ? 'btn-cta' : 'btn-ghost'} style={{ padding: '0.85rem', borderRadius: '10px', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', ...(p.highlight ? { background: C.grad, border: 'none', color: 'white' } : { background: 'none', border: `1px solid ${C.border}`, color: C.text }) }}>
-                    {p.cta}
-                  </button>
-                </div>
-              </FadeIn>
-            ))}
+                </FadeIn>
+              );
+            })}
           </div>
           <FadeIn>
             <p style={{ textAlign: 'center', color: C.textSec, fontSize: '0.88rem' }}>
-              Los precios son en USD · <a href="mailto:hola@asisto.ai" style={{ color: C.blue, textDecoration: 'none' }}>¿Manejás múltiples negocios? Escribinos para el plan Agency →</a>
+              Precios en USD · <a href="mailto:hola@asisto.ai" style={{ color: C.pink, textDecoration: 'none', fontWeight: 700 }}>¿Múltiples negocios? Consultá el plan Agency →</a>
             </p>
           </FadeIn>
-          {/* FAQ */}
-          <FadeIn delay={0.1} style={{ maxWidth: '650px', margin: '3rem auto 0' }}>
-            <h3 style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.15rem', marginBottom: '1.5rem', color: C.textSec }}>Preguntas frecuentes</h3>
-            {FAQS.map((f, i) => <Accordion key={i} q={f.q} a={f.a} />)}
+          <FadeIn delay={0.1} style={{ maxWidth: '620px', margin: '3rem auto 0' }}>
+            <h3 style={{ textAlign: 'center', fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem', color: C.textSec }}>{t('faq.title')}</h3>
+            <div style={{ borderTop: `1px solid ${C.border}` }}>
+              {faqs.map((f, i) => <Accordion key={i} q={f.q} a={f.a} />)}
+            </div>
           </FadeIn>
         </div>
       </section>
 
       {/* ════════════ CTA FINAL ════════════ */}
-      <section id="cta" style={{ padding: 'clamp(5rem,10vw,9rem) 2rem', textAlign: 'center', background: `radial-gradient(ellipse 80% 60% at 50% 100%, rgba(59,130,246,0.12) 0%, transparent 65%)` }}>
-        <div style={{ maxWidth: '580px', margin: '0 auto' }}>
+      <section id="cta" style={{ padding: 'clamp(5rem,10vw,9rem) 2rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <ParticleField />
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '700px', height: '500px', background: 'radial-gradient(ellipse, rgba(90,20,120,0.5) 0%, transparent 65%)', pointerEvents: 'none', animation: 'heroGlow 8s ease-in-out infinite' }} />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: '560px', margin: '0 auto' }}>
           <FadeIn>
-            <h2 style={{ fontSize: 'clamp(1.9rem,3.5vw,3rem)', fontWeight: 900, letterSpacing: '-1.5px', marginBottom: '1rem', lineHeight: 1.1 }}>Tu próxima venta está esperando respuesta.</h2>
+            <h2 style={{ fontSize: 'clamp(2rem,4vw,3.4rem)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '1rem', lineHeight: 1.08 }}>
+              {t('cta.title')}<br /><GradText>{t('cta.titleHighlight')}</GradText>
+            </h2>
           </FadeIn>
           <FadeIn delay={0.06}>
-            <p style={{ color: C.textSec, fontSize: '1.1rem', marginBottom: '2.5rem' }}>Empezá hoy. En 5 minutos tu bot está activo y respondiendo.</p>
+            <p style={{ color: C.textSec, fontSize: '1.1rem', marginBottom: '2.25rem' }}>{t('cta.subtitle')}</p>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <a href="/registro" className="btn-cta" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '1.05rem 2.4rem', fontSize: '1.1rem', borderRadius: '12px', textDecoration: 'none', background: C.grad, color: 'white', fontWeight: 700, transition: 'all 0.2s' }}>
-              Crear mi cuenta gratis <ChevronRight size={20} />
+            <a href="/registro" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '1.1rem 2.4rem', fontSize: '1.1rem', borderRadius: '12px', textDecoration: 'none', fontFamily: 'inherit', animation: 'btnPulse 3s infinite' }}>
+              {t('cta.button')} <ChevronRight size={20} />
             </a>
-            <p style={{ marginTop: '1rem', fontSize: '0.82rem', color: C.textMuted }}>Sin tarjeta de crédito · 7 días gratis · Cancelás cuando quieras</p>
+            <p style={{ marginTop: '1rem', fontSize: '0.82rem', color: C.textMuted }}>{t('cta.trust')}</p>
           </FadeIn>
         </div>
       </section>
 
       {/* ════════════ FOOTER ════════════ */}
-      <footer style={{ borderTop: `1px solid ${C.border}`, padding: '3rem 2rem', background: C.bgCard2 }}>
-        <div style={{ maxWidth: '1140px', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '3rem', marginBottom: '3rem' }}>
-            {/* Brand */}
+      <footer style={{ borderTop: `1px solid ${C.border}`, padding: '2.5rem 2rem', background: C.bgCard }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '3rem', marginBottom: '2.5rem' }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 800, fontSize: '1.15rem', marginBottom: '0.75rem' }}>
-                <div style={{ width: '30px', height: '30px', borderRadius: '8px', background: C.grad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.9rem', color: 'white' }}>A</div>
-                Asisto AI
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.75rem' }}>
+                <span style={{ fontSize: '1.3rem' }}>🤖</span>
+                <span style={{ fontWeight: 800, fontSize: '1.05rem', color: C.text }}>Asisto AI</span>
               </div>
-              <p style={{ color: C.textMuted, fontSize: '0.88rem', lineHeight: 1.6, maxWidth: '260px' }}>El empleado que nunca falla. Disponible 24/7, conoce tu negocio al detalle y responde como humano.</p>
-            </div>
-            {/* Links */}
-            <div>
-              <div style={{ fontWeight: 700, fontSize: '0.85rem', color: C.textSec, marginBottom: '1rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Producto</div>
-              {['Funciones|features','Precios|pricing','Casos de éxito|reviews'].map(s => {
-                const [label, id] = s.split('|');
-                return <div key={id} style={{ marginBottom: '0.6rem' }}><button onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textMuted, cursor: 'pointer', fontSize: '0.88rem', padding: 0 }}>{label}</button></div>;
-              })}
+              <p style={{ color: C.textMuted, fontSize: '0.87rem', lineHeight: 1.65, maxWidth: '240px', margin: 0 }}>El empleado que nunca falla. Disponible 24/7, conoce tu negocio al detalle y responde como humano.</p>
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: '0.85rem', color: C.textSec, marginBottom: '1rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Legal</div>
-              {['Política de privacidad','Términos y condiciones','Contacto'].map(t => (
-                <div key={t} style={{ marginBottom: '0.6rem' }}><a href={`mailto:hola@asisto.ai`} style={{ color: C.textMuted, textDecoration: 'none', fontSize: '0.88rem' }}>{t}</a></div>
+              <div style={{ fontWeight: 700, fontSize: '0.78rem', color: C.textSec, marginBottom: '1rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Producto</div>
+              {[['features', t('nav.features')],['pricing', t('nav.pricing')],['reviews', t('nav.clients')]].map(([id, label]) => (
+                <div key={id} style={{ marginBottom: '0.6rem' }}><button onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textMuted, cursor: 'pointer', fontSize: '0.87rem', padding: 0, fontFamily: 'inherit' }}>{label}</button></div>
+              ))}
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.78rem', color: C.textSec, marginBottom: '1rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Legal</div>
+              {[['Política de privacidad','/privacidad'],['Términos y condiciones','/terminos'],['Contacto','mailto:hola@asisto.ai']].map(([label, href]) => (
+                <div key={label} style={{ marginBottom: '0.6rem' }}><a href={href} style={{ color: C.textMuted, textDecoration: 'none', fontSize: '0.87rem' }}>{label}</a></div>
               ))}
             </div>
           </div>
-          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-            <div style={{ fontSize: '0.82rem', color: C.textMuted }}>© 2026 Asisto AI. Todos los derechos reservados. · Hecho en Argentina 🇦🇷</div>
-            <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.82rem' }}>
+          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <span style={{ fontSize: '0.8rem', color: C.textMuted }}>© 2026 Asisto AI. {t('footer.rights')} · Hecho en Argentina 🇦🇷</span>
+            <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.8rem' }}>
               <a href="mailto:hola@asisto.ai" style={{ color: C.textMuted, textDecoration: 'none' }}>hola@asisto.ai</a>
-              <a href="/login" style={{ color: C.textMuted, textDecoration: 'none' }}>Ingresar</a>
-              <a href="/registro" style={{ color: C.blue, textDecoration: 'none', fontWeight: 600 }}>Registrarse</a>
+              <a href="/login" style={{ color: C.textMuted, textDecoration: 'none' }}>{t('nav.login')}</a>
+              <a href="/registro" style={{ background: C.gradText, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textDecoration: 'none', fontWeight: 700 }}>{t('nav.start')}</a>
             </div>
           </div>
         </div>
       </footer>
 
-      {/* Responsive overrides */}
-      <style>{`
-        @media (max-width: 768px) {
-          .desktop-nav { display: none !important; }
-          .hamburger { display: flex !important; }
-          #hero > div > div:first-child + div { display: none; }
-          #hero > div { grid-template-columns: 1fr !important; }
-        }
-        @media (max-width: 600px) {
-          #pricing > div > div:nth-child(2) { grid-template-columns: 1fr !important; }
-          footer > div > div:first-child { grid-template-columns: 1fr !important; }
-          #reviews > div > div:nth-child(2) { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
     </div>
   );
 }
