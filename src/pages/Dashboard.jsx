@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
-import { Settings, Smartphone, Loader, BrainCircuit, MessageCircle, Users, TrendingUp, Lock, Mail, ChevronRight, LogOut, Plus, X, Save, Bell, Clock, Trash2, Sun, Moon, Bot, BarChart2, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { Settings, Smartphone, Loader, BrainCircuit, MessageCircle, Users, TrendingUp, Lock, Mail, ChevronRight, LogOut, Plus, X, Save, Bell, Clock, Trash2, Sun, Moon, Bot, BarChart2, Search, ChevronDown, ChevronUp, Megaphone } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import '../index.css';
 
@@ -190,19 +190,29 @@ function SmoothAreaChart({ data, color = '#3b82f6', height = 160, tooltipFn }) {
   const chartH = H - PAD.top - PAD.bottom;
   const GRID = 4;
 
-  if (!data || data.length < 2) return (
+  // Compute pts before early return so hooks are always called unconditionally
+  const validData = !!(data && data.length >= 2);
+  const maxVal = validData ? Math.max(...data.map(d => d.value), 1) : 1;
+  const pts = validData ? data.map((d, i) => ({
+    x: PAD.left + (i / (data.length - 1)) * chartW,
+    y: PAD.top + chartH - (d.value / maxVal) * chartH,
+    raw: d,
+  })) : [];
+
+  const handleMouseMove = useCallback((e) => {
+    if (!svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const mouseX = ((e.clientX - rect.left) / rect.width) * W;
+    let best = 0, bestDist = Infinity;
+    pts.forEach((p, i) => { const d = Math.abs(p.x - mouseX); if (d < bestDist) { bestDist = d; best = i; } });
+    setHoveredIdx(best);
+  }, [pts.length]);
+
+  if (!validData) return (
     <div style={{ height, display:'flex', alignItems:'center', justifyContent:'center', color:'var(--text-3)', fontSize:'0.82rem' }}>
       Sin datos suficientes aún.
     </div>
   );
-
-  const maxVal = Math.max(...data.map(d => d.value), 1);
-
-  const pts = data.map((d, i) => ({
-    x: PAD.left + (i / (data.length - 1)) * chartW,
-    y: PAD.top + chartH - (d.value / maxVal) * chartH,
-    raw: d,
-  }));
 
   // Catmull-Rom → cubic bezier smooth path
   const buildPath = (points) => points.reduce((acc, p, i) => {
@@ -222,19 +232,9 @@ function SmoothAreaChart({ data, color = '#3b82f6', height = 160, tooltipFn }) {
   const areaPath = `${linePath} L${pts[pts.length-1].x.toFixed(1)},${baseline} L${pts[0].x.toFixed(1)},${baseline}Z`;
 
   const gradId = `grad_${color.replace('#','')}`;
-  const clipId = `clip_${color.replace('#','')}`;
 
   const step = Math.max(1, Math.floor(pts.length / 6));
   const xLabels = pts.filter((_, i) => i === 0 || i === pts.length - 1 || i % step === 0);
-
-  const handleMouseMove = useCallback((e) => {
-    if (!svgRef.current) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const mouseX = ((e.clientX - rect.left) / rect.width) * W;
-    let best = 0, bestDist = Infinity;
-    pts.forEach((p, i) => { const d = Math.abs(p.x - mouseX); if (d < bestDist) { bestDist = d; best = i; } });
-    setHoveredIdx(best);
-  }, [pts.length]);
 
   const hp = hoveredIdx !== null ? pts[hoveredIdx] : null;
 
@@ -316,6 +316,463 @@ function SmoothAreaChart({ data, color = '#3b82f6', height = 160, tooltipFn }) {
   );
 }
 
+// ─── Admin Campaigns Panel ─────────────────────────────────────
+function AdminCampaignsPanel({ bots }) {
+  const token = localStorage.getItem('asisto_token');
+  const [selectedBotId, setSelectedBotId] = useState(bots?.[0]?.id || null);
+  const [campaigns, setCampaigns] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Modal nueva campaña
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [newCampaign, setNewCampaign] = useState({ name: '', message_template: '', delay_seconds: 45, use_ai: false, campaign_goal: '' });
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  // Modal detalle (config + leads)
+  const [detailModal, setDetailModal] = useState(null);
+  const [detailTab, setDetailTab] = useState('config');
+  const [editForm, setEditForm] = useState({});
+  const [editSaving, setEditSaving] = useState(false);
+  const [editMsg, setEditMsg] = useState(null);
+
+  // Leads
+  const [leads, setLeads] = useState([]);
+  const [leadsText, setLeadsText] = useState('');
+  const [leadsImportMode, setLeadsImportMode] = useState('manual');
+  const [sheetsUrl, setSheetsUrl] = useState('');
+  const [leadsMsg, setLeadsMsg] = useState(null);
+  const [importingLeads, setImportingLeads] = useState(false);
+
+  const statusColors = { draft: '#64748b', running: '#10b981', paused: '#f59e0b', completed: '#3b82f6' };
+  const statusLabels = { draft: 'Borrador', running: 'Activa', paused: 'Pausada', completed: 'Completada' };
+  const leadStatusBadge = { pending: { color: '#64748b', label: 'Pendiente' }, sent: { color: '#3b82f6', label: 'Enviado' }, replied: { color: '#10b981', label: 'Respondió' }, opted_out: { color: '#ef4444', label: 'Opt-out' } };
+
+  const selectedBot = bots?.find(b => b.id === selectedBotId);
+
+  async function loadCampaigns(botId) {
+    if (!botId) return;
+    setLoading(true);
+    try {
+      const res = await authFetch(`${API_URL}/api/bots/${botId}/campaigns`, {}, token);
+      const data = await res.json();
+      setCampaigns(Array.isArray(data) ? data : []);
+    } catch { setCampaigns([]); }
+    finally { setLoading(false); }
+  }
+
+  useEffect(() => { if (selectedBotId) loadCampaigns(selectedBotId); }, [selectedBotId]);
+
+  async function createCampaign() {
+    if (!newCampaign.name) { setMsg({ ok: false, text: 'El nombre es requerido.' }); return; }
+    if (newCampaign.use_ai && !newCampaign.campaign_goal) { setMsg({ ok: false, text: 'Describí el objetivo de la campaña.' }); return; }
+    if (!newCampaign.use_ai && !newCampaign.message_template) { setMsg({ ok: false, text: 'Escribí el mensaje a enviar.' }); return; }
+    setSaving(true); setMsg(null);
+    try {
+      const res = await authFetch(`${API_URL}/api/bots/${selectedBotId}/campaigns`, { method: 'POST', body: JSON.stringify(newCampaign) }, token);
+      if (res.ok) {
+        setShowNewModal(false);
+        setNewCampaign({ name: '', message_template: '', delay_seconds: 45, use_ai: false, campaign_goal: '' });
+        loadCampaigns(selectedBotId);
+      } else { const d = await res.json(); setMsg({ ok: false, text: d.error || 'Error al crear.' }); }
+    } catch { setMsg({ ok: false, text: 'Error de conexión.' }); }
+    finally { setSaving(false); }
+  }
+
+  async function openDetail(c, tab = 'config') {
+    setDetailModal(c);
+    setDetailTab(tab);
+    setEditForm({ name: c.name, message_template: c.message_template || '', campaign_goal: c.campaign_goal || '', delay_seconds: c.delay_seconds, use_ai: !!c.use_ai });
+    setEditMsg(null); setLeadsMsg(null); setLeadsText(''); setSheetsUrl(''); setLeadsImportMode('manual');
+    try {
+      const res = await authFetch(`${API_URL}/api/bots/${selectedBotId}/campaigns/${c.id}/leads`, {}, token);
+      const data = await res.json();
+      setLeads(Array.isArray(data) ? data : []);
+    } catch { setLeads([]); }
+  }
+
+  async function saveCampaignEdit() {
+    if (!editForm.name) { setEditMsg({ ok: false, text: 'El nombre es requerido.' }); return; }
+    setEditSaving(true); setEditMsg(null);
+    try {
+      const res = await authFetch(`${API_URL}/api/bots/${selectedBotId}/campaigns/${detailModal.id}`, {
+        method: 'PUT', body: JSON.stringify(editForm)
+      }, token);
+      if (res.ok) {
+        setEditMsg({ ok: true, text: '✅ Cambios guardados.' });
+        const updated = { ...detailModal, ...editForm };
+        setDetailModal(updated);
+        loadCampaigns(selectedBotId);
+      } else { const d = await res.json(); setEditMsg({ ok: false, text: d.error || 'Error al guardar.' }); }
+    } catch { setEditMsg({ ok: false, text: 'Error de conexión.' }); }
+    finally { setEditSaving(false); }
+  }
+
+  async function deleteCampaign(cid) {
+    if (!confirm('¿Eliminar esta campaña y todos sus leads?')) return;
+    await authFetch(`${API_URL}/api/bots/${selectedBotId}/campaigns/${cid}`, { method: 'DELETE' }, token);
+    setDetailModal(null);
+    loadCampaigns(selectedBotId);
+  }
+
+  async function startCampaign(cid) {
+    await authFetch(`${API_URL}/api/bots/${selectedBotId}/campaigns/${cid}/start`, { method: 'POST' }, token);
+    loadCampaigns(selectedBotId);
+    if (detailModal?.id === cid) setDetailModal(p => ({ ...p, status: 'running' }));
+  }
+
+  async function pauseCampaign(cid) {
+    await authFetch(`${API_URL}/api/bots/${selectedBotId}/campaigns/${cid}/pause`, { method: 'POST' }, token);
+    loadCampaigns(selectedBotId);
+    if (detailModal?.id === cid) setDetailModal(p => ({ ...p, status: 'paused' }));
+  }
+
+  async function importFromSheets() {
+    if (!sheetsUrl.trim()) return;
+    setImportingLeads(true); setLeadsMsg(null);
+    try {
+      const res = await authFetch(`${API_URL}/api/bots/${selectedBotId}/campaigns/${detailModal.id}/leads/import-sheets`, {
+        method: 'POST', body: JSON.stringify({ sheetsUrl: sheetsUrl.trim() })
+      }, token);
+      const data = await res.json();
+      if (res.ok) {
+        setLeadsMsg({ ok: true, text: `✅ ${data.imported} leads importados desde Google Sheets.` });
+        setSheetsUrl('');
+        const r2 = await authFetch(`${API_URL}/api/bots/${selectedBotId}/campaigns/${detailModal.id}/leads`, {}, token);
+        const d2 = await r2.json();
+        setLeads(Array.isArray(d2) ? d2 : []);
+        loadCampaigns(selectedBotId);
+      } else { setLeadsMsg({ ok: false, text: `❌ ${data.error}` }); }
+    } catch { setLeadsMsg({ ok: false, text: '❌ Error de conexión.' }); }
+    finally { setImportingLeads(false); }
+  }
+
+  async function importLeads() {
+    if (!leadsText.trim()) return;
+    setImportingLeads(true); setLeadsMsg(null);
+    const parsed = leadsText.trim().split('\n').filter(l => l.trim()).map(line => {
+      const parts = line.split(',').map(s => s.trim());
+      return { phone: parts[0], name: parts[1] || '', business_type: parts[2] || '', city: parts[3] || '', website: parts[4] || '' };
+    }).filter(l => l.phone);
+    try {
+      const res = await authFetch(`${API_URL}/api/bots/${selectedBotId}/campaigns/${detailModal.id}/leads`, { method: 'POST', body: JSON.stringify({ leads: parsed }) }, token);
+      const data = await res.json();
+      if (res.ok) {
+        setLeadsMsg({ ok: true, text: `✅ ${data.imported} leads importados.` });
+        setLeadsText('');
+        const r2 = await authFetch(`${API_URL}/api/bots/${selectedBotId}/campaigns/${detailModal.id}/leads`, {}, token);
+        const d2 = await r2.json();
+        setLeads(Array.isArray(d2) ? d2 : []);
+        loadCampaigns(selectedBotId);
+      } else { setLeadsMsg({ ok: false, text: `❌ ${data.error}` }); }
+    } catch { setLeadsMsg({ ok: false, text: '❌ Error de conexión.' }); }
+    finally { setImportingLeads(false); }
+  }
+
+  async function deleteLead(lid) {
+    await authFetch(`${API_URL}/api/bots/${selectedBotId}/campaigns/${detailModal.id}/leads/${lid}`, { method: 'DELETE' }, token);
+    const r = await authFetch(`${API_URL}/api/bots/${selectedBotId}/campaigns/${detailModal.id}/leads`, {}, token);
+    const d = await r.json(); setLeads(Array.isArray(d) ? d : []);
+    loadCampaigns(selectedBotId);
+  }
+
+  if (!bots || bots.length === 0) return <div style={{ padding: '2rem', color: 'var(--text-secondary)' }}>No hay bots disponibles.</div>;
+
+  return (
+    <div style={{ padding: '1.5rem 2rem' }}>
+
+      {/* ── Modal detalle de campaña (config + leads) ── */}
+      {detailModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '18px', width: '100%', maxWidth: '660px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+            {/* Header */}
+            <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 700, fontSize: '1rem' }}>{detailModal.name}</span>
+                  <span style={{ background: statusColors[detailModal.status] || '#64748b', color: '#fff', fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: '20px' }}>{statusLabels[detailModal.status] || detailModal.status}</span>
+                  {detailModal.use_ai && <span style={{ background: 'rgba(124,58,237,0.2)', color: '#a78bfa', fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: '20px', border: '1px solid rgba(124,58,237,0.4)' }}>✨ IA</span>}
+                </div>
+              </div>
+              {/* Acciones rápidas */}
+              <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+                {(detailModal.status === 'draft' || detailModal.status === 'paused') && (
+                  <button onClick={() => startCampaign(detailModal.id)} style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.4)', borderRadius: '8px', color: '#10b981', cursor: 'pointer', padding: '0.35rem 0.7rem', fontSize: '0.8rem' }}>▶ Iniciar</button>
+                )}
+                {detailModal.status === 'running' && (
+                  <button onClick={() => pauseCampaign(detailModal.id)} style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '8px', color: '#f59e0b', cursor: 'pointer', padding: '0.35rem 0.7rem', fontSize: '0.8rem' }}>⏸ Pausar</button>
+                )}
+                {['draft', 'paused', 'completed'].includes(detailModal.status) && (
+                  <button onClick={() => deleteCampaign(detailModal.id)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#f87171', cursor: 'pointer', padding: '0.35rem 0.7rem', fontSize: '0.8rem' }}>🗑</button>
+                )}
+                <button onClick={() => setDetailModal(null)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.35rem 0.7rem' }}>✕</button>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+              {[{ id: 'config', label: '⚙️ Configuración' }, { id: 'leads', label: `👥 Leads (${leads.length})` }].map(t => (
+                <button key={t.id} onClick={() => setDetailTab(t.id)}
+                  style={{ padding: '0.75rem 1.25rem', border: 'none', borderBottom: detailTab === t.id ? '2px solid #7c3aed' : '2px solid transparent', background: 'none', color: detailTab === t.id ? '#a78bfa' : 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem', fontWeight: detailTab === t.id ? 700 : 400, transition: '0.15s' }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Body */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+              {/* ── Tab Configuración ── */}
+              {detailTab === 'config' && (
+                <>
+                  <div>
+                    <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Nombre</label>
+                    <input className="modal-input" value={editForm.name || ''} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} style={{ marginBottom: 0, background: 'var(--surface-2)' }} />
+                  </div>
+
+                  <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: '10px', padding: '0.875rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.15rem' }}>✨ Mensaje generado por IA</div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Gemini escribe un mensaje único para cada negocio</div>
+                    </div>
+                    <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', flexShrink: 0 }}>
+                      <input type="checkbox" checked={!!editForm.use_ai} onChange={e => setEditForm(p => ({ ...p, use_ai: e.target.checked }))} style={{ opacity: 0, width: 0, height: 0 }} />
+                      <span style={{ position: 'absolute', cursor: 'pointer', inset: 0, borderRadius: '34px', background: editForm.use_ai ? '#7c3aed' : 'rgba(255,255,255,0.15)', transition: '0.2s' }}>
+                        <span style={{ position: 'absolute', height: '18px', width: '18px', left: editForm.use_ai ? '23px' : '3px', bottom: '3px', background: 'white', borderRadius: '50%', transition: '0.2s' }} />
+                      </span>
+                    </label>
+                  </div>
+
+                  {editForm.use_ai ? (
+                    <div>
+                      <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Objetivo de la campaña</label>
+                      <textarea className="prompt-textarea editable" style={{ minHeight: '90px' }} value={editForm.campaign_goal || ''} onChange={e => setEditForm(p => ({ ...p, campaign_goal: e.target.value }))} placeholder="Ej: Ofrecer Asisto AI a negocios locales. Mencionar los 7 días gratis." />
+                    </div>
+                  ) : (
+                    <div>
+                      <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>
+                        Mensaje <span style={{ opacity: 0.6 }}>(variables: {'{{nombre}}'}, {'{{negocio}}'}, {'{{ciudad}}'})</span>
+                      </label>
+                      <textarea className="prompt-textarea editable" style={{ minHeight: '110px' }} value={editForm.message_template || ''} onChange={e => setEditForm(p => ({ ...p, message_template: e.target.value }))} placeholder="Hola {{nombre}}! Te escribimos desde Asisto AI..." />
+                    </div>
+                  )}
+
+                  <div>
+                    <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Delay entre mensajes (segundos)</label>
+                    <input className="modal-input" type="number" min="10" max="3600" value={editForm.delay_seconds || 45} onChange={e => setEditForm(p => ({ ...p, delay_seconds: Number(e.target.value) }))} style={{ marginBottom: 0, background: 'var(--surface-2)', width: '130px' }} />
+                  </div>
+
+                  {editMsg && <p style={{ margin: 0, fontSize: '0.875rem', color: editMsg.ok ? '#10b981' : '#f87171' }}>{editMsg.text}</p>}
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button onClick={saveCampaignEdit} disabled={editSaving} className="btn-primary" style={{ padding: '0.6rem 1.5rem' }}>
+                      {editSaving ? 'Guardando...' : 'Guardar cambios'}
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* ── Tab Leads ── */}
+              {detailTab === 'leads' && (
+                <>
+                  {/* Modo de importación */}
+                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem' }}>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Agregar prospectos</div>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                      {['manual', 'sheets'].map(mode => (
+                        <button key={mode} onClick={() => { setLeadsImportMode(mode); setLeadsMsg(null); }}
+                          style={{ padding: '0.35rem 0.9rem', borderRadius: '20px', border: '1px solid var(--border)', fontSize: '0.82rem', cursor: 'pointer', fontWeight: leadsImportMode === mode ? 700 : 400, background: leadsImportMode === mode ? '#7c3aed' : 'rgba(255,255,255,0.05)', color: leadsImportMode === mode ? '#fff' : 'var(--text-secondary)', transition: '0.15s' }}>
+                          {mode === 'manual' ? '📋 Manual (CSV)' : '📊 Google Sheets'}
+                        </button>
+                      ))}
+                    </div>
+
+                    {leadsImportMode === 'manual' && (
+                      <>
+                        <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>
+                          Formato: <code style={{ background: 'rgba(255,255,255,0.08)', padding: '0 4px', borderRadius: '4px', fontSize: '0.78rem' }}>teléfono,nombre,negocio,ciudad,url_web</code> — uno por línea
+                        </label>
+                        <textarea className="prompt-textarea editable" style={{ minHeight: '100px', fontSize: '0.82rem' }} value={leadsText} onChange={e => setLeadsText(e.target.value)}
+                          placeholder={'5491112345678,Juan García,Panadería El Sol,CABA,https://maps.app.goo.gl/xyz\n5491198765432,María López,Ferretería Norte,Córdoba,'} />
+                        <button onClick={importLeads} disabled={importingLeads || !leadsText.trim()} className="btn-primary" style={{ marginTop: '0.6rem', padding: '0.5rem 1.1rem', fontSize: '0.875rem' }}>
+                          {importingLeads ? 'Importando...' : '+ Agregar leads'}
+                        </button>
+                      </>
+                    )}
+
+                    {leadsImportMode === 'sheets' && (
+                      <>
+                        <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>
+                          Link de Google Sheets <span style={{ opacity: 0.6 }}>(debe ser público — "cualquiera con el link puede ver")</span>
+                        </label>
+                        <input className="modal-input" value={sheetsUrl} onChange={e => setSheetsUrl(e.target.value)}
+                          placeholder="https://docs.google.com/spreadsheets/d/..." style={{ marginBottom: '0.4rem', background: 'var(--surface-2)' }} />
+                        <p style={{ margin: '0 0 0.6rem', fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                          Columnas esperadas: <strong>teléfono, nombre, negocio, ciudad, url</strong>. La columna <strong>url</strong> puede ser el sitio web o Google Maps — la IA lo analiza antes de escribir el mensaje.
+                        </p>
+                        <button onClick={importFromSheets} disabled={importingLeads || !sheetsUrl.trim()} className="btn-primary" style={{ padding: '0.5rem 1.1rem', fontSize: '0.875rem' }}>
+                          {importingLeads ? 'Importando...' : '📊 Importar desde Sheets'}
+                        </button>
+                      </>
+                    )}
+
+                    {leadsMsg && <p style={{ margin: '0.6rem 0 0', fontSize: '0.875rem', color: leadsMsg.ok ? '#10b981' : '#f87171' }}>{leadsMsg.text}</p>}
+                  </div>
+
+                  {/* Lista de leads */}
+                  <div>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                      Prospectos cargados — {leads.length}
+                    </div>
+                    {leads.length === 0 && (
+                      <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--border)', borderRadius: '10px', padding: '1.5rem', textAlign: 'center', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                        Todavía no hay prospectos. Agregá usando CSV o Google Sheets arriba.
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                      {leads.map(lead => (
+                        <div key={lead.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.5rem 0.75rem' }}>
+                          <span style={{ background: leadStatusBadge[lead.status]?.color || '#64748b', borderRadius: '20px', padding: '2px 8px', fontSize: '0.68rem', color: '#fff', fontWeight: 600, flexShrink: 0 }}>{leadStatusBadge[lead.status]?.label || lead.status}</span>
+                          <span style={{ flex: 1, fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {lead.name || lead.phone.replace('@c.us', '')}
+                            {lead.business_type && <span style={{ color: 'var(--text-secondary)' }}> · {lead.business_type}</span>}
+                            {lead.city && <span style={{ color: 'var(--text-secondary)' }}>, {lead.city}</span>}
+                          </span>
+                          <span style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', flexShrink: 0 }}>{lead.phone.replace('@c.us', '')}</span>
+                          <button onClick={() => deleteLead(lead.id)} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', padding: '0.2rem', flexShrink: 0 }}>🗑</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal nueva campaña ── */}
+      {showNewModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.5rem', width: '100%', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Nueva Campaña — {selectedBot?.name}</span>
+              <button onClick={() => { setShowNewModal(false); setMsg(null); }} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.3rem 0.7rem' }}>✕</button>
+            </div>
+            <div>
+              <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Nombre de la campaña</label>
+              <input className="modal-input" value={newCampaign.name} onChange={e => setNewCampaign(p => ({ ...p, name: e.target.value }))} placeholder="Ej: Prospección Mayo 2026" style={{ marginBottom: 0, background: 'var(--surface-2)' }} />
+            </div>
+            <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: '10px', padding: '0.875rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.15rem' }}>✨ Mensaje generado por IA</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Gemini escribe un mensaje único para cada negocio</div>
+              </div>
+              <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', flexShrink: 0 }}>
+                <input type="checkbox" checked={newCampaign.use_ai} onChange={e => setNewCampaign(p => ({ ...p, use_ai: e.target.checked }))} style={{ opacity: 0, width: 0, height: 0 }} />
+                <span style={{ position: 'absolute', cursor: 'pointer', inset: 0, borderRadius: '34px', background: newCampaign.use_ai ? '#7c3aed' : 'rgba(255,255,255,0.15)', transition: '0.2s' }}>
+                  <span style={{ position: 'absolute', height: '18px', width: '18px', left: newCampaign.use_ai ? '23px' : '3px', bottom: '3px', background: 'white', borderRadius: '50%', transition: '0.2s' }} />
+                </span>
+              </label>
+            </div>
+            {newCampaign.use_ai ? (
+              <div>
+                <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Objetivo de la campaña</label>
+                <textarea className="prompt-textarea editable" style={{ minHeight: '90px' }} value={newCampaign.campaign_goal} onChange={e => setNewCampaign(p => ({ ...p, campaign_goal: e.target.value }))} placeholder="Ej: Ofrecer Asisto AI a negocios locales. Mencionar los 7 días gratis." />
+              </div>
+            ) : (
+              <div>
+                <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Mensaje <span style={{ opacity: 0.6 }}>(variables: {'{{nombre}}'}, {'{{negocio}}'}, {'{{ciudad}}'})</span></label>
+                <textarea className="prompt-textarea editable" style={{ minHeight: '110px' }} value={newCampaign.message_template} onChange={e => setNewCampaign(p => ({ ...p, message_template: e.target.value }))} placeholder="Hola {{nombre}}! Te escribimos desde Asisto AI..." />
+              </div>
+            )}
+            <div>
+              <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Delay entre mensajes (segundos)</label>
+              <input className="modal-input" type="number" min="10" max="3600" value={newCampaign.delay_seconds} onChange={e => setNewCampaign(p => ({ ...p, delay_seconds: Number(e.target.value) }))} style={{ marginBottom: 0, background: 'var(--surface-2)', width: '120px' }} />
+            </div>
+            {msg && <p style={{ margin: 0, fontSize: '0.875rem', color: msg.ok ? '#10b981' : '#f87171' }}>{msg.text}</p>}
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button onClick={() => { setShowNewModal(false); setMsg(null); }} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.6rem 1rem' }}>Cancelar</button>
+              <button onClick={createCampaign} disabled={saving} className="btn-primary" style={{ padding: '0.6rem 1.25rem' }}>{saving ? 'Creando...' : 'Crear Campaña'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Selector de bot */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {bots.map(b => (
+            <button key={b.id} onClick={() => setSelectedBotId(b.id)}
+              style={{ padding: '0.4rem 0.9rem', borderRadius: '20px', border: '1px solid var(--border)', background: selectedBotId === b.id ? 'var(--gradient)' : 'var(--surface-2)', color: selectedBotId === b.id ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: selectedBotId === b.id ? 700 : 400, transition: '0.15s' }}>
+              {b.name}
+            </button>
+          ))}
+        </div>
+        <button onClick={() => { setShowNewModal(true); setMsg(null); }} className="btn-primary" style={{ marginLeft: 'auto', padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
+          <Plus size={14} /> Nueva campaña
+        </button>
+      </div>
+
+      {loading && <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Cargando...</p>}
+
+      {!loading && campaigns.length === 0 && (
+        <div style={{ background: 'var(--surface)', border: '1px dashed var(--border)', borderRadius: '12px', padding: '2.5rem', textAlign: 'center' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📣</div>
+          <p style={{ color: 'var(--text-secondary)', margin: 0 }}>No hay campañas para {selectedBot?.name}. Creá una arriba.</p>
+        </div>
+      )}
+
+      {/* Lista de campañas */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        {campaigns.map(c => (
+          <div key={c.id} onClick={() => openDetail(c)} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem 1.25rem', cursor: 'pointer', transition: '0.15s', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.35rem', flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{c.name}</span>
+                <span style={{ background: statusColors[c.status] || '#64748b', color: '#fff', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '20px' }}>{statusLabels[c.status] || c.status}</span>
+                {c.use_ai ? <span style={{ background: 'rgba(124,58,237,0.2)', color: '#a78bfa', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '20px', border: '1px solid rgba(124,58,237,0.4)' }}>✨ IA</span> : null}
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', fontSize: '0.78rem', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
+                <span>⏳ {c.stats?.pending || 0} pendientes</span>
+                <span style={{ color: '#3b82f6' }}>📤 {c.stats?.sent || 0} enviados</span>
+                <span style={{ color: '#10b981' }}>💬 {c.stats?.replied || 0} respondieron</span>
+                {(c.stats?.opted_out || 0) > 0 && <span style={{ color: '#f87171' }}>🚫 {c.stats.opted_out} opt-out</span>}
+                <span style={{ opacity: 0.5 }}>delay: {c.delay_seconds}s</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+              <button onClick={e => { e.stopPropagation(); openDetail(c, 'leads'); }}
+                style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', color: '#60a5fa', cursor: 'pointer', padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}>
+                👥 Leads {c.stats?.total > 0 ? `(${c.stats.total})` : ''}
+              </button>
+              <button onClick={e => { e.stopPropagation(); openDetail(c, 'config'); }}
+                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}>
+                ⚙️ Config
+              </button>
+              {(c.status === 'draft' || c.status === 'paused') && (
+                <button onClick={e => { e.stopPropagation(); startCampaign(c.id); }}
+                  style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.4)', borderRadius: '8px', color: '#10b981', cursor: 'pointer', padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}>
+                  ▶ Iniciar
+                </button>
+              )}
+              {c.status === 'running' && (
+                <button onClick={e => { e.stopPropagation(); pauseCampaign(c.id); }}
+                  style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '8px', color: '#f59e0b', cursor: 'pointer', padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}>
+                  ⏸ Pausar
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Analytics Panel (router by role) ─────────────────────────
 function AnalyticsPanel({ user }) {
   if (user?.role === 'admin') return <AdminAnalyticsPanel />;
@@ -337,7 +794,6 @@ function UserAnalyticsPanel({ botId }) {
   if (loading) return <div style={{ display:'flex', justifyContent:'center', alignItems:'center', flex:1, background:'var(--bg)' }}><Loader className="spinner" size={26} color="#818cf8" /></div>;
   if (!data) return <div style={{ padding:'3rem', textAlign:'center', color:'var(--text-3)' }}>No se pudo cargar analíticas.</div>;
 
-  const maxPeak = Math.max(...data.peakHours.map(h => h.count), 1);
   const maxKw   = data.topKeywords[0]?.count || 1;
 
   const card = (icon, value, label, bg) => (
@@ -474,7 +930,6 @@ function AdminAnalyticsPanel() {
   if (loading) return <div style={{ display:'flex', justifyContent:'center', alignItems:'center', flex:1, background:'var(--bg)' }}><Loader className="spinner" size={26} color="#818cf8" /></div>;
   if (!data) return <div style={{ padding:'3rem', textAlign:'center', color:'var(--text-3)' }}>No se pudieron cargar analíticas.</div>;
 
-  const maxTokens = Math.max(...(data.tokenChart.map(r => (r.inp||0)+(r.out||0))), 1);
   const maxBotMsgs = data.topBots[0]?.user_msgs || 1;
   const PERIODS = [{ v:'day', l:'Día' }, { v:'week', l:'Semana' }, { v:'month', l:'Mes' }, { v:'year', l:'Año' }];
 
@@ -780,7 +1235,7 @@ function Dashboard() {
     }
     const onOAuthMessage = (e) => {
       if (e.origin !== window.location.origin) return;
-      const { type, token, pageName, error } = e.data || {};
+      const { type, token, error } = e.data || {};
       if (type === 'meta_ok') {
         fetchBots();
       } else if (type === 'meta_select') {
@@ -1057,6 +1512,10 @@ function Dashboard() {
             <BarChart2 size={16} />
             <span>Analíticas</span>
           </div>
+          <div className={`sidebar-nav-item ${currentView === 'campaigns' ? 'active' : ''}`} onClick={() => setCurrentView('campaigns')}>
+            <Megaphone size={16} />
+            <span>Campañas</span>
+          </div>
         </nav>
 
         <div className="sidebar-footer">
@@ -1094,11 +1553,13 @@ function Dashboard() {
               {currentView === 'bots' && <>Bot Manager <span className="badge">PRO</span></>}
               {currentView === 'conversations' && 'Conversaciones'}
               {currentView === 'analytics' && 'Analíticas'}
+              {currentView === 'campaigns' && 'Campañas'}
             </div>
             <div className="page-subtitle">
               {currentView === 'bots' && (user.role === 'admin' ? 'Vista Global Súper Administrador' : 'Panel de Auto-Gestión Inteligente')}
               {currentView === 'conversations' && 'Historial de mensajes por cliente y bot'}
               {currentView === 'analytics' && 'Métricas de actividad en tiempo real'}
+              {currentView === 'campaigns' && 'Gestión de campañas de mensajería saliente'}
             </div>
           </div>
           <div className="header-actions">
@@ -1146,6 +1607,7 @@ function Dashboard() {
         {/* ── Views ── */}
         {currentView === 'conversations' && <ConversationsPanel bots={bots} />}
         {currentView === 'analytics' && <AnalyticsPanel user={user} />}
+        {currentView === 'campaigns' && <AdminCampaignsPanel bots={bots} />}
 
         {currentView === 'bots' && <>
         {/* ── KPI Cards ── */}

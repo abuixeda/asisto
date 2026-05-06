@@ -30,9 +30,6 @@ function CampaignPanel({ botId, token, api }) {
   const statusColors = { draft: '#64748b', running: '#10b981', paused: '#f59e0b', completed: '#3b82f6' };
   const statusLabels = { draft: 'Borrador', running: 'Activa', paused: 'Pausada', completed: 'Completada' };
 
-  const tabStyle = { background: 'none', border: 'none', borderBottom: '2px solid transparent', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.6rem 1rem', fontSize: '0.9rem', fontWeight: 500, marginBottom: '-1px' };
-  const tabActiveStyle = { ...tabStyle, borderBottom: '2px solid #7c3aed', color: 'var(--text-primary)', fontWeight: 700 };
-
   async function loadCampaigns() {
     setLoading(true);
     try {
@@ -799,9 +796,6 @@ function TurnosPanel({ botId, token, api }) {
     loadAppointments();
   }
 
-  const statusColors = { confirmed:'#10b981', cancelled:'#ef4444', completed:'#3b82f6' };
-  const statusLabels = { confirmed:'Confirmado', cancelled:'Cancelado', completed:'Completado' };
-
   const inputStyle = { width:'100%', padding:'0.65rem 0.85rem', borderRadius:'8px', border:'1px solid var(--border)', background:'rgba(255,255,255,0.05)', color:'var(--text-primary)', fontSize:'0.9rem', boxSizing:'border-box' };
   const labelStyle = { fontSize:'0.8rem', color:'var(--text-secondary)', display:'block', marginBottom:'0.25rem' };
 
@@ -1022,9 +1016,6 @@ function TurnosPanel({ botId, token, api }) {
         const activeSpec = specs.find(s => s.id === selectedSpecId);
         const { slots, dayMap } = activeSpec ? getTimeSlotsForSpec(activeSpec) : { slots:[], dayMap:{} };
 
-        const statusColors = { confirmed:'#10b981', cancelled:'#ef4444', completed:'#3b82f6' };
-        const statusLabels = { confirmed:'Confirmado', cancelled:'Cancelado', completed:'Completado' };
-
         return (
           <div>
             {/* Cards de servicios */}
@@ -1103,7 +1094,7 @@ function TurnosPanel({ botId, token, api }) {
                         <tr><td colSpan={8} style={{ padding:'2rem', textAlign:'center', color:'var(--text-secondary)', fontSize:'0.85rem' }}>
                           Este servicio no tiene horarios configurados. Configuralos en <strong>📋 Servicios</strong>.
                         </td></tr>
-                      ) : slots.map((slot, si) => (
+                      ) : slots.map((slot) => (
                         <tr key={slot}>
                           {/* Hora */}
                           <td style={{ padding:'0.3rem 0.5rem', background:'rgba(255,255,255,0.02)', borderBottom:'1px solid var(--border)', borderRight:'1px solid var(--border)', fontSize:'0.75rem', fontWeight:600, color:'var(--text-secondary)', textAlign:'right', verticalAlign:'top', whiteSpace:'nowrap' }}>{slot}</td>
@@ -1358,7 +1349,6 @@ export default function MerchantPanel() {
       const catMatch = kb.match(/\[CATALOGO\]([\s\S]*?)(?=\n\[|$)/i);
       setCatalog(catMatch ? catMatch[1].trim() : '');
 
-      if (data.metaAccessToken) setMetaAccessToken(data.metaAccessToken);
       if (data.metaPageId) setMetaPageId(data.metaPageId);
       if (data.metaIgId) setMetaIgId(data.metaIgId);
       if (data.telegramBotToken) setTelegramBotToken(data.telegramBotToken);
@@ -1506,7 +1496,7 @@ export default function MerchantPanel() {
         setStarting(false);
         clearInterval(pollRef.current);
       }
-    } catch {}
+    } catch (_e) { /* ignore poll errors */ }
   }
 
   function logout() {

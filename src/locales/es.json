@@ -3,20 +3,23 @@
     "features": "Funciones",
     "howItWorks": "Cómo funciona",
     "pricing": "Precios",
+    "clients": "Clientes",
     "login": "Ingresar",
     "start": "Empezar gratis"
   },
   "hero": {
-    "badge": "Atención automática en WhatsApp e Instagram",
-    "title": "Tu negocio responde solo,",
-    "titleHighlight": "aunque vos estés durmiendo",
-    "subtitle": "Asisto atiende a tus clientes en WhatsApp e Instagram, responde consultas, informa precios y cierra ventas — las 24 horas, los 7 días.",
-    "cta": "Probarlo gratis 14 días",
-    "ctaSecondary": "Ver demo en vivo",
+    "badge": "Asisto AI 2.0 · Multi-idioma · WhatsApp + Instagram",
+    "title": "Tu negocio responde solo.",
+    "titleHighlight": "24hs. Sin errores. Sin sueldo.",
+    "subtitle": "Asisto AI atiende las consultas de WhatsApp de tu negocio, conoce tu catálogo al detalle y responde como un humano — sin que vos estés presente.",
+    "hint": "Configuración en 5 minutos. Sin conocimientos técnicos.",
+    "cta": "Empezar gratis",
+    "ctaSecondary": "▶ Ver demo en vivo",
+    "noCc": "Sin tarjeta de crédito · 7 días gratis",
     "stats": {
-      "responses": "respuestas automáticas",
-      "uptime": "disponible",
-      "satisfaction": "satisfacción de clientes"
+      "responses": "Consultas respondidas",
+      "uptime": "Tiempo de respuesta",
+      "satisfaction": "Satisfacción"
     }
   },
   "demo": {
@@ -97,9 +100,9 @@
     "monthly": "mes",
     "popular": "Más elegido",
     "plans": [
-      { "name": "Starter", "price": 29, "desc": "Para negocios que empiezan a automatizar", "features": ["1 número WhatsApp", "Hasta 500 mensajes/mes", "Catálogo sincronizado", "Panel de control", "Soporte por email"], "cta": "Empezar gratis" },
-      { "name": "Pro", "price": 59, "desc": "El más elegido por negocios en crecimiento", "features": ["Todo lo de Starter", "Hasta 2.000 mensajes/mes", "Soporte prioritario", "Horario anti-nocturno", "Base de conocimientos avanzada"], "cta": "Empezar gratis" },
-      { "name": "Business", "price": 99, "desc": "Para negocios con alto volumen de consultas", "features": ["Todo lo de Pro", "Mensajes ilimitados", "Instagram DMs", "Soporte directo WhatsApp", "Multi-idioma"], "cta": "Empezar gratis" }
+      { "name": "Starter", "price": 49, "desc": "Para negocios que empiezan a automatizar", "features": ["1 número WhatsApp", "Hasta 500 mensajes/mes", "Catálogo sincronizado", "Panel de control", "Soporte por email"], "cta": "Empezar gratis" },
+      { "name": "Pro", "price": 89, "desc": "El más elegido por negocios en crecimiento", "features": ["Todo lo de Starter", "Hasta 2.000 mensajes/mes", "Soporte prioritario", "Horario anti-nocturno", "Base de conocimientos avanzada"], "cta": "Empezar gratis" },
+      { "name": "Business", "price": 149, "desc": "Para negocios con alto volumen de consultas", "features": ["Todo lo de Pro", "Mensajes ilimitados", "Instagram DMs", "Soporte directo WhatsApp", "Multi-idioma"], "cta": "Empezar gratis" }
     ]
   },
   "faq": {
@@ -113,11 +116,11 @@
     ]
   },
   "cta": {
-    "title": "Tu negocio puede responder",
-    "titleHighlight": "en 10 minutos",
-    "subtitle": "Sin contratos, sin setup técnico. Probalo gratis 14 días y cancelá cuando quieras.",
-    "button": "Crear mi cuenta gratis →",
-    "trust": "Sin tarjeta de crédito · Cancelás cuando querés · 14 días gratis"
+    "title": "Tu próxima venta está",
+    "titleHighlight": "esperando respuesta.",
+    "subtitle": "Empezá hoy. En 5 minutos tu bot está activo.",
+    "button": "Crear mi cuenta gratis",
+    "trust": "Sin tarjeta de crédito · 7 días gratis · Cancelás cuando quieras"
   },
   "footer": {
     "rights": "Todos los derechos reservados."

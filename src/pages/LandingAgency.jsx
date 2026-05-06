@@ -280,7 +280,7 @@ export default function LandingAgency() {
           {/* Logo */}
           <div onClick={() => scrollTo('hero')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
             <span className="serif" style={{ fontSize: '1.25rem', fontWeight: 800, color: C.text }}>Asisto</span>
-            <span style={{ fontSize: '0.7rem', color: C.textMuted, fontWeight: 500, letterSpacing: '0.04em', background: C.accentSubtle, padding: '2px 6px', borderRadius: '4px', color: C.accent }}>Servicio</span>
+            <span style={{ fontSize: '0.7rem', fontWeight: 500, letterSpacing: '0.04em', background: C.accentSubtle, padding: '2px 6px', borderRadius: '4px', color: C.accent }}>Servicio</span>
           </div>
           {/* Desktop nav */}
           <div className="desktop-nav" style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>

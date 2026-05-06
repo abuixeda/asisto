@@ -77,7 +77,7 @@ export default function Onboarding() {
           localStorage.setItem('merchant_bot_id', payload.botId);
           setBotId(payload.botId);
         }
-      } catch {}
+      } catch (_e) { /* ignore */ }
       fetch(`${API}/api/merchant/temp-password`, {
         headers: { Authorization: `Bearer ${urlToken}` }
       }).then(r => r.json()).then(d => { if (d.tempPwd) setTempPwd(d.tempPwd); }).catch(() => {});
@@ -87,17 +87,12 @@ export default function Onboarding() {
     }
   }, [params]);
 
-  useEffect(() => {
-    if (isLastSlide) startBot();
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [isLastSlide]);
-
   async function startBot() {
     if (!botId || !token) return;
     try {
       await fetch(`${API}/api/bots/${botId}/start`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
       pollRef.current = setInterval(pollStatus, 2000);
-    } catch {}
+    } catch (_e) { /* ignore */ }
   }
 
   async function pollStatus() {
@@ -109,8 +104,13 @@ export default function Onboarding() {
         setBotStatus('ON');
         clearInterval(pollRef.current);
       }
-    } catch {}
+    } catch (_e) { /* ignore */ }
   }
+
+  useEffect(() => {
+    if (isLastSlide) startBot();
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [isLastSlide]);
 
   function goTo(idx) {
     if (animating || idx === slide) return;
