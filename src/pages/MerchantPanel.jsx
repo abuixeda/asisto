@@ -387,6 +387,138 @@ function CampaignPanel({ botId, token, api }) {
     </div>
   );
 }
+// ─── BotPreviewChat ───────────────────────────────────────────────────────────
+function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClose }) {
+  const [messages, setMessages] = useState([
+    { role: 'model', text: '¡Hola! Soy el asistente virtual. ¿En qué te puedo ayudar? 😊' }
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  async function sendMessage() {
+    const text = input.trim();
+    if (!text || loading) return;
+    setInput('');
+    const newMessages = [...messages, { role: 'user', text }];
+    setMessages(newMessages);
+    setLoading(true);
+    try {
+      const history = newMessages.slice(1, -1).map(m => ({ role: m.role, text: m.text }));
+      const res = await fetch(`${API}/api/bots/${botId}/preview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ message: text, history, prompt: currentPrompt, knowledgeBase: currentKB })
+      });
+      const d = await res.json();
+      setMessages(prev => [...prev, { role: 'model', text: d.reply || d.error || 'Sin respuesta.' }]);
+    } catch {
+      setMessages(prev => [...prev, { role: 'model', text: '❌ Error al conectar con el bot.' }]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const now = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, right: 0, bottom: 0, width: '340px',
+      zIndex: 9998, display: 'flex', flexDirection: 'column',
+      filter: 'drop-shadow(-8px 0 32px rgba(0,0,0,0.5))',
+    }}>
+      {/* Phone frame */}
+      <div style={{
+        margin: '16px 16px 16px 0',
+        flex: 1, display: 'flex', flexDirection: 'column',
+        background: '#111b21', borderRadius: '36px',
+        border: '8px solid #1a1a2e', overflow: 'hidden',
+        boxShadow: '0 0 0 2px #0d0f18',
+      }}>
+        {/* Notch */}
+        <div style={{ background: '#111b21', display: 'flex', justifyContent: 'center', padding: '8px 0 4px' }}>
+          <div style={{ width: '60px', height: '5px', borderRadius: '3px', background: '#1a1a2e' }} />
+        </div>
+
+        {/* WA Header */}
+        <div style={{ background: '#1f2c34', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#aebac1', cursor: 'pointer', fontSize: '1.1rem', padding: 0, lineHeight: 1 }}>←</button>
+          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: '0.9rem', flexShrink: 0 }}>
+            {(botName || 'B').charAt(0).toUpperCase()}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ color: '#e9edef', fontWeight: 600, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{botName || 'Mi Bot'}</div>
+            <div style={{ color: '#aebac1', fontSize: '0.7rem' }}>en línea</div>
+          </div>
+          <div style={{ fontSize: '0.6rem', color: '#aebac1', background: '#2a3942', padding: '2px 7px', borderRadius: '8px', fontWeight: 600 }}>PREVIEW</div>
+        </div>
+
+        {/* Chat area */}
+        <div style={{
+          flex: 1, overflowY: 'auto', padding: '12px 10px',
+          background: '#0b141a',
+          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.015) 1px, transparent 0)',
+          backgroundSize: '24px 24px',
+        }}>
+          {messages.map((m, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: '6px' }}>
+              <div style={{
+                maxWidth: '80%', padding: '6px 10px 4px',
+                borderRadius: m.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                background: m.role === 'user' ? '#005c4b' : '#202c33',
+                color: '#e9edef', fontSize: '0.82rem', lineHeight: 1.5,
+                wordBreak: 'break-word', whiteSpace: 'pre-wrap',
+              }}>
+                {m.text}
+                <div style={{ fontSize: '0.6rem', color: '#aebac1', textAlign: 'right', marginTop: '2px' }}>
+                  {now} {m.role === 'user' && '✓✓'}
+                </div>
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '6px' }}>
+              <div style={{ background: '#202c33', borderRadius: '12px 12px 12px 2px', padding: '8px 14px', color: '#aebac1', fontSize: '0.82rem' }}>
+                <span style={{ animation: 'pulse 1s infinite' }}>● ● ●</span>
+              </div>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        {/* Input */}
+        <div style={{ background: '#1f2c34', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+            placeholder="Escribí un mensaje..."
+            style={{
+              flex: 1, background: '#2a3942', border: 'none', borderRadius: '20px',
+              padding: '8px 14px', color: '#e9edef', fontSize: '0.82rem', outline: 'none',
+            }}
+          />
+          <button onClick={sendMessage} disabled={loading || !input.trim()} style={{
+            width: '36px', height: '36px', borderRadius: '50%', border: 'none',
+            background: loading || !input.trim() ? '#2a3942' : '#00a884',
+            color: '#fff', cursor: loading || !input.trim() ? 'default' : 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0,
+          }}>➤</button>
+        </div>
+
+        {/* Home bar */}
+        <div style={{ background: '#111b21', padding: '6px 0 10px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ width: '80px', height: '4px', borderRadius: '2px', background: '#2a3942' }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── TourOverlay ─────────────────────────────────────────────────────────────
 function TourOverlay({ steps, onFinish, setActiveTab }) {
   const [step, setStep] = useState(0);
@@ -1178,6 +1310,7 @@ export default function MerchantPanel() {
   const [responseDelay, setResponseDelay] = useState(2.5);
   const [activeTab, setActiveTab] = useState('config'); // 'config' | 'campaigns'
   const [showTour, setShowTour] = useState(() => !localStorage.getItem('asisto_tour_done'));
+  const [showPreview, setShowPreview] = useState(false);
   const pollRef = useRef(null);
 
   // Meta Config (Instagram/Facebook)
@@ -1407,6 +1540,7 @@ export default function MerchantPanel() {
     <div style={{ minHeight: '100vh', background: 'var(--bg-color)', padding: '2rem' }}>
 
       {showTour && <TourOverlay steps={TOUR_STEPS} onFinish={() => setShowTour(false)} setActiveTab={setActiveTab} />}
+      {showPreview && <BotPreviewChat botId={botId} token={token} botName={bot?.name} currentPrompt={prompt} currentKB={knowledgeBase} onClose={() => setShowPreview(false)} />}
 
       {/* Modal expandido */}
       {expandedField && (
@@ -1483,6 +1617,9 @@ export default function MerchantPanel() {
               <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Panel de Auto-Gestión Inteligente</p>
             </div>
             <div id="tour-status" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <button onClick={() => setShowPreview(p => !p)} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #00a884', background: showPreview ? '#00a884' : 'transparent', color: showPreview ? '#fff' : '#00a884', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                📱 {showPreview ? 'Cerrar preview' : 'Probar bot'}
+              </button>
               {isOn ? (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button onClick={stopBot} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #ef4444', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '0.9rem' }}>
