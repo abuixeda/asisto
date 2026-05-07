@@ -95,14 +95,16 @@ function ShopifyPanel() {
 
   const shopifyFetch = useCallback(async (url, options = {}) => {
     const headers = { 'Content-Type': 'application/json', ...options.headers };
+    // Siempre incluir X-Shopify-Shop para que el backend pueda usarlo como fallback
+    if (shop) headers['X-Shopify-Shop'] = shop;
     try {
       const token = await Promise.race([
         app.idToken(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
       ]);
       headers['Authorization'] = `Bearer ${token}`;
     } catch (_e) {
-      if (shop) headers['X-Shopify-Shop'] = shop;
+      // Sin token: el backend usa X-Shopify-Shop como autenticación de desarrollo
     }
     return fetch(url, { ...options, headers });
   }, [app, shop]);
