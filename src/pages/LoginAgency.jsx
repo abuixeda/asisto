@@ -69,7 +69,10 @@ export default function LoginAgency() {
             />
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: C.textSec, fontWeight: 500 }}>Contraseña</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+              <label style={{ fontSize: '0.9rem', color: C.textSec, fontWeight: 500 }}>Contraseña</label>
+              <a href="/olvide-contrasena" style={{ fontSize: '0.82rem', color: C.accent, textDecoration: 'none' }}>¿Olvidaste tu contraseña?</a>
+            </div>
             <input
               type="password" value={password} onChange={e => setPassword(e.target.value)}
               placeholder="Tu contraseña"

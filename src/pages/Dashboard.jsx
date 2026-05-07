@@ -1526,6 +1526,7 @@ function Dashboard() {
               <div className="sidebar-user-role">{user.role === 'admin' ? 'Super Admin' : user.role === 'manager' ? 'Administrador' : 'Usuario'}</div>
             </div>
           </div>
+          <a href="/olvide-contrasena" style={{ fontSize:'0.75rem', color:'var(--text-3)', textDecoration:'none', padding:'0.1rem 0.1rem', display:'flex', alignItems:'center', gap:'0.35rem' }}>🔑 Olvidé mi contraseña</a>
           <button
             onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
             style={{ display:'flex', alignItems:'center', gap:'0.6rem', width:'100%', background:'var(--surface-2)', border:'1px solid var(--border)', borderRadius:'8px', padding:'0.55rem 0.85rem', cursor:'pointer', color:'var(--text-2)', fontSize:'0.82rem', fontWeight:500, transition:'all 0.15s' }}
@@ -1654,7 +1655,7 @@ function Dashboard() {
 
         {/* ── Search / Filter ── */}
         {(user.role === 'admin' || user.role === 'manager') && (
-          <div style={{ display:'flex', gap:'0.75rem', padding:'0 0 0.5rem', flexWrap:'wrap', alignItems:'center' }}>
+          <div style={{ display:'flex', gap:'0.75rem', padding:'0.75rem 2rem 0.5rem', flexWrap:'wrap', alignItems:'center' }}>
             <div style={{ position:'relative', flex:1, minWidth:'200px' }}>
               <Search size={15} style={{ position:'absolute', left:'0.75rem', top:'50%', transform:'translateY(-50%)', color:'var(--text-3)', pointerEvents:'none' }} />
               <input
