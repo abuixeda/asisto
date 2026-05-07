@@ -124,7 +124,9 @@ function ShopifyPanel() {
   // ── WhatsApp ──
   const [starting, setStarting] = useState(false);
   const [qrData, setQrData] = useState(null);
+  const [startError, setStartError] = useState(null);
   const pollRef = useRef(null);
+  const pollCountRef = useRef(0);
 
   // ── Turnos ──
   const [specialties, setSpecialties] = useState([]);
@@ -194,9 +196,22 @@ function ShopifyPanel() {
 
   // ── WhatsApp ──
   async function pollStatus() {
+    pollCountRef.current += 1;
+    if (pollCountRef.current > 45) {
+      clearInterval(pollRef.current);
+      setStarting(false); setQrData(null);
+      setStartError('No se pudo generar el código QR. Revisá que el servidor tenga Chromium disponible e intentá de nuevo.');
+      return;
+    }
     try {
       const res = await shopifyFetch(`${API}/api/shopify/embedded/status`);
       const data = await res.json();
+      if (data.status === 'OFF' && pollCountRef.current > 5) {
+        clearInterval(pollRef.current);
+        setStarting(false); setQrData(null);
+        setStartError('El servidor no pudo iniciar WhatsApp. Revisá los logs e intentá de nuevo.');
+        return;
+      }
       if (data.qr) setQrData(data.qr);
       if (data.businessPhone) setBot(b => ({ ...b, businessPhone: data.businessPhone }));
       if (data.status === 'ON') {
@@ -208,7 +223,8 @@ function ShopifyPanel() {
   }
 
   async function startBot() {
-    setStarting(true); setQrData(null);
+    setStarting(true); setQrData(null); setStartError(null);
+    pollCountRef.current = 0;
     try {
       await shopifyFetch(`${API}/api/shopify/embedded/start`, { method: 'POST' });
       pollRef.current = setInterval(pollStatus, 2000);
@@ -456,6 +472,13 @@ function ShopifyPanel() {
                           </Banner>
                           <InlineStack>
                             <Button onClick={stopBot} tone="critical">Desconectar WhatsApp</Button>
+                          </InlineStack>
+                        </BlockStack>
+                      ) : startError ? (
+                        <BlockStack gap="300">
+                          <Banner tone="critical">{startError}</Banner>
+                          <InlineStack>
+                            <Button onClick={startBot} variant="primary">Reintentar</Button>
                           </InlineStack>
                         </BlockStack>
                       ) : starting ? (
