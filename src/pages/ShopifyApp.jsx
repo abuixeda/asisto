@@ -43,10 +43,9 @@ function PreviewChat({ botName, onSend }) {
   return (
     <Box padding="0">
       <div style={{ background: '#111b21', borderRadius: '16px', overflow: 'hidden', maxWidth: 420, margin: '0 auto', display: 'flex', flexDirection: 'column', height: 520 }}>
-        {/* Header WhatsApp */}
         <div style={{ background: '#1f2c34', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: '0.9rem', flexShrink: 0 }}>
-            {(botName || 'B').charAt(0).toUpperCase()}
+            {(botName || 'A').charAt(0).toUpperCase()}
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ color: '#e9edef', fontWeight: 600, fontSize: '0.9rem' }}>{botName || 'Mi Asistente'}</div>
@@ -54,8 +53,6 @@ function PreviewChat({ botName, onSend }) {
           </div>
           <div style={{ fontSize: '0.6rem', color: '#aebac1', background: '#2a3942', padding: '2px 8px', borderRadius: 8, fontWeight: 600 }}>PREVIEW</div>
         </div>
-
-        {/* Mensajes */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px 10px', background: '#0b141a', backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.015) 1px, transparent 0)', backgroundSize: '24px 24px' }}>
           {messages.map((m, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
@@ -72,8 +69,6 @@ function PreviewChat({ botName, onSend }) {
           )}
           <div ref={bottomRef} />
         </div>
-
-        {/* Input */}
         <div style={{ background: '#1f2c34', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
           <input
             value={input} onChange={e => setInput(e.target.value)}
@@ -95,7 +90,6 @@ function ShopifyPanel() {
 
   const shopifyFetch = useCallback(async (url, options = {}) => {
     const headers = { 'Content-Type': 'application/json', ...options.headers };
-    // Siempre incluir X-Shopify-Shop para que el backend pueda usarlo como fallback
     if (shop) headers['X-Shopify-Shop'] = shop;
     try {
       const token = await Promise.race([
@@ -103,9 +97,7 @@ function ShopifyPanel() {
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
       ]);
       headers['Authorization'] = `Bearer ${token}`;
-    } catch (_e) {
-      // Sin token: el backend usa X-Shopify-Shop como autenticación de desarrollo
-    }
+    } catch (_e) {}
     return fetch(url, { ...options, headers });
   }, [app, shop]);
 
@@ -119,13 +111,10 @@ function ShopifyPanel() {
   const [kb, setKb] = useState('');
   const [responseDelay, setResponseDelay] = useState(2.5);
   const [hours, setHours] = useState({ active: false, start: '09:00', end: '18:00', autoReplyMsg: '' });
+  const [adminPhone, setAdminPhone] = useState('');
+  const [widget, setWidget] = useState({ enabled: false, welcomeMessage: '', buttonText: '' });
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
-
-  // ── Widget ──
-  const [widget, setWidget] = useState({ enabled: false, phone: '', welcomeMessage: '', buttonText: '' });
-  const [widgetSaving, setWidgetSaving] = useState(false);
-  const [widgetMsg, setWidgetMsg] = useState(null);
 
   // ── Catálogo ──
   const [syncing, setSyncing] = useState(false);
@@ -155,17 +144,21 @@ function ShopifyPanel() {
         setBot(data);
         setPrompt(data.prompt || '');
         setKb(data.knowledgeBase || '');
-        try { setWidget(JSON.parse(data.widgetConfig || '{}')); } catch (_e) {}
+        try {
+          const w = JSON.parse(data.widgetConfig || '{}');
+          setWidget({ enabled: !!w.enabled, welcomeMessage: w.welcomeMessage || '', buttonText: w.buttonText || '' });
+        } catch (_e) {}
         const m = (() => { try { return JSON.parse(data.metrics || '{}'); } catch { return {}; } })();
         if (m.responseDelay !== undefined) setResponseDelay(m.responseDelay);
         if (m.workingHours) setHours(m.workingHours);
+        if (m.adminNumber) setAdminPhone(m.adminNumber.replace('@c.us', ''));
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    if (selectedTab === 3) loadTurnos();
+    if (selectedTab === 1) loadTurnos();
   }, [selectedTab]);
 
   async function loadTurnos() {
@@ -180,7 +173,7 @@ function ShopifyPanel() {
   }
 
   useEffect(() => {
-    if (selectedTab === 3) {
+    if (selectedTab === 1) {
       shopifyFetch(`${API}/api/shopify/embedded/appointments?date=${apptDate}`)
         .then(r => r.json()).then(setAppointments).catch(() => {});
     }
@@ -192,12 +185,12 @@ function ShopifyPanel() {
       const res = await shopifyFetch(`${API}/api/shopify/embedded/status`);
       const data = await res.json();
       if (data.qr) setQrData(data.qr);
+      if (data.businessPhone) setBot(b => ({ ...b, businessPhone: data.businessPhone }));
       if (data.status === 'ON') {
         setBot(b => ({ ...b, status: 'ON', businessPhone: data.businessPhone || b?.businessPhone }));
         setStarting(false); setQrData(null);
         clearInterval(pollRef.current);
       }
-      if (data.businessPhone) setBot(b => ({ ...b, businessPhone: data.businessPhone }));
     } catch (_e) {}
   }
 
@@ -216,28 +209,18 @@ function ShopifyPanel() {
     clearInterval(pollRef.current);
   }
 
-  // ── Config ──
+  // ── Config (guarda todo junto) ──
   async function saveConfig() {
     setSaving(true); setSaveMsg(null);
     try {
       const res = await shopifyFetch(`${API}/api/shopify/embedded/bot`, {
         method: 'POST',
-        body: JSON.stringify({ prompt, knowledgeBase: kb, responseDelay, workingHours: hours }),
+        body: JSON.stringify({ prompt, knowledgeBase: kb, responseDelay, workingHours: hours, adminPhone, widget }),
       });
       const d = await res.json();
       setSaveMsg(d.ok ? { ok: true, text: 'Configuración guardada.' } : { ok: false, text: d.error || 'Error.' });
     } catch (_e) { setSaveMsg({ ok: false, text: 'Error de conexión.' }); }
     finally { setSaving(false); }
-  }
-
-  async function saveWidget() {
-    setWidgetSaving(true); setWidgetMsg(null);
-    try {
-      const res = await shopifyFetch(`${API}/api/shopify/embedded/widget`, { method: 'POST', body: JSON.stringify(widget) });
-      const d = await res.json();
-      setWidgetMsg(d.ok ? { ok: true, text: 'Widget actualizado.' } : { ok: false, text: d.error || 'Error.' });
-    } catch (_e) { setWidgetMsg({ ok: false, text: 'Error de conexión.' }); }
-    finally { setWidgetSaving(false); }
   }
 
   async function syncCatalog() {
@@ -298,8 +281,6 @@ function ShopifyPanel() {
 
   const tabs = [
     { id: 'config', content: 'Configuración' },
-    { id: 'whatsapp', content: 'WhatsApp' },
-    { id: 'catalogo', content: 'Catálogo & Widget' },
     { id: 'turnos', content: 'Turnos' },
     { id: 'preview', content: '📱 Probar asistente' },
   ];
@@ -331,7 +312,7 @@ function ShopifyPanel() {
             <Text as="p" variant="bodyMd" tone="subdued">
               {isOn
                 ? `${metrics.messagesSent || 0} mensajes respondidos · ${metrics.customersHelped || 0} chats atendidos`
-                : 'Conectá WhatsApp en la pestaña "WhatsApp" para activar el asistente.'}
+                : 'Conectá WhatsApp en la sección de Configuración para activar el asistente.'}
             </Text>
           </Banner>
         </Layout.Section>
@@ -365,14 +346,119 @@ function ShopifyPanel() {
                 {/* ════ TAB: CONFIGURACIÓN ════ */}
                 {selectedTab === 0 && (
                   <BlockStack gap="500">
+
+                    {/* ── WhatsApp ── */}
+                    <BlockStack gap="300">
+                      <Text variant="headingMd" as="h2">Conexión WhatsApp</Text>
+                      {isOn ? (
+                        <BlockStack gap="300">
+                          <Banner tone="success">
+                            <BlockStack gap="100">
+                              <Text variant="bodyMd" fontWeight="semibold">WhatsApp conectado y activo</Text>
+                              {bot?.businessPhone && (
+                                <Text variant="bodySm" tone="subdued">
+                                  Número conectado: <strong>+{bot.businessPhone}</strong>
+                                </Text>
+                              )}
+                              <Text variant="bodySm" tone="subdued">El asistente está respondiendo mensajes automáticamente.</Text>
+                            </BlockStack>
+                          </Banner>
+                          <InlineStack>
+                            <Button onClick={stopBot} tone="critical">Desconectar WhatsApp</Button>
+                          </InlineStack>
+                        </BlockStack>
+                      ) : starting ? (
+                        <BlockStack gap="400">
+                          {qrData ? (
+                            <>
+                              <Text variant="bodySm" tone="subdued">Escaneá con WhatsApp → Dispositivos vinculados → Escanear QR</Text>
+                              <InlineStack align="center">
+                                <div style={{ background: 'white', padding: '12px', borderRadius: '12px', display: 'inline-block' }}>
+                                  <QRCodeSVG value={qrData} size={200} />
+                                </div>
+                              </InlineStack>
+                              <Text variant="bodySm" tone="subdued" alignment="center">El código expira en 60 segundos — se actualiza automáticamente.</Text>
+                            </>
+                          ) : (
+                            <InlineStack gap="300">
+                              <Spinner size="small" />
+                              <Text variant="bodySm" tone="subdued">Iniciando, aguardá el código QR…</Text>
+                            </InlineStack>
+                          )}
+                          <InlineStack>
+                            <Button onClick={stopBot} variant="plain">Cancelar</Button>
+                          </InlineStack>
+                        </BlockStack>
+                      ) : (
+                        <BlockStack gap="300">
+                          <Text variant="bodySm" tone="subdued">Escaneá el QR con tu WhatsApp Business para que el asistente empiece a responder mensajes.</Text>
+                          <InlineStack>
+                            <Button onClick={startBot} variant="primary">Conectar WhatsApp</Button>
+                          </InlineStack>
+                        </BlockStack>
+                      )}
+                    </BlockStack>
+
+                    <Divider />
+
+                    {/* ── Botón WhatsApp en la tienda ── */}
+                    <BlockStack gap="300">
+                      <Text variant="headingMd" as="h2">Botón de WhatsApp en tu tienda</Text>
+                      <Text variant="bodySm" tone="subdued">
+                        Agrega un botón flotante en tu tienda. Cuando un cliente lo toca, se abre WhatsApp listo para escribirte a vos.
+                        {bot?.businessPhone
+                          ? ` Los mensajes llegarán al número +${bot.businessPhone}.`
+                          : ' Conectá WhatsApp arriba para activarlo.'}
+                      </Text>
+                      <Checkbox
+                        label="Mostrar botón de WhatsApp en la tienda"
+                        checked={!!widget.enabled}
+                        onChange={v => setWidget(w => ({ ...w, enabled: v }))}
+                        disabled={!bot?.businessPhone}
+                      />
+                      {widget.enabled && (
+                        <BlockStack gap="300">
+                          <TextField
+                            label="Mensaje inicial del cliente"
+                            value={widget.welcomeMessage}
+                            onChange={v => setWidget(w => ({ ...w, welcomeMessage: v }))}
+                            placeholder="Hola! Tengo una consulta sobre un producto."
+                            helpText="Texto que aparece pre-escrito en WhatsApp cuando el cliente toca el botón."
+                            autoComplete="off"
+                          />
+                          <TextField
+                            label="Texto del botón flotante"
+                            value={widget.buttonText}
+                            onChange={v => setWidget(w => ({ ...w, buttonText: v }))}
+                            placeholder="Chateá con nosotros"
+                            helpText="Etiqueta que aparece al lado del botón verde."
+                            autoComplete="off"
+                          />
+                        </BlockStack>
+                      )}
+                    </BlockStack>
+
+                    <Divider />
+
+                    {/* ── Catálogo ── */}
+                    <BlockStack gap="300">
+                      <Text variant="headingMd" as="h2">Catálogo de productos</Text>
+                      <Text variant="bodySm" tone="subdued">El asistente sincroniza tu catálogo automáticamente al crear o modificar productos. También podés hacerlo manualmente.</Text>
+                      {syncMsg && <Banner tone={syncMsg.ok ? 'success' : 'critical'}>{syncMsg.text}</Banner>}
+                      <InlineStack>
+                        <Button onClick={syncCatalog} loading={syncing}>Sincronizar ahora</Button>
+                      </InlineStack>
+                    </BlockStack>
+
+                    <Divider />
+
+                    {/* ── Comportamiento ── */}
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Comportamiento del asistente</Text>
                       <Text variant="bodySm" tone="subdued">Definí la personalidad: cómo saluda, qué tono usa, si tutea o usa "usted".</Text>
                       <TextField label="Personalidad e instrucciones" value={prompt} onChange={setPrompt} multiline={6}
                         placeholder="Ej: Sos el asistente de [Negocio]. Respondé de forma amigable..." autoComplete="off" />
                     </BlockStack>
-
-                    <Divider />
 
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Base de conocimientos</Text>
@@ -383,6 +469,7 @@ function ShopifyPanel() {
 
                     <Divider />
 
+                    {/* ── Tiempo de espera ── */}
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">⏱️ Tiempo de espera antes de responder</Text>
                       <Text variant="bodySm" tone="subdued">
@@ -400,6 +487,7 @@ function ShopifyPanel() {
 
                     <Divider />
 
+                    {/* ── Horario ── */}
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">🕐 Horario de Atención (Anti-Nocturno)</Text>
                       <Text variant="bodySm" tone="subdued">
@@ -430,128 +518,36 @@ function ShopifyPanel() {
                       )}
                     </BlockStack>
 
+                    <Divider />
+
+                    {/* ── Celular del dueño ── */}
+                    <BlockStack gap="300">
+                      <Text variant="headingMd" as="h2">📱 Tu celular (línea directa con el asistente)</Text>
+                      <Text variant="bodySm" tone="subdued">
+                        Escribile desde este número para dar indicaciones en tiempo real: actualizar info, consultar reportes de ventas, ver turnos del día, gestionar pagos pendientes. El asistente te responde solo a vos con información de dueño.
+                      </Text>
+                      <TextField
+                        label="Tu número de WhatsApp"
+                        value={adminPhone}
+                        onChange={setAdminPhone}
+                        placeholder="5491150001234"
+                        helpText="Código de país + número, sin + ni espacios. Ejemplo para Argentina: 5491150001234."
+                        autoComplete="off"
+                      />
+                    </BlockStack>
+
                     {saveMsg && <Banner tone={saveMsg.ok ? 'success' : 'critical'}>{saveMsg.text}</Banner>}
                     <InlineStack>
                       <Button onClick={saveConfig} loading={saving} variant="primary">Guardar configuración</Button>
                     </InlineStack>
-                  </BlockStack>
-                )}
 
-                {/* ════ TAB: WHATSAPP ════ */}
-                {selectedTab === 1 && (
-                  <BlockStack gap="400">
-                    <Text variant="headingMd" as="h2">Conexión WhatsApp</Text>
-                    {isOn ? (
-                      <BlockStack gap="300">
-                        <Banner tone="success">
-                          <BlockStack gap="100">
-                            <Text variant="bodyMd" fontWeight="semibold">WhatsApp conectado y activo</Text>
-                            {bot?.businessPhone && (
-                              <Text variant="bodySm" tone="subdued">
-                                Número conectado: <strong>+{bot.businessPhone}</strong>
-                              </Text>
-                            )}
-                            <Text variant="bodySm" tone="subdued">El asistente está respondiendo mensajes automáticamente.</Text>
-                          </BlockStack>
-                        </Banner>
-                        <InlineStack>
-                          <Button onClick={stopBot} tone="critical">Desconectar WhatsApp</Button>
-                        </InlineStack>
-                      </BlockStack>
-                    ) : starting ? (
-                      <BlockStack gap="400">
-                        {qrData ? (
-                          <>
-                            <Text variant="bodySm" tone="subdued">Escaneá con WhatsApp → Dispositivos vinculados → Escanear QR</Text>
-                            <InlineStack align="center">
-                              <div style={{ background: 'white', padding: '12px', borderRadius: '12px', display: 'inline-block' }}>
-                                <QRCodeSVG value={qrData} size={200} />
-                              </div>
-                            </InlineStack>
-                            <Text variant="bodySm" tone="subdued" alignment="center">El código expira en 60 segundos — se actualiza automáticamente.</Text>
-                          </>
-                        ) : (
-                          <InlineStack gap="300">
-                            <Spinner size="small" />
-                            <Text variant="bodySm" tone="subdued">Iniciando, aguardá el código QR…</Text>
-                          </InlineStack>
-                        )}
-                        <InlineStack>
-                          <Button onClick={stopBot} variant="plain">Cancelar</Button>
-                        </InlineStack>
-                      </BlockStack>
-                    ) : (
-                      <BlockStack gap="300">
-                        <Text variant="bodySm" tone="subdued">Hacé clic en el botón y escaneá el QR con tu WhatsApp Business para activar el asistente.</Text>
-                        <InlineStack>
-                          <Button onClick={startBot} variant="primary">Conectar WhatsApp</Button>
-                        </InlineStack>
-                      </BlockStack>
-                    )}
-                  </BlockStack>
-                )}
-
-                {/* ════ TAB: CATÁLOGO & WIDGET ════ */}
-                {selectedTab === 2 && (
-                  <BlockStack gap="500">
-                    <BlockStack gap="300">
-                      <Text variant="headingMd" as="h2">Catálogo de productos</Text>
-                      <Text variant="bodySm" tone="subdued">El asistente sincroniza tu catálogo automáticamente al crear o modificar productos. También podés hacerlo manualmente.</Text>
-                      {syncMsg && <Banner tone={syncMsg.ok ? 'success' : 'critical'}>{syncMsg.text}</Banner>}
-                      <InlineStack>
-                        <Button onClick={syncCatalog} loading={syncing}>Sincronizar ahora</Button>
-                      </InlineStack>
-                    </BlockStack>
-
-                    <Divider />
-
-                    <BlockStack gap="300">
-                      <Text variant="headingMd" as="h2">Widget de WhatsApp</Text>
-                      <Text variant="bodySm" tone="subdued">
-                        Agrega un botón verde flotante en tu tienda. Cuando un cliente lo toca, se abre WhatsApp listo para escribirte a vos directamente.
-                      </Text>
-                      <Checkbox
-                        label="Mostrar botón de WhatsApp en la tienda"
-                        checked={!!widget.enabled}
-                        onChange={v => setWidget(w => ({ ...w, enabled: v }))}
-                      />
-                      <TextField
-                        label="Tu número de WhatsApp Business"
-                        value={widget.phone}
-                        onChange={v => setWidget(w => ({ ...w, phone: v }))}
-                        placeholder={bot?.businessPhone || '5491150001234'}
-                        helpText={`Los clientes te escribirán a este número cuando hagan clic en el botón. Debe ser el mismo número de WhatsApp que conectaste en la pestaña "WhatsApp".${bot?.businessPhone ? ` Número conectado: +${bot.businessPhone}.` : ' Todavía no conectaste WhatsApp.'} Formato: código de país + número, sin + ni espacios.`}
-                        autoComplete="off"
-                      />
-                      <TextField
-                        label="Mensaje inicial del cliente"
-                        value={widget.welcomeMessage}
-                        onChange={v => setWidget(w => ({ ...w, welcomeMessage: v }))}
-                        placeholder="Hola! Tengo una consulta sobre un producto."
-                        helpText="Texto que aparece pre-escrito en WhatsApp cuando el cliente toca el botón. El cliente puede modificarlo antes de enviarlo."
-                        autoComplete="off"
-                      />
-                      <TextField
-                        label="Texto del botón flotante"
-                        value={widget.buttonText}
-                        onChange={v => setWidget(w => ({ ...w, buttonText: v }))}
-                        placeholder="Chateá con nosotros"
-                        helpText="Etiqueta que aparece al lado del botón verde para invitar al cliente a hacer clic."
-                        autoComplete="off"
-                      />
-                      {widgetMsg && <Banner tone={widgetMsg.ok ? 'success' : 'critical'}>{widgetMsg.text}</Banner>}
-                      <InlineStack>
-                        <Button onClick={saveWidget} loading={widgetSaving} variant="primary">Guardar widget</Button>
-                      </InlineStack>
-                    </BlockStack>
                   </BlockStack>
                 )}
 
                 {/* ════ TAB: TURNOS ════ */}
-                {selectedTab === 3 && (
+                {selectedTab === 1 && (
                   <BlockStack gap="500">
 
-                    {/* Servicios */}
                     <BlockStack gap="300">
                       <InlineStack align="space-between">
                         <Text variant="headingMd" as="h2">Servicios</Text>
@@ -602,7 +598,6 @@ function ShopifyPanel() {
 
                     <Divider />
 
-                    {/* Turnos del día */}
                     <BlockStack gap="300">
                       <InlineStack align="space-between">
                         <Text variant="headingMd" as="h2">Turnos</Text>
@@ -670,7 +665,7 @@ function ShopifyPanel() {
                 )}
 
                 {/* ════ TAB: PROBAR ASISTENTE ════ */}
-                {selectedTab === 4 && (
+                {selectedTab === 2 && (
                   <BlockStack gap="300">
                     <Text variant="bodySm" tone="subdued">
                       Probá el asistente con el prompt y la base de conocimientos actuales. No es necesario guardar primero.
