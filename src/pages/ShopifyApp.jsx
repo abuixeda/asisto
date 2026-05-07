@@ -34,7 +34,7 @@ function PreviewChat({ botName, onSend }) {
       const reply = await onSend(text, history);
       setMessages(prev => [...prev, { role: 'model', text: reply }]);
     } catch {
-      setMessages(prev => [...prev, { role: 'model', text: '❌ Error al conectar con el bot.' }]);
+      setMessages(prev => [...prev, { role: 'model', text: '❌ Error al conectar con el asistente.' }]);
     } finally { setLoading(false); }
   }
 
@@ -49,7 +49,7 @@ function PreviewChat({ botName, onSend }) {
             {(botName || 'B').charAt(0).toUpperCase()}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ color: '#e9edef', fontWeight: 600, fontSize: '0.9rem' }}>{botName || 'Mi Bot'}</div>
+            <div style={{ color: '#e9edef', fontWeight: 600, fontSize: '0.9rem' }}>{botName || 'Mi Asistente'}</div>
             <div style={{ color: '#aebac1', fontSize: '0.7rem' }}>en línea</div>
           </div>
           <div style={{ fontSize: '0.6rem', color: '#aebac1', background: '#2a3942', padding: '2px 8px', borderRadius: 8, fontWeight: 600 }}>PREVIEW</div>
@@ -300,7 +300,7 @@ function ShopifyPanel() {
     { id: 'whatsapp', content: 'WhatsApp' },
     { id: 'catalogo', content: 'Catálogo & Widget' },
     { id: 'turnos', content: 'Turnos' },
-    { id: 'preview', content: '📱 Probar bot' },
+    { id: 'preview', content: '📱 Probar asistente' },
   ];
 
   async function sendPreview(message, history) {
@@ -326,11 +326,11 @@ function ShopifyPanel() {
 
         {/* ── Banner estado ── */}
         <Layout.Section>
-          <Banner tone={isOn ? 'success' : 'warning'} title={isOn ? '✅ Bot activo' : '⚠️ Bot inactivo'}>
+          <Banner tone={isOn ? 'success' : 'warning'} title={isOn ? '✅ Asistente activo' : '⚠️ Asistente inactivo'}>
             <Text as="p" variant="bodyMd" tone="subdued">
               {isOn
                 ? `${metrics.messagesSent || 0} mensajes respondidos · ${metrics.customersHelped || 0} chats atendidos`
-                : 'Conectá WhatsApp en la pestaña "WhatsApp" para activar el bot.'}
+                : 'Conectá WhatsApp en la pestaña "WhatsApp" para activar el asistente.'}
             </Text>
           </Banner>
         </Layout.Section>
@@ -385,7 +385,7 @@ function ShopifyPanel() {
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">⏱️ Tiempo de espera antes de responder</Text>
                       <Text variant="bodySm" tone="subdued">
-                        Si el cliente manda varios mensajes seguidos, el bot espera este tiempo antes de responder — así agrupa todos los mensajes y contesta una sola vez.
+                        Si el cliente manda varios mensajes seguidos, el asistente espera este tiempo antes de responder — así agrupa todos los mensajes y contesta una sola vez.
                       </Text>
                       <RangeSlider
                         label={`Espera: ${responseDelay}s`}
@@ -402,7 +402,7 @@ function ShopifyPanel() {
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">🕐 Horario de Atención (Anti-Nocturno)</Text>
                       <Text variant="bodySm" tone="subdued">
-                        Activá esta opción para que el bot solo responda dentro de tu horario comercial. Fuera de ese horario, enviará el mensaje automático.
+                        Activá esta opción para que el asistente solo responda dentro de tu horario comercial. Fuera de ese horario, enviará el mensaje automático.
                       </Text>
                       <Checkbox
                         label="Activar límite de horario"
@@ -442,7 +442,7 @@ function ShopifyPanel() {
                     <Text variant="headingMd" as="h2">Conexión WhatsApp</Text>
                     {isOn ? (
                       <BlockStack gap="300">
-                        <Text variant="bodySm" tone="subdued">WhatsApp conectado y activo. El bot está respondiendo mensajes.</Text>
+                        <Text variant="bodySm" tone="subdued">WhatsApp conectado y activo. El asistente está respondiendo mensajes.</Text>
                         <InlineStack>
                           <Button onClick={stopBot} tone="critical">Desconectar WhatsApp</Button>
                         </InlineStack>
@@ -471,7 +471,7 @@ function ShopifyPanel() {
                       </BlockStack>
                     ) : (
                       <BlockStack gap="300">
-                        <Text variant="bodySm" tone="subdued">Hacé clic en el botón y escaneá el QR con tu WhatsApp Business para activar el bot.</Text>
+                        <Text variant="bodySm" tone="subdued">Hacé clic en el botón y escaneá el QR con tu WhatsApp Business para activar el asistente.</Text>
                         <InlineStack>
                           <Button onClick={startBot} variant="primary">Conectar WhatsApp</Button>
                         </InlineStack>
@@ -485,7 +485,7 @@ function ShopifyPanel() {
                   <BlockStack gap="500">
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Catálogo de productos</Text>
-                      <Text variant="bodySm" tone="subdued">El bot sincroniza tu catálogo automáticamente al crear o modificar productos. También podés hacerlo manualmente.</Text>
+                      <Text variant="bodySm" tone="subdued">El asistente sincroniza tu catálogo automáticamente al crear o modificar productos. También podés hacerlo manualmente.</Text>
                       {syncMsg && <Banner tone={syncMsg.ok ? 'success' : 'critical'}>{syncMsg.text}</Banner>}
                       <InlineStack>
                         <Button onClick={syncCatalog} loading={syncing}>Sincronizar ahora</Button>
@@ -496,14 +496,38 @@ function ShopifyPanel() {
 
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Widget de WhatsApp</Text>
-                      <Text variant="bodySm" tone="subdued">Botón flotante en tu tienda — los clientes hacen clic y te escriben directo por WhatsApp.</Text>
-                      <Checkbox label="Activar widget en la tienda" checked={!!widget.enabled} onChange={v => setWidget(w => ({ ...w, enabled: v }))} />
-                      <TextField label="Número de WhatsApp" value={widget.phone} onChange={v => setWidget(w => ({ ...w, phone: v }))}
-                        placeholder="5491123456789" helpText="Código de país + número, sin + ni espacios." autoComplete="off" />
-                      <TextField label="Mensaje de bienvenida" value={widget.welcomeMessage} onChange={v => setWidget(w => ({ ...w, welcomeMessage: v }))}
-                        placeholder="Hola! Tengo una consulta sobre su tienda." autoComplete="off" />
-                      <TextField label="Texto del tooltip" value={widget.buttonText} onChange={v => setWidget(w => ({ ...w, buttonText: v }))}
-                        placeholder="Chateá con nosotros" autoComplete="off" />
+                      <Text variant="bodySm" tone="subdued">
+                        Agrega un botón verde flotante en tu tienda. Cuando un cliente lo toca, se abre WhatsApp listo para escribirte a vos directamente.
+                      </Text>
+                      <Checkbox
+                        label="Mostrar botón de WhatsApp en la tienda"
+                        checked={!!widget.enabled}
+                        onChange={v => setWidget(w => ({ ...w, enabled: v }))}
+                      />
+                      <TextField
+                        label="Tu número de WhatsApp Business"
+                        value={widget.phone}
+                        onChange={v => setWidget(w => ({ ...w, phone: v }))}
+                        placeholder="5491150001234"
+                        helpText="Los clientes te escribirán a este número. Formato: código de país + código de área + número, sin + ni espacios. Ejemplo para Argentina: 5491150001234."
+                        autoComplete="off"
+                      />
+                      <TextField
+                        label="Mensaje inicial del cliente"
+                        value={widget.welcomeMessage}
+                        onChange={v => setWidget(w => ({ ...w, welcomeMessage: v }))}
+                        placeholder="Hola! Tengo una consulta sobre un producto."
+                        helpText="Texto que aparece pre-escrito en WhatsApp cuando el cliente toca el botón. El cliente puede modificarlo antes de enviarlo."
+                        autoComplete="off"
+                      />
+                      <TextField
+                        label="Texto del botón flotante"
+                        value={widget.buttonText}
+                        onChange={v => setWidget(w => ({ ...w, buttonText: v }))}
+                        placeholder="Chateá con nosotros"
+                        helpText="Etiqueta que aparece al lado del botón verde para invitar al cliente a hacer clic."
+                        autoComplete="off"
+                      />
                       {widgetMsg && <Banner tone={widgetMsg.ok ? 'success' : 'critical'}>{widgetMsg.text}</Banner>}
                       <InlineStack>
                         <Button onClick={saveWidget} loading={widgetSaving} variant="primary">Guardar widget</Button>
@@ -634,11 +658,11 @@ function ShopifyPanel() {
                   </BlockStack>
                 )}
 
-                {/* ════ TAB: PROBAR BOT ════ */}
+                {/* ════ TAB: PROBAR ASISTENTE ════ */}
                 {selectedTab === 4 && (
                   <BlockStack gap="300">
                     <Text variant="bodySm" tone="subdued">
-                      Probá el bot con el prompt y la base de conocimientos actuales. No es necesario guardar primero.
+                      Probá el asistente con el prompt y la base de conocimientos actuales. No es necesario guardar primero.
                     </Text>
                     <PreviewChat botName={bot?.name} onSend={sendPreview} />
                   </BlockStack>
