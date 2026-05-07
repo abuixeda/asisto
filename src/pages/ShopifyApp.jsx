@@ -524,7 +524,7 @@ function ShopifyPanel() {
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">📱 Tu celular (línea directa con el asistente)</Text>
                       <Text variant="bodySm" tone="subdued">
-                        Escribile desde este número para dar indicaciones en tiempo real: actualizar info, consultar reportes de ventas, ver turnos del día, gestionar pagos pendientes. El asistente te responde solo a vos con información de dueño.
+                        Escribile desde este número para dar indicaciones en tiempo real: actualizar info, consultar reportes de ventas, ver turnos del día. El asistente te responde solo a vos con información de dueño.
                       </Text>
                       <TextField
                         label="Tu número de WhatsApp"
