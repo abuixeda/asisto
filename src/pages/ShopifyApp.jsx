@@ -11,6 +11,83 @@ import translations from '@shopify/polaris/locales/es.json';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
+// ─── Preview Chat (simulación WhatsApp) ───────────────────────────────────────
+function PreviewChat({ botName, onSend }) {
+  const [messages, setMessages] = useState([
+    { role: 'model', text: '¡Hola! Soy el asistente virtual. ¿En qué te puedo ayudar? 😊' }
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const bottomRef = useRef(null);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  async function sendMessage() {
+    const text = input.trim();
+    if (!text || loading) return;
+    setInput('');
+    const newMessages = [...messages, { role: 'user', text }];
+    setMessages(newMessages);
+    setLoading(true);
+    try {
+      const history = newMessages.slice(1, -1).map(m => ({ role: m.role, text: m.text }));
+      const reply = await onSend(text, history);
+      setMessages(prev => [...prev, { role: 'model', text: reply }]);
+    } catch {
+      setMessages(prev => [...prev, { role: 'model', text: '❌ Error al conectar con el bot.' }]);
+    } finally { setLoading(false); }
+  }
+
+  const now = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+
+  return (
+    <Box padding="0">
+      <div style={{ background: '#111b21', borderRadius: '16px', overflow: 'hidden', maxWidth: 420, margin: '0 auto', display: 'flex', flexDirection: 'column', height: 520 }}>
+        {/* Header WhatsApp */}
+        <div style={{ background: '#1f2c34', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: '0.9rem', flexShrink: 0 }}>
+            {(botName || 'B').charAt(0).toUpperCase()}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ color: '#e9edef', fontWeight: 600, fontSize: '0.9rem' }}>{botName || 'Mi Bot'}</div>
+            <div style={{ color: '#aebac1', fontSize: '0.7rem' }}>en línea</div>
+          </div>
+          <div style={{ fontSize: '0.6rem', color: '#aebac1', background: '#2a3942', padding: '2px 8px', borderRadius: 8, fontWeight: 600 }}>PREVIEW</div>
+        </div>
+
+        {/* Mensajes */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px 10px', background: '#0b141a', backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.015) 1px, transparent 0)', backgroundSize: '24px 24px' }}>
+          {messages.map((m, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
+              <div style={{ maxWidth: '80%', padding: '6px 10px 4px', borderRadius: m.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px', background: m.role === 'user' ? '#005c4b' : '#202c33', color: '#e9edef', fontSize: '0.82rem', lineHeight: 1.5, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
+                {m.text}
+                <div style={{ fontSize: '0.6rem', color: '#aebac1', textAlign: 'right', marginTop: 2 }}>{now} {m.role === 'user' && '✓✓'}</div>
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 6 }}>
+              <div style={{ background: '#202c33', borderRadius: '12px 12px 12px 2px', padding: '8px 14px', color: '#aebac1', fontSize: '0.82rem' }}>● ● ●</div>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        {/* Input */}
+        <div style={{ background: '#1f2c34', padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input
+            value={input} onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+            placeholder="Escribí un mensaje..."
+            style={{ flex: 1, background: '#2a3942', border: 'none', borderRadius: 20, padding: '8px 14px', color: '#e9edef', fontSize: '0.82rem', outline: 'none' }}
+          />
+          <button onClick={sendMessage} disabled={loading || !input.trim()} style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: loading || !input.trim() ? '#2a3942' : '#00a884', color: '#fff', cursor: loading || !input.trim() ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>➤</button>
+        </div>
+      </div>
+    </Box>
+  );
+}
+
 // ─── Panel principal ───────────────────────────────────────────────────────────
 function ShopifyPanel() {
   const app = useAppBridge();
@@ -221,7 +298,17 @@ function ShopifyPanel() {
     { id: 'whatsapp', content: 'WhatsApp' },
     { id: 'catalogo', content: 'Catálogo & Widget' },
     { id: 'turnos', content: 'Turnos' },
+    { id: 'preview', content: '📱 Probar bot' },
   ];
+
+  async function sendPreview(message, history) {
+    const res = await shopifyFetch(`${API}/api/shopify/embedded/preview`, {
+      method: 'POST',
+      body: JSON.stringify({ message, history, prompt, knowledgeBase: kb }),
+    });
+    const d = await res.json();
+    return d.reply || d.error || 'Sin respuesta.';
+  }
 
   const specOptions = [
     { label: 'Seleccioná un servicio', value: '' },
@@ -542,6 +629,16 @@ function ShopifyPanel() {
                       )}
                     </BlockStack>
 
+                  </BlockStack>
+                )}
+
+                {/* ════ TAB: PROBAR BOT ════ */}
+                {selectedTab === 4 && (
+                  <BlockStack gap="300">
+                    <Text variant="bodySm" tone="subdued">
+                      Probá el bot con el prompt y la base de conocimientos actuales. No es necesario guardar primero.
+                    </Text>
+                    <PreviewChat botName={bot?.name} onSend={sendPreview} />
                   </BlockStack>
                 )}
 
