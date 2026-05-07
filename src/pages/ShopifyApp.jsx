@@ -998,18 +998,8 @@ export default function ShopifyApp() {
     link.id = 'polaris-styles';
     document.head.appendChild(link);
 
-    const style = document.createElement('style');
-    style.id = 'asisto-overrides';
-    style.textContent = `
-      html, body { background: #0d0f18 !important; }
-      .Polaris-Frame { background: #0d0f18 !important; }
-      .Polaris-Page { background: transparent !important; }
-    `;
-    document.head.appendChild(style);
-
     return () => {
       document.getElementById('polaris-styles')?.remove();
-      document.getElementById('asisto-overrides')?.remove();
     };
   }, []);
 
