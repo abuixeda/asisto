@@ -12,6 +12,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import ShopifyApp from './pages/ShopifyApp';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="/terminos" element={<TermsOfService />} />
           <Route path="/olvide-contrasena" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/shopify-app" element={<ShopifyApp />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
     </Router>
