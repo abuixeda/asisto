@@ -1392,7 +1392,6 @@ export default function MerchantPanel() {
   const [pwMsg, setPwMsg] = useState(null);
   const [pwSaving, setPwSaving] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
   const [expandedField, setExpandedField] = useState(null); // 'prompt' | 'kb'
   const [responseDelay, setResponseDelay] = useState(2.5);
   const [activeTab, setActiveTab] = useState('config'); // 'config' | 'campaigns'
@@ -1623,8 +1622,7 @@ export default function MerchantPanel() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg-color)', padding: '2rem' }}>
-
+    <>
       {showTour && <TourOverlay steps={TOUR_STEPS} onFinish={() => setShowTour(false)} setActiveTab={setActiveTab} />}
       {showPreview && <BotPreviewChat botId={botId} token={token} botName={bot?.name} currentPrompt={prompt} currentKB={knowledgeBase} onClose={() => setShowPreview(false)} />}
 
@@ -1645,54 +1643,43 @@ export default function MerchantPanel() {
           />
         </div>
       )}
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '900px', margin: '0 auto 2rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: '800', fontSize: '1.3rem' }}>
-          <div className="brand-logo" style={{ width: '32px', height: '32px', fontSize: '1rem', margin: 0, boxShadow: 'none' }}>TJ</div>
-          Asisto AI
-        </div>
-        <div style={{ position: 'relative' }}>
-          <div onClick={() => setShowProfile(!showProfile)} style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontWeight: '700', fontSize: '1rem', color: 'white', border: '2px solid var(--border)', userSelect: 'none' }}>
-            {(bot?.name || 'U').charAt(0).toUpperCase()}
+      <div className="app-shell">
+        {/* ── Sidebar ── */}
+        <aside className="sidebar">
+          <div className="sidebar-logo">
+            <div className="sidebar-logo-icon">TJ</div>
+            Asisto AI
           </div>
-          {showProfile && (
-            <div style={{ position: 'absolute', top: '48px', right: 0, background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1rem', minWidth: '200px', zIndex: 9999, boxShadow: '0 10px 25px rgba(0,0,0,0.4)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
-                <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '1.1rem', color: 'white', flexShrink: 0 }}>
-                  {(bot?.name || 'U').charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <div style={{ fontWeight: '700', fontSize: '0.95rem' }}>{bot?.name || 'Mi negocio'}</div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Usuario</div>
-                </div>
+          <nav className="sidebar-nav" id="tour-tabs">
+            <span className="sidebar-nav-section">Principal</span>
+            <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => setActiveTab('config')}>⚙️ Configuración</div>
+            <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => setActiveTab('campaigns')}>📣 Campañas</div>
+            <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => setActiveTab('turnos')}>📅 Turnos</div>
+            {bot?.botType === 'shopify' && (
+              <div className={`sidebar-nav-item${activeTab === 'widget' ? ' active' : ''}`} onClick={() => setActiveTab('widget')}>🛒 Widget</div>
+            )}
+          </nav>
+          <div className="sidebar-footer">
+            <div className="sidebar-user">
+              <div className="sidebar-avatar">{(bot?.name || 'U').charAt(0).toUpperCase()}</div>
+              <div>
+                <div className="sidebar-user-name">{bot?.name || 'Mi negocio'}</div>
+                <div className="sidebar-user-role">Merchant</div>
               </div>
-              <button onClick={logout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '0.9rem', padding: '0.4rem 0' }}>
-                &#8594; Cerrar sesión
-              </button>
             </div>
-          )}
-        </div>
-      </header>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', paddingTop: '0.2rem' }}>
+              <a href="/olvide-contrasena" style={{ fontSize: '0.75rem', color: 'var(--text-3)', textDecoration: 'none', padding: '0.2rem 0.1rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>🔑 Olvidé mi contraseña</a>
+              <button onClick={logout} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.75rem', textAlign: 'left', padding: '0.2rem 0.1rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>→ Cerrar sesión</button>
+            </div>
+          </div>
+        </aside>
 
-      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-        <div className="bot-card" style={{ border: isOn ? '1px solid rgba(16,185,129,0.3)' : undefined }}>
-
-          {/* Tab bar */}
-          {(() => {
-            const tabStyle = { background: 'none', border: 'none', borderBottom: '2px solid transparent', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.6rem 1rem', fontSize: '0.9rem', fontWeight: 500, marginBottom: '-1px' };
-            const tabActiveStyle = { ...tabStyle, borderBottom: '2px solid #7c3aed', color: 'var(--text-primary)', fontWeight: 700 };
-            return (
-              <div id="tour-tabs" style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0' }}>
-                <button onClick={() => setActiveTab('config')} style={activeTab === 'config' ? tabActiveStyle : tabStyle}>⚙️ Configuración</button>
-                <button onClick={() => setActiveTab('campaigns')} style={activeTab === 'campaigns' ? tabActiveStyle : tabStyle}>📣 Campañas</button>
-                <button onClick={() => setActiveTab('turnos')} style={activeTab === 'turnos' ? tabActiveStyle : tabStyle}>📅 Turnos</button>
-                {bot?.botType === 'shopify' && <button onClick={() => setActiveTab('widget')} style={activeTab === 'widget' ? tabActiveStyle : tabStyle}>🛒 Widget</button>}
-              </div>
-            );
-          })()}
-
-          {activeTab === 'campaigns' && <div id="tour-campaigns-area"><CampaignPanel botId={botId} token={token} api={API} /></div>}
-          {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} /></div>}
-          {activeTab === 'widget' && <WidgetPanel botId={botId} token={token} api={API} />}
+        {/* ── Main ── */}
+        <main className="main-content" style={{ overflow: 'auto' }}>
+          <div style={{ padding: '1.75rem 2rem' }}>
+            {activeTab === 'campaigns' && <div id="tour-campaigns-area"><CampaignPanel botId={botId} token={token} api={API} /></div>}
+            {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} /></div>}
+            {activeTab === 'widget' && <WidgetPanel botId={botId} token={token} api={API} />}
 
           {activeTab === 'config' && (<>
 
@@ -2034,8 +2021,9 @@ export default function MerchantPanel() {
 
           </>)}
 
-        </div>
+          </div>
+        </main>
       </div>
-    </div>
+    </>
   );
 }

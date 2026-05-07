@@ -7,11 +7,11 @@
   --gradient-border: linear-gradient(135deg, rgba(124,58,237,0.35) 0%, rgba(59,130,246,0.35) 100%);
 
   /* Dark mode (default) */
-  --bg:              #0d0f18;
-  --sidebar-bg:      #111422;
-  --surface:         #161a2e;
-  --surface-2:       #1c2038;
-  --surface-3:       #222644;
+  --bg:              #111827;
+  --sidebar-bg:      #1a2035;
+  --surface:         #1e2640;
+  --surface-2:       #232d4a;
+  --surface-3:       #293354;
   --surface-hover:   #252a44;
 
   --text-1:          #f1f5f9;
