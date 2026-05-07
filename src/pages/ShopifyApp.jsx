@@ -136,6 +136,17 @@ function ShopifyPanel() {
   const [showNewSpec, setShowNewSpec] = useState(false);
   const [showNewAppt, setShowNewAppt] = useState(false);
 
+  // ── Marketing ──
+  const [customers, setCustomers] = useState([]);
+  const [campaigns, setCampaigns] = useState([]);
+  const [cartConfig, setCartConfig] = useState({ enabled: false, delayHours: 2, message: 'Hola {{nombre}}! 👋 Notamos que dejaste productos en tu carrito:\n\n{{productos}}\n\n¿Querés completar tu compra? 👉 {{url}}' });
+  const [abandonedCarts, setAbandonedCarts] = useState([]);
+  const [newCampaign, setNewCampaign] = useState({ name: '', message_template: '', delay_seconds: 30 });
+  const [showNewCampaign, setShowNewCampaign] = useState(false);
+  const [marketingMsg, setMarketingMsg] = useState(null);
+  const [marketingLoading, setMarketingLoading] = useState(false);
+  const [cartSaving, setCartSaving] = useState(false);
+
   // ── Carga inicial ──
   useEffect(() => {
     shopifyFetch(`${API}/api/shopify/embedded/bot`)
@@ -270,6 +281,83 @@ function ShopifyPanel() {
     loadTurnos();
   }
 
+  useEffect(() => {
+    if (selectedTab === 3) loadMarketing();
+  }, [selectedTab]);
+
+  async function loadMarketing() {
+    setMarketingLoading(true);
+    try {
+      const [cRes, camRes, cartRes] = await Promise.all([
+        shopifyFetch(`${API}/api/shopify/embedded/customers`),
+        shopifyFetch(`${API}/api/shopify/embedded/campaigns`),
+        shopifyFetch(`${API}/api/shopify/embedded/abandoned-cart`),
+      ]);
+      setCustomers(await cRes.json());
+      setCampaigns(await camRes.json());
+      const cartData = await cartRes.json();
+      setCartConfig(cartData.config);
+      setAbandonedCarts(cartData.carts || []);
+    } catch (_e) {}
+    finally { setMarketingLoading(false); }
+  }
+
+  async function saveCartConfig() {
+    setCartSaving(true);
+    try {
+      await shopifyFetch(`${API}/api/shopify/embedded/abandoned-cart`, { method: 'PUT', body: JSON.stringify(cartConfig) });
+      setMarketingMsg({ ok: true, text: 'Configuración de carritos guardada.' });
+    } catch (_e) { setMarketingMsg({ ok: false, text: 'Error de conexión.' }); }
+    finally { setCartSaving(false); setTimeout(() => setMarketingMsg(null), 4000); }
+  }
+
+  async function createCampaign() {
+    if (!newCampaign.name || !newCampaign.message_template) {
+      setMarketingMsg({ ok: false, text: 'Nombre y mensaje son requeridos.' }); return;
+    }
+    try {
+      const res = await shopifyFetch(`${API}/api/shopify/embedded/campaigns`, { method: 'POST', body: JSON.stringify(newCampaign) });
+      const d = await res.json();
+      if (d.id) {
+        setNewCampaign({ name: '', message_template: '', delay_seconds: 30 });
+        setShowNewCampaign(false);
+        loadMarketing();
+      }
+    } catch (_e) { setMarketingMsg({ ok: false, text: 'Error al crear campaña.' }); }
+  }
+
+  async function addCustomersToCampaign(campaignId) {
+    try {
+      const res = await shopifyFetch(`${API}/api/shopify/embedded/campaigns/${campaignId}/add-customers`, { method: 'POST', body: JSON.stringify({}) });
+      const d = await res.json();
+      setMarketingMsg({ ok: true, text: `${d.added} clientes agregados a la campaña.` });
+      loadMarketing();
+    } catch (_e) { setMarketingMsg({ ok: false, text: 'Error al agregar clientes.' }); }
+  }
+
+  async function startCampaign(id) {
+    try {
+      const res = await shopifyFetch(`${API}/api/shopify/embedded/campaigns/${id}/start`, { method: 'POST' });
+      const d = await res.json();
+      if (!d.ok) setMarketingMsg({ ok: false, text: d.error });
+      else loadMarketing();
+    } catch (_e) { setMarketingMsg({ ok: false, text: 'Error.' }); }
+  }
+
+  async function pauseCampaign(id) {
+    try {
+      await shopifyFetch(`${API}/api/shopify/embedded/campaigns/${id}/pause`, { method: 'POST' });
+      loadMarketing();
+    } catch (_e) {}
+  }
+
+  async function deleteCampaign(id) {
+    try {
+      await shopifyFetch(`${API}/api/shopify/embedded/campaigns/${id}`, { method: 'DELETE' });
+      loadMarketing();
+    } catch (_e) {}
+  }
+
   if (loading) return (
     <Page><Layout><Layout.Section>
       <Card><Box padding="800"><InlineStack align="center"><Spinner size="large" /></InlineStack></Box></Card>
@@ -283,6 +371,7 @@ function ShopifyPanel() {
     { id: 'config', content: 'Configuración' },
     { id: 'turnos', content: 'Turnos' },
     { id: 'preview', content: '📱 Probar asistente' },
+    { id: 'marketing', content: '📣 Marketing' },
   ];
 
   async function sendPreview(message, history) {
@@ -671,6 +760,196 @@ function ShopifyPanel() {
                       Probá el asistente con el prompt y la base de conocimientos actuales. No es necesario guardar primero.
                     </Text>
                     <PreviewChat botName={bot?.name} onSend={sendPreview} />
+                  </BlockStack>
+                )}
+
+                {/* ════ TAB: MARKETING ════ */}
+                {selectedTab === 3 && (
+                  <BlockStack gap="500">
+                    {marketingLoading && <InlineStack align="center"><Spinner size="small" /></InlineStack>}
+                    {marketingMsg && <Banner tone={marketingMsg.ok ? 'success' : 'critical'}>{marketingMsg.text}</Banner>}
+
+                    {/* ── Carritos abandonados ── */}
+                    <BlockStack gap="300">
+                      <Text variant="headingMd" as="h2">🛒 Recupero de carritos abandonados</Text>
+                      <Text variant="bodySm" tone="subdued">
+                        Cuando un cliente agrega productos al carrito pero no completa la compra, el asistente le manda un WhatsApp automático recordándole. Requiere WhatsApp conectado.
+                      </Text>
+                      <Checkbox
+                        label="Activar recupero automático de carritos"
+                        checked={!!cartConfig.enabled}
+                        onChange={v => setCartConfig(c => ({ ...c, enabled: v }))}
+                        disabled={!isOn}
+                        helpText={!isOn ? 'Requiere WhatsApp conectado.' : ''}
+                      />
+                      {cartConfig.enabled && (
+                        <BlockStack gap="300">
+                          <TextField
+                            label="Horas de espera antes de enviar el recordatorio"
+                            type="number"
+                            value={String(cartConfig.delayHours)}
+                            onChange={v => setCartConfig(c => ({ ...c, delayHours: parseFloat(v) || 2 }))}
+                            helpText="Tiempo que espera después del abandono antes de mandar el mensaje. Recomendado: 2 horas."
+                            autoComplete="off"
+                          />
+                          <TextField
+                            label="Mensaje de recupero"
+                            value={cartConfig.message}
+                            onChange={v => setCartConfig(c => ({ ...c, message: v }))}
+                            multiline={5}
+                            helpText="Variables disponibles: {{nombre}}, {{productos}}, {{url}}, {{total}}"
+                            autoComplete="off"
+                          />
+                        </BlockStack>
+                      )}
+                      <InlineStack>
+                        <Button onClick={saveCartConfig} loading={cartSaving} variant="primary">Guardar configuración</Button>
+                      </InlineStack>
+
+                      {abandonedCarts.length > 0 && (
+                        <BlockStack gap="200">
+                          <Text variant="headingSm" as="h3">Últimos carritos detectados</Text>
+                          {abandonedCarts.slice(0, 8).map(cart => (
+                            <Card key={cart.id}>
+                              <InlineStack align="space-between">
+                                <BlockStack gap="100">
+                                  <Text variant="bodyMd" fontWeight="semibold">{cart.name || cart.phone}</Text>
+                                  <Text variant="bodySm" tone="subdued">{cart.products?.split('\n')[0] || 'Sin detalle'}</Text>
+                                </BlockStack>
+                                <span style={{ background: cart.status === 'recovered' ? '#10b981' : cart.status === 'messaged' ? '#3b82f6' : '#64748b', color: '#fff', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>
+                                  {cart.status === 'recovered' ? 'Recuperado' : cart.status === 'messaged' ? 'Mensaje enviado' : 'Pendiente'}
+                                </span>
+                              </InlineStack>
+                            </Card>
+                          ))}
+                        </BlockStack>
+                      )}
+                    </BlockStack>
+
+                    <Divider />
+
+                    {/* ── Clientes ── */}
+                    <BlockStack gap="300">
+                      <Text variant="headingMd" as="h2">👥 Clientes recolectados</Text>
+                      <Text variant="bodySm" tone="subdued">
+                        Cada vez que alguien completa una compra en tu tienda, su nombre y número de WhatsApp quedan guardados automáticamente. Podés usarlos para difusiones.
+                      </Text>
+                      <Card>
+                        <Box padding="400">
+                          <InlineStack align="space-between">
+                            <BlockStack gap="100">
+                              <Text variant="headingXl" as="p">{customers.length}</Text>
+                              <Text variant="bodySm" tone="subdued">clientes con WhatsApp</Text>
+                            </BlockStack>
+                            {customers.length > 0 && (
+                              <BlockStack gap="100">
+                                <Text variant="bodySm" tone="subdued">Últ. cliente: {customers[0]?.name || customers[0]?.phone || '—'}</Text>
+                                <Text variant="bodySm" tone="subdued">{customers[0]?.total_orders || 1} compra{customers[0]?.total_orders !== 1 ? 's' : ''}</Text>
+                              </BlockStack>
+                            )}
+                          </InlineStack>
+                        </Box>
+                      </Card>
+                      {customers.length === 0 && (
+                        <Banner tone="info">Todavía no hay clientes registrados. Se cargarán automáticamente con cada nueva compra en la tienda.</Banner>
+                      )}
+                    </BlockStack>
+
+                    <Divider />
+
+                    {/* ── Difusiones ── */}
+                    <BlockStack gap="300">
+                      <InlineStack align="space-between">
+                        <Text variant="headingMd" as="h2">📨 Difusiones</Text>
+                        <Button onClick={() => setShowNewCampaign(v => !v)} size="slim" disabled={customers.length === 0}>
+                          {showNewCampaign ? 'Cancelar' : '+ Nueva difusión'}
+                        </Button>
+                      </InlineStack>
+                      <Text variant="bodySm" tone="subdued">
+                        Mandá un mensaje personalizado a todos tus clientes de una vez. Usá {'{{nombre}}'} para personalizar. El sistema envía los mensajes con un intervalo automático para evitar bloqueos.
+                      </Text>
+                      <Banner tone="warning">
+                        WhatsApp puede bloquear números que envíen mensajes masivos. Usá esta función con moderación, con mensajes de valor real para tus clientes.
+                      </Banner>
+
+                      {showNewCampaign && (
+                        <Card>
+                          <BlockStack gap="300">
+                            <Text variant="headingSm" as="h3">Nueva difusión</Text>
+                            <TextField
+                              label="Nombre de la difusión"
+                              value={newCampaign.name}
+                              onChange={v => setNewCampaign(c => ({ ...c, name: v }))}
+                              placeholder="Ej: Promo Mayo 2026"
+                              autoComplete="off"
+                            />
+                            <TextField
+                              label="Mensaje"
+                              value={newCampaign.message_template}
+                              onChange={v => setNewCampaign(c => ({ ...c, message_template: v }))}
+                              multiline={5}
+                              placeholder={'Hola {{nombre}}! 👋 Tenemos una novedad especial para vos...'}
+                              helpText="Usá {{nombre}} para personalizar con el nombre del cliente."
+                              autoComplete="off"
+                            />
+                            <TextField
+                              label="Pausa entre mensajes (segundos)"
+                              type="number"
+                              value={String(newCampaign.delay_seconds)}
+                              onChange={v => setNewCampaign(c => ({ ...c, delay_seconds: parseInt(v) || 30 }))}
+                              helpText="Mínimo recomendado: 30 segundos. Menos tiempo aumenta el riesgo de bloqueo."
+                              autoComplete="off"
+                            />
+                            <InlineStack>
+                              <Button onClick={createCampaign} variant="primary">Crear difusión</Button>
+                            </InlineStack>
+                          </BlockStack>
+                        </Card>
+                      )}
+
+                      {campaigns.length === 0 ? (
+                        <Text variant="bodySm" tone="subdued">No hay difusiones creadas todavía.</Text>
+                      ) : (
+                        <BlockStack gap="200">
+                          {campaigns.map(c => {
+                            const statusLabel = { draft: 'Borrador', running: 'Enviando', paused: 'Pausada', completed: 'Completada' }[c.status] || c.status;
+                            const statusColor = { draft: '#64748b', running: '#10b981', paused: '#f59e0b', completed: '#3b82f6' }[c.status] || '#64748b';
+                            return (
+                              <Card key={c.id}>
+                                <BlockStack gap="200">
+                                  <InlineStack align="space-between">
+                                    <InlineStack gap="300">
+                                      <Text variant="bodyMd" fontWeight="semibold">{c.name}</Text>
+                                      <span style={{ background: statusColor, color: '#fff', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>{statusLabel}</span>
+                                    </InlineStack>
+                                    <InlineStack gap="200">
+                                      {c.status === 'draft' && (
+                                        <Button size="slim" onClick={() => addCustomersToCampaign(c.id)}>+ Clientes ({customers.length})</Button>
+                                      )}
+                                      {['draft', 'paused'].includes(c.status) && (
+                                        <Button size="slim" variant="primary" onClick={() => startCampaign(c.id)} disabled={!isOn}>Enviar</Button>
+                                      )}
+                                      {c.status === 'running' && (
+                                        <Button size="slim" onClick={() => pauseCampaign(c.id)}>Pausar</Button>
+                                      )}
+                                      {['draft', 'paused', 'completed'].includes(c.status) && (
+                                        <Button size="slim" tone="critical" variant="plain" onClick={() => deleteCampaign(c.id)}>Eliminar</Button>
+                                      )}
+                                    </InlineStack>
+                                  </InlineStack>
+                                  <InlineStack gap="400">
+                                    <Text variant="bodySm" tone="subdued">Pendientes: {c.stats?.pending || 0}</Text>
+                                    <Text variant="bodySm" tone="subdued">Enviados: {c.stats?.sent || 0}</Text>
+                                    <Text variant="bodySm" tone="subdued">Respondieron: {c.stats?.replied || 0}</Text>
+                                  </InlineStack>
+                                </BlockStack>
+                              </Card>
+                            );
+                          })}
+                        </BlockStack>
+                      )}
+                    </BlockStack>
+
                   </BlockStack>
                 )}
 
