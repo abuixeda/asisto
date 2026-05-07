@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   AppProvider, Page, Layout, Card, BlockStack, InlineStack,
   Text, Button, TextField, Banner, Spinner, Divider,
@@ -40,6 +41,9 @@ function ShopifyPanel() {
   const [widgetMsg, setWidgetMsg] = useState(null);
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState(null);
+  const [starting, setStarting] = useState(false);
+  const [qrData, setQrData] = useState(null);
+  const pollRef = useRef(null);
 
   useEffect(() => {
     shopifyFetch(`${API}/api/shopify/embedded/bot`)
@@ -53,6 +57,39 @@ function ShopifyPanel() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  async function pollStatus() {
+    try {
+      const res = await shopifyFetch(`${API}/api/shopify/embedded/status`);
+      const data = await res.json();
+      if (data.qr) setQrData(data.qr);
+      if (data.status === 'ON') {
+        setBot(b => ({ ...b, status: 'ON' }));
+        setStarting(false);
+        setQrData(null);
+        clearInterval(pollRef.current);
+      }
+    } catch (_e) {}
+  }
+
+  async function startBot() {
+    setStarting(true);
+    setQrData(null);
+    try {
+      await shopifyFetch(`${API}/api/shopify/embedded/start`, { method: 'POST' });
+      pollRef.current = setInterval(pollStatus, 2000);
+    } catch (_e) { setStarting(false); }
+  }
+
+  async function stopBot() {
+    try {
+      await shopifyFetch(`${API}/api/shopify/embedded/stop`, { method: 'POST' });
+    } catch (_e) {}
+    setBot(b => ({ ...b, status: 'OFF' }));
+    setStarting(false);
+    setQrData(null);
+    clearInterval(pollRef.current);
+  }
 
   async function saveConfig() {
     setSaving(true); setSaveMsg(null);
@@ -106,9 +143,54 @@ function ShopifyPanel() {
             <Text as="p" variant="bodyMd" tone="subdued">
               {isOn
                 ? `${metrics.messagesSent || 0} mensajes respondidos · ${metrics.customersHelped || 0} chats atendidos`
-                : 'Para conectar WhatsApp, ingresá al panel de Asisto desde el link que recibiste por email.'}
+                : 'Conectá WhatsApp para que el bot empiece a responder mensajes.'}
             </Text>
           </Banner>
+        </Layout.Section>
+
+        <Layout.Section>
+          <Card>
+            <BlockStack gap="400">
+              <Text variant="headingMd" as="h2">Conexión WhatsApp</Text>
+              {isOn ? (
+                <BlockStack gap="300">
+                  <Text variant="bodySm" tone="subdued">WhatsApp conectado y activo. El bot está respondiendo mensajes.</Text>
+                  <InlineStack>
+                    <Button onClick={stopBot} tone="critical">Desconectar WhatsApp</Button>
+                  </InlineStack>
+                </BlockStack>
+              ) : starting ? (
+                <BlockStack gap="400" align="center">
+                  {qrData ? (
+                    <>
+                      <Text variant="bodySm" tone="subdued">Escaneá este código con WhatsApp → Dispositivos vinculados → Escanear QR</Text>
+                      <InlineStack align="center">
+                        <div style={{ background: 'white', padding: '12px', borderRadius: '12px', display: 'inline-block' }}>
+                          <QRCodeSVG value={qrData} size={200} />
+                        </div>
+                      </InlineStack>
+                      <Text variant="bodySm" tone="subdued" alignment="center">El código expira en 60 segundos — se actualiza automáticamente.</Text>
+                    </>
+                  ) : (
+                    <InlineStack gap="300" align="center">
+                      <Spinner size="small" />
+                      <Text variant="bodySm" tone="subdued">Iniciando, aguardá el código QR…</Text>
+                    </InlineStack>
+                  )}
+                  <InlineStack>
+                    <Button onClick={stopBot} variant="plain">Cancelar</Button>
+                  </InlineStack>
+                </BlockStack>
+              ) : (
+                <BlockStack gap="300">
+                  <Text variant="bodySm" tone="subdued">Hacé clic en el botón y escaneá el código QR con tu WhatsApp Business para activar el bot.</Text>
+                  <InlineStack>
+                    <Button onClick={startBot} variant="primary">Conectar WhatsApp</Button>
+                  </InlineStack>
+                </BlockStack>
+              )}
+            </BlockStack>
+          </Card>
         </Layout.Section>
 
         <Layout.Section>
