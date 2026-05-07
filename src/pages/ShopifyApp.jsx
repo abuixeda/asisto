@@ -193,10 +193,11 @@ function ShopifyPanel() {
       const data = await res.json();
       if (data.qr) setQrData(data.qr);
       if (data.status === 'ON') {
-        setBot(b => ({ ...b, status: 'ON' }));
+        setBot(b => ({ ...b, status: 'ON', businessPhone: data.businessPhone || b?.businessPhone }));
         setStarting(false); setQrData(null);
         clearInterval(pollRef.current);
       }
+      if (data.businessPhone) setBot(b => ({ ...b, businessPhone: data.businessPhone }));
     } catch (_e) {}
   }
 
@@ -442,7 +443,17 @@ function ShopifyPanel() {
                     <Text variant="headingMd" as="h2">Conexión WhatsApp</Text>
                     {isOn ? (
                       <BlockStack gap="300">
-                        <Text variant="bodySm" tone="subdued">WhatsApp conectado y activo. El asistente está respondiendo mensajes.</Text>
+                        <Banner tone="success">
+                          <BlockStack gap="100">
+                            <Text variant="bodyMd" fontWeight="semibold">WhatsApp conectado y activo</Text>
+                            {bot?.businessPhone && (
+                              <Text variant="bodySm" tone="subdued">
+                                Número conectado: <strong>+{bot.businessPhone}</strong>
+                              </Text>
+                            )}
+                            <Text variant="bodySm" tone="subdued">El asistente está respondiendo mensajes automáticamente.</Text>
+                          </BlockStack>
+                        </Banner>
                         <InlineStack>
                           <Button onClick={stopBot} tone="critical">Desconectar WhatsApp</Button>
                         </InlineStack>
@@ -508,8 +519,8 @@ function ShopifyPanel() {
                         label="Tu número de WhatsApp Business"
                         value={widget.phone}
                         onChange={v => setWidget(w => ({ ...w, phone: v }))}
-                        placeholder="5491150001234"
-                        helpText="Los clientes te escribirán a este número. Formato: código de país + código de área + número, sin + ni espacios. Ejemplo para Argentina: 5491150001234."
+                        placeholder={bot?.businessPhone || '5491150001234'}
+                        helpText={`Los clientes te escribirán a este número cuando hagan clic en el botón. Debe ser el mismo número de WhatsApp que conectaste en la pestaña "WhatsApp".${bot?.businessPhone ? ` Número conectado: +${bot.businessPhone}.` : ' Todavía no conectaste WhatsApp.'} Formato: código de país + número, sin + ni espacios.`}
                         autoComplete="off"
                       />
                       <TextField
