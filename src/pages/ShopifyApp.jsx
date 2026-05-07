@@ -112,6 +112,7 @@ function ShopifyPanel() {
   const [responseDelay, setResponseDelay] = useState(2.5);
   const [hours, setHours] = useState({ active: false, start: '09:00', end: '18:00', autoReplyMsg: '' });
   const [adminPhone, setAdminPhone] = useState('');
+  const [language, setLanguage] = useState('es');
   const [widget, setWidget] = useState({ enabled: false, welcomeMessage: '', buttonText: '' });
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState(null);
@@ -163,6 +164,7 @@ function ShopifyPanel() {
         if (m.responseDelay !== undefined) setResponseDelay(m.responseDelay);
         if (m.workingHours) setHours(m.workingHours);
         if (m.adminNumber) setAdminPhone(m.adminNumber.replace('@c.us', ''));
+        if (data.language) setLanguage(data.language);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -226,7 +228,7 @@ function ShopifyPanel() {
     try {
       const res = await shopifyFetch(`${API}/api/shopify/embedded/bot`, {
         method: 'POST',
-        body: JSON.stringify({ prompt, knowledgeBase: kb, responseDelay, workingHours: hours, adminPhone, widget }),
+        body: JSON.stringify({ prompt, knowledgeBase: kb, responseDelay, workingHours: hours, adminPhone, widget, language }),
       });
       const d = await res.json();
       setSaveMsg(d.ok ? { ok: true, text: 'Configuración guardada.' } : { ok: false, text: d.error || 'Error.' });
@@ -541,6 +543,30 @@ function ShopifyPanel() {
 
                     <Divider />
 
+                    {/* ── Idioma ── */}
+                    <BlockStack gap="300">
+                      <Text variant="headingMd" as="h2">🌐 Idioma de respuestas</Text>
+                      <Text variant="bodySm" tone="subdued">
+                        En qué idioma responde el asistente. Si elegís un idioma distinto al español, el asistente responderá siempre en ese idioma aunque el cliente escriba en otro.
+                      </Text>
+                      <Select
+                        label="Idioma del asistente"
+                        options={[
+                          { label: '🇦🇷 Español', value: 'es' },
+                          { label: '🇺🇸 English', value: 'en' },
+                          { label: '🇧🇷 Português', value: 'pt' },
+                          { label: '🇩🇪 Deutsch', value: 'de' },
+                          { label: '🇫🇷 Français', value: 'fr' },
+                          { label: '🇸🇦 العربية', value: 'ar' },
+                          { label: '🇮🇹 Italiano', value: 'it' },
+                        ]}
+                        value={language}
+                        onChange={setLanguage}
+                      />
+                    </BlockStack>
+
+                    <Divider />
+
                     {/* ── Comportamiento ── */}
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Comportamiento del asistente</Text>
@@ -780,8 +806,8 @@ function ShopifyPanel() {
                         checked={!!cartConfig.enabled}
                         onChange={v => setCartConfig(c => ({ ...c, enabled: v }))}
                         disabled={!isOn}
-                        helpText={!isOn ? 'Requiere WhatsApp conectado.' : ''}
                       />
+                      {!isOn && <Text variant="bodySm" tone="subdued">Requiere WhatsApp conectado para funcionar.</Text>}
                       {cartConfig.enabled && (
                         <BlockStack gap="300">
                           <TextField
@@ -971,7 +997,20 @@ export default function ShopifyApp() {
     link.href = polarisCssUrl;
     link.id = 'polaris-styles';
     document.head.appendChild(link);
-    return () => document.getElementById('polaris-styles')?.remove();
+
+    const style = document.createElement('style');
+    style.id = 'asisto-overrides';
+    style.textContent = `
+      html, body { background: #0d0f18 !important; }
+      .Polaris-Frame { background: #0d0f18 !important; }
+      .Polaris-Page { background: transparent !important; }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      document.getElementById('polaris-styles')?.remove();
+      document.getElementById('asisto-overrides')?.remove();
+    };
   }, []);
 
   return (
