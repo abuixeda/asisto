@@ -13,14 +13,21 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 // ─── Panel (requiere window.shopify inyectado por Shopify en el iframe) ────────
 function ShopifyPanel() {
   const app = useAppBridge();
+  const shop = new URLSearchParams(window.location.search).get('shop') || '';
 
   const shopifyFetch = useCallback(async (url, options = {}) => {
-    const token = await app.idToken();
-    return fetch(url, {
-      ...options,
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...options.headers },
-    });
-  }, [app]);
+    const headers = { 'Content-Type': 'application/json', ...options.headers };
+    try {
+      const token = await Promise.race([
+        app.idToken(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
+      ]);
+      headers['Authorization'] = `Bearer ${token}`;
+    } catch (_e) {
+      if (shop) headers['X-Shopify-Shop'] = shop;
+    }
+    return fetch(url, { ...options, headers });
+  }, [app, shop]);
 
   const [bot, setBot] = useState(null);
   const [loading, setLoading] = useState(true);
