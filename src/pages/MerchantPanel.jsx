@@ -1271,6 +1271,102 @@ function TurnosPanel({ botId, token, api }) {
   );
 }
 
+// ─── WidgetPanel ──────────────────────────────────────────────────────────────
+function WidgetPanel({ botId, token, api }) {
+  const [cfg, setCfg] = useState({ enabled: false, phone: '', welcomeMessage: '', buttonText: '' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  useEffect(() => {
+    authFetch(`${api}/api/bots/${botId}/widget-config`, {}, token)
+      .then(r => r.json())
+      .then(d => { if (d && typeof d.enabled !== 'undefined') setCfg(d); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [botId, token, api]);
+
+  async function save() {
+    setSaving(true); setMsg(null);
+    try {
+      const r = await authFetch(`${api}/api/bots/${botId}/widget-config`, { method: 'POST', body: JSON.stringify(cfg) }, token);
+      const d = await r.json();
+      if (d.ok) setMsg({ ok: true, text: 'Configuración guardada.' });
+      else setMsg({ ok: false, text: d.error || 'Error al guardar.' });
+    } catch { setMsg({ ok: false, text: 'Error de conexión.' }); }
+    finally { setSaving(false); }
+  }
+
+  if (loading) return <div style={{ padding: '2rem', color: 'var(--text-secondary)' }}>Cargando...</div>;
+
+  const inputStyle = { width: '100%', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text-primary)', padding: '0.65rem 0.85rem', fontSize: '0.9rem', boxSizing: 'border-box' };
+  const labelStyle = { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.05em' };
+
+  return (
+    <div style={{ padding: '0.5rem 0' }}>
+      <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 0.4rem' }}>Widget de WhatsApp</h2>
+      <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0 0 1.75rem' }}>
+        Aparece como botón flotante en tu tienda Shopify. Tus clientes hacen clic y te escriben directo por WhatsApp.
+      </p>
+
+      {/* Enable toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem 1.25rem', marginBottom: '1.25rem' }}>
+        <div>
+          <div style={{ fontWeight: 600, marginBottom: '0.2rem' }}>Activar widget en la tienda</div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Muestra el botón de WhatsApp en todas las páginas de tu tienda</div>
+        </div>
+        <label style={{ position: 'relative', display: 'inline-block', width: '48px', height: '26px', flexShrink: 0 }}>
+          <input type="checkbox" checked={cfg.enabled} onChange={e => setCfg(c => ({ ...c, enabled: e.target.checked }))} style={{ opacity: 0, width: 0, height: 0 }} />
+          <span style={{ position: 'absolute', inset: 0, borderRadius: '99px', background: cfg.enabled ? 'linear-gradient(135deg,#7c3aed,#3b82f6)' : 'var(--border)', cursor: 'pointer', transition: 'background 0.2s' }}>
+            <span style={{ position: 'absolute', top: '3px', left: cfg.enabled ? '25px' : '3px', width: '20px', height: '20px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)' }} />
+          </span>
+        </label>
+      </div>
+
+      <div style={{ display: 'grid', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div>
+          <label style={labelStyle}>Número de WhatsApp <span style={{ color: '#ef4444' }}>*</span></label>
+          <input style={inputStyle} placeholder="5491123456789 (sin + ni espacios)" value={cfg.phone} onChange={e => setCfg(c => ({ ...c, phone: e.target.value }))} />
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem' }}>Código de país + número. Ej: 5491123456789 para Argentina</div>
+        </div>
+        <div>
+          <label style={labelStyle}>Mensaje de bienvenida</label>
+          <input style={inputStyle} placeholder="Hola! Tengo una consulta sobre su tienda." value={cfg.welcomeMessage} onChange={e => setCfg(c => ({ ...c, welcomeMessage: e.target.value }))} />
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem' }}>Texto que aparece pre-escrito cuando el cliente abre WhatsApp</div>
+        </div>
+        <div>
+          <label style={labelStyle}>Texto del tooltip</label>
+          <input style={inputStyle} placeholder="Chateá con nosotros" value={cfg.buttonText} onChange={e => setCfg(c => ({ ...c, buttonText: e.target.value }))} />
+        </div>
+      </div>
+
+      {/* Preview */}
+      <div style={{ background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
+        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Vista previa del botón</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: cfg.enabled ? '#25d366' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: cfg.enabled ? '0 4px 20px rgba(37,211,102,0.4)' : 'none', flexShrink: 0, transition: 'all 0.2s' }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          </div>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{cfg.buttonText || 'Chateá con nosotros'}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{cfg.enabled ? '✅ Visible en tu tienda' : '⛔ Desactivado'}</div>
+          </div>
+        </div>
+      </div>
+
+      {msg && (
+        <div style={{ background: msg.ok ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${msg.ok ? '#10b981' : '#ef4444'}`, borderRadius: '10px', padding: '0.65rem 1rem', marginBottom: '1rem', fontSize: '0.875rem', color: msg.ok ? '#10b981' : '#ef4444' }}>
+          {msg.text}
+        </div>
+      )}
+
+      <button onClick={save} disabled={saving} style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: '10px', color: '#fff', cursor: saving ? 'wait' : 'pointer', padding: '0.75rem 2rem', fontWeight: 700, fontSize: '0.95rem', opacity: saving ? 0.7 : 1 }}>
+        {saving ? 'Guardando...' : 'Guardar configuración'}
+      </button>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function MerchantPanel() {
@@ -1589,12 +1685,14 @@ export default function MerchantPanel() {
                 <button onClick={() => setActiveTab('config')} style={activeTab === 'config' ? tabActiveStyle : tabStyle}>⚙️ Configuración</button>
                 <button onClick={() => setActiveTab('campaigns')} style={activeTab === 'campaigns' ? tabActiveStyle : tabStyle}>📣 Campañas</button>
                 <button onClick={() => setActiveTab('turnos')} style={activeTab === 'turnos' ? tabActiveStyle : tabStyle}>📅 Turnos</button>
+                {bot?.botType === 'shopify' && <button onClick={() => setActiveTab('widget')} style={activeTab === 'widget' ? tabActiveStyle : tabStyle}>🛒 Widget</button>}
               </div>
             );
           })()}
 
           {activeTab === 'campaigns' && <div id="tour-campaigns-area"><CampaignPanel botId={botId} token={token} api={API} /></div>}
           {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} /></div>}
+          {activeTab === 'widget' && <WidgetPanel botId={botId} token={token} api={API} />}
 
           {activeTab === 'config' && (<>
 
