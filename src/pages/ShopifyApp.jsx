@@ -6,7 +6,7 @@ import {
   Text, Button, TextField, Banner, Spinner, Divider,
   Box, InlineGrid, Checkbox,
 } from '@shopify/polaris';
-import '@shopify/polaris/build/esm/styles.css';
+import polarisCssUrl from '@shopify/polaris/build/esm/styles.css?url';
 import translations from '@shopify/polaris/locales/es.json';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -265,6 +265,15 @@ function ShopifyPanel() {
 
 // ─── Entry point ──────────────────────────────────────────────────────────────
 export default function ShopifyApp() {
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = polarisCssUrl;
+    link.id = 'polaris-styles';
+    document.head.appendChild(link);
+    return () => document.getElementById('polaris-styles')?.remove();
+  }, []);
+
   return (
     <AppProvider i18n={translations}>
       <ShopifyPanel />
