@@ -83,6 +83,47 @@ function PreviewChat({ botName, onSend }) {
   );
 }
 
+// ─── Constantes y helpers de Turnos ──────────────────────────────────────────
+const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const DAYS_SHORT = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const SPEC_COLORS = ['#7c3aed','#3b82f6','#10b981','#f59e0b','#ef4444','#ec4899','#06b6d4'];
+
+function getWeekDays(offset) {
+  const today = new Date();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7) + offset * 7);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d.toISOString().split('T')[0];
+  });
+}
+
+function getTimeSlotsForSpec(spec) {
+  if (!spec) return { slots: [], dayMap: {} };
+  const schedArr = Array.isArray(spec.schedule) ? spec.schedule : [];
+  const dayMap = {};
+  let minH = 24, maxH = 0;
+  for (const sl of schedArr) {
+    if (!sl.active) continue;
+    const dow = sl.day_of_week;
+    if (!dayMap[dow]) dayMap[dow] = [];
+    dayMap[dow].push({ start: sl.start_time, end: sl.end_time });
+    const [sh] = sl.start_time.split(':').map(Number);
+    const [eh] = sl.end_time.split(':').map(Number);
+    if (sh < minH) minH = sh;
+    if (eh > maxH) maxH = eh;
+  }
+  if (maxH === 0 || minH === 24) return { slots: [], dayMap };
+  const slots = [];
+  const dur = spec.duration_minutes || 30;
+  for (let m = minH * 60; m < maxH * 60; m += dur) {
+    const h = Math.floor(m / 60), min = m % 60;
+    slots.push(`${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`);
+  }
+  return { slots, dayMap };
+}
+
 // ─── Panel principal ───────────────────────────────────────────────────────────
 function ShopifyPanel() {
   const app = useAppBridge();
@@ -131,11 +172,18 @@ function ShopifyPanel() {
   // ── Turnos ──
   const [specialties, setSpecialties] = useState([]);
   const [appointments, setAppointments] = useState([]);
-  const [apptDate, setApptDate] = useState(new Date().toISOString().slice(0, 10));
-  const [newSpec, setNewSpec] = useState({ name: '', duration_minutes: 30, color: '#7c3aed', capacity: 1 });
-  const [newAppt, setNewAppt] = useState({ specialty_id: '', client_name: '', client_phone: '', date: new Date().toISOString().slice(0, 10), time: '' });
+  const [turnosView, setTurnosView] = useState('agenda');
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedSpecId, setSelectedSpecId] = useState(null);
+  const [schedule, setSchedule] = useState({});
+  const [savingSchedule, setSavingSchedule] = useState(false);
+  const [scheduleMsg, setScheduleMsg] = useState(null);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [apptDetail, setApptDetail] = useState(null);
+  const [newSpec, setNewSpec] = useState({ name: '', duration_minutes: 30, color: '#7c3aed', capacity: 1, reminder_enabled: true, reminder_hours: 24 });
+  const [newAppt, setNewAppt] = useState({ specialty_id: '', client_name: '', client_phone: '', date: new Date().toISOString().slice(0, 10), time: '', notes: '' });
   const [turnosSaving, setTurnosSaving] = useState(false);
-  const [turnosMsg, setTurnosMsg] = useState(null);
+  const [apptMsg, setApptMsg] = useState(null);
   const [showNewSpec, setShowNewSpec] = useState(false);
   const [showNewAppt, setShowNewAppt] = useState(false);
 
@@ -180,19 +228,54 @@ function ShopifyPanel() {
     try {
       const [sRes, aRes] = await Promise.all([
         shopifyFetch(`${API}/api/shopify/embedded/specialties`),
-        shopifyFetch(`${API}/api/shopify/embedded/appointments?date=${apptDate}`),
+        shopifyFetch(`${API}/api/shopify/embedded/appointments`),
       ]);
-      setSpecialties(await sRes.json());
-      setAppointments(await aRes.json());
+      const specsData = await sRes.json();
+      const apptsData = await aRes.json();
+      setSpecialties(Array.isArray(specsData) ? specsData : []);
+      setAppointments(Array.isArray(apptsData) ? apptsData : []);
+      const sched = {};
+      for (const spec of (Array.isArray(specsData) ? specsData : [])) {
+        const slots = Array.isArray(spec.schedule) ? spec.schedule : [];
+        const dayMap = {};
+        for (const sl of slots) {
+          const d = sl.day_of_week;
+          if (!dayMap[d]) dayMap[d] = [];
+          dayMap[d].push({ start_time: sl.start_time, end_time: sl.end_time });
+        }
+        sched[spec.id] = Array.from({ length: 7 }, (_, i) => ({
+          day_of_week: i,
+          active: !!(dayMap[i]?.length),
+          windows: dayMap[i]?.length ? dayMap[i] : [{ start_time: '09:00', end_time: '18:00' }],
+        }));
+      }
+      setSchedule(sched);
+      if (Array.isArray(specsData) && specsData.length > 0) {
+        setSelectedSpecId(prev => prev || specsData[0].id);
+      }
     } catch (_e) {}
   }
 
   useEffect(() => {
-    if (selectedTab === 1) {
-      shopifyFetch(`${API}/api/shopify/embedded/appointments?date=${apptDate}`)
-        .then(r => r.json()).then(setAppointments).catch(() => {});
+    async function load() {
+      const specId = newAppt.specialty_id;
+      const date = newAppt.date;
+      if (!specId || !date) { setAvailableSlots([]); return; }
+      const spec = specialties.find(s => s.id === specId);
+      if (!spec) { setAvailableSlots([]); return; }
+      const dow = new Date(date + 'T12:00:00').getDay();
+      const adjustedDow = dow === 0 ? 6 : dow - 1;
+      const { slots: allSlots, dayMap } = getTimeSlotsForSpec(spec);
+      if (!dayMap[adjustedDow]) { setAvailableSlots([]); return; }
+      try {
+        const res = await shopifyFetch(`${API}/api/shopify/embedded/appointments?date=${date}`);
+        const existing = await res.json();
+        const taken = new Set(existing.filter(a => a.specialty_id === specId).map(a => a.time?.slice(0, 5)));
+        setAvailableSlots(allSlots.filter(s => !taken.has(s)));
+      } catch (_e) { setAvailableSlots(allSlots); }
     }
-  }, [apptDate, selectedTab]);
+    load();
+  }, [newAppt.specialty_id, newAppt.date]);
 
   // ── WhatsApp ──
   async function pollStatus() {
@@ -265,38 +348,98 @@ function ShopifyPanel() {
   // ── Turnos ──
   async function createSpecialty() {
     if (!newSpec.name) return;
-    setTurnosSaving(true); setTurnosMsg(null);
+    setTurnosSaving(true); setApptMsg(null);
     try {
       await shopifyFetch(`${API}/api/shopify/embedded/specialties`, { method: 'POST', body: JSON.stringify(newSpec) });
-      setNewSpec({ name: '', duration_minutes: 30, color: '#7c3aed', capacity: 1 });
+      setNewSpec({ name: '', duration_minutes: 30, color: '#7c3aed', capacity: 1, reminder_enabled: true, reminder_hours: 24 });
       setShowNewSpec(false);
       loadTurnos();
-    } catch (_e) { setTurnosMsg({ ok: false, text: 'Error al crear servicio.' }); }
+    } catch (_e) { setApptMsg({ ok: false, text: 'Error al crear servicio.' }); }
     finally { setTurnosSaving(false); }
   }
 
   async function deleteSpecialty(id) {
     await shopifyFetch(`${API}/api/shopify/embedded/specialties/${id}`, { method: 'DELETE' });
+    setSelectedSpecId(prev => prev === id ? null : prev);
     loadTurnos();
   }
 
   async function createAppointment() {
     if (!newAppt.specialty_id || !newAppt.client_phone || !newAppt.date || !newAppt.time) {
-      setTurnosMsg({ ok: false, text: 'Completá todos los campos requeridos.' }); return;
+      setApptMsg({ ok: false, text: 'Completá todos los campos requeridos.' }); return;
     }
-    setTurnosSaving(true); setTurnosMsg(null);
+    setTurnosSaving(true); setApptMsg(null);
     try {
       await shopifyFetch(`${API}/api/shopify/embedded/appointments`, { method: 'POST', body: JSON.stringify(newAppt) });
-      setNewAppt({ specialty_id: '', client_name: '', client_phone: '', date: apptDate, time: '' });
+      setNewAppt({ specialty_id: '', client_name: '', client_phone: '', date: new Date().toISOString().slice(0, 10), time: '', notes: '' });
       setShowNewAppt(false);
+      setAvailableSlots([]);
       loadTurnos();
-    } catch (_e) { setTurnosMsg({ ok: false, text: 'Error al crear turno.' }); }
+    } catch (_e) { setApptMsg({ ok: false, text: 'Error al crear turno.' }); }
     finally { setTurnosSaving(false); }
   }
 
-  async function cancelAppointment(id) {
-    await shopifyFetch(`${API}/api/shopify/embedded/appointments/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'cancelled' }) });
+  async function updateApptStatus(id, status) {
+    await shopifyFetch(`${API}/api/shopify/embedded/appointments/${id}`, { method: 'PUT', body: JSON.stringify({ status }) });
+    setApptDetail(null);
     loadTurnos();
+  }
+
+  function toggleDay(specId, dayIndex, active) {
+    setSchedule(prev => {
+      const days = [...(prev[specId] || [])];
+      days[dayIndex] = { ...days[dayIndex], active };
+      return { ...prev, [specId]: days };
+    });
+  }
+
+  function updateWindow(specId, dayIndex, windowIndex, field, value) {
+    setSchedule(prev => {
+      const days = [...(prev[specId] || [])];
+      const windows = [...(days[dayIndex]?.windows || [])];
+      windows[windowIndex] = { ...windows[windowIndex], [field]: value };
+      days[dayIndex] = { ...days[dayIndex], windows };
+      return { ...prev, [specId]: days };
+    });
+  }
+
+  function addWindow(specId, dayIndex) {
+    setSchedule(prev => {
+      const days = [...(prev[specId] || [])];
+      const windows = [...(days[dayIndex]?.windows || []), { start_time: '09:00', end_time: '18:00' }];
+      days[dayIndex] = { ...days[dayIndex], windows };
+      return { ...prev, [specId]: days };
+    });
+  }
+
+  function removeWindow(specId, dayIndex, windowIndex) {
+    setSchedule(prev => {
+      const days = [...(prev[specId] || [])];
+      const windows = (days[dayIndex]?.windows || []).filter((_, i) => i !== windowIndex);
+      days[dayIndex] = { ...days[dayIndex], windows };
+      return { ...prev, [specId]: days };
+    });
+  }
+
+  async function saveSchedule(specId) {
+    setSavingSchedule(true); setScheduleMsg(null);
+    const daySlots = schedule[specId] || [];
+    const slots = [];
+    for (const day of daySlots) {
+      if (!day.active) continue;
+      for (const w of (day.windows || [])) {
+        slots.push({ day_of_week: day.day_of_week, start_time: w.start_time, end_time: w.end_time, active: true });
+      }
+    }
+    try {
+      const res = await shopifyFetch(`${API}/api/shopify/embedded/specialties/${specId}/schedule`, {
+        method: 'PUT', body: JSON.stringify({ slots }),
+      });
+      const d = await res.json();
+      setScheduleMsg(d.ok ? { ok: true, text: 'Horarios guardados correctamente.' } : { ok: false, text: d.error || 'Error.' });
+      loadTurnos();
+    } catch (_e) { setScheduleMsg({ ok: false, text: 'Error de conexión.' }); }
+    finally { setSavingSchedule(false); setTimeout(() => setScheduleMsg(null), 4000); }
   }
 
   useEffect(() => {
@@ -684,120 +827,270 @@ function ShopifyPanel() {
 
                 {/* ════ TAB: TURNOS ════ */}
                 {selectedTab === 1 && (
-                  <BlockStack gap="500">
+                  <BlockStack gap="400">
 
-                    <BlockStack gap="300">
-                      <InlineStack align="space-between">
-                        <Text variant="headingMd" as="h2">Servicios</Text>
-                        <Button onClick={() => setShowNewSpec(v => !v)} size="slim">
-                          {showNewSpec ? 'Cancelar' : '+ Nuevo servicio'}
-                        </Button>
+                    {/* ── Encabezado y toggle de vista ── */}
+                    <InlineStack align="space-between">
+                      <Text variant="headingMd" as="h2">Turnos & Servicios</Text>
+                      <InlineStack gap="200">
+                        <Button variant={turnosView === 'agenda' ? 'primary' : 'secondary'} size="slim" onClick={() => setTurnosView('agenda')}>📅 Agenda</Button>
+                        <Button variant={turnosView === 'servicios' ? 'primary' : 'secondary'} size="slim" onClick={() => setTurnosView('servicios')}>⚙️ Servicios</Button>
                       </InlineStack>
+                    </InlineStack>
 
-                      {showNewSpec && (
-                        <Card>
-                          <BlockStack gap="300">
-                            <TextField label="Nombre del servicio" value={newSpec.name}
-                              onChange={v => setNewSpec(s => ({ ...s, name: v }))} autoComplete="off" />
-                            <InlineStack gap="400">
-                              <TextField label="Duración (min)" type="number" value={String(newSpec.duration_minutes)}
-                                onChange={v => setNewSpec(s => ({ ...s, duration_minutes: Number(v) }))} autoComplete="off" />
-                              <TextField label="Capacidad simultánea" type="number" value={String(newSpec.capacity)}
-                                onChange={v => setNewSpec(s => ({ ...s, capacity: Number(v) }))} autoComplete="off" />
-                            </InlineStack>
-                            <InlineStack>
-                              <Button onClick={createSpecialty} loading={turnosSaving} variant="primary">Crear servicio</Button>
+                    {/* ── Nuevo servicio ── */}
+                    <InlineStack align="space-between">
+                      <Text variant="bodySm" tone="subdued">
+                        {specialties.length === 0 ? 'Creá un servicio para empezar.' : `${specialties.length} servicio${specialties.length !== 1 ? 's' : ''} configurado${specialties.length !== 1 ? 's' : ''}.`}
+                      </Text>
+                      <Button onClick={() => setShowNewSpec(v => !v)} size="slim">{showNewSpec ? 'Cancelar' : '+ Nuevo servicio'}</Button>
+                    </InlineStack>
+
+                    {showNewSpec && (
+                      <Card>
+                        <BlockStack gap="300">
+                          <Text variant="headingSm" as="h3">Nuevo servicio</Text>
+                          <TextField label="Nombre del servicio" value={newSpec.name}
+                            onChange={v => setNewSpec(s => ({ ...s, name: v }))}
+                            placeholder="Ej: Corte de pelo, Masaje, Consulta..." autoComplete="off" />
+                          <InlineStack gap="400">
+                            <TextField label="Duración (min)" type="number" value={String(newSpec.duration_minutes)}
+                              onChange={v => setNewSpec(s => ({ ...s, duration_minutes: Number(v) }))} autoComplete="off" />
+                            <TextField label="Capacidad simultánea" type="number" value={String(newSpec.capacity)}
+                              onChange={v => setNewSpec(s => ({ ...s, capacity: Number(v) }))} autoComplete="off" />
+                          </InlineStack>
+                          <BlockStack gap="100">
+                            <Text variant="bodySm" as="p">Color</Text>
+                            <InlineStack gap="200">
+                              {SPEC_COLORS.map(c => (
+                                <button key={c} onClick={() => setNewSpec(s => ({ ...s, color: c }))}
+                                  style={{ width: 24, height: 24, borderRadius: '50%', border: newSpec.color === c ? '3px solid #374151' : '2px solid #e5e7eb', background: c, cursor: 'pointer', padding: 0 }} />
+                              ))}
                             </InlineStack>
                           </BlockStack>
-                        </Card>
-                      )}
-
-                      {specialties.length === 0 ? (
-                        <Text variant="bodySm" tone="subdued">No hay servicios creados todavía.</Text>
-                      ) : (
-                        <BlockStack gap="200">
-                          {specialties.map(s => (
-                            <Card key={s.id}>
-                              <InlineStack align="space-between">
-                                <InlineStack gap="300">
-                                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: s.color, marginTop: 4, flexShrink: 0 }} />
-                                  <BlockStack gap="100">
-                                    <Text variant="bodyMd" fontWeight="semibold">{s.name}</Text>
-                                    <Text variant="bodySm" tone="subdued">{s.duration_minutes} min · capacidad {s.capacity}</Text>
-                                  </BlockStack>
-                                </InlineStack>
-                                <Button onClick={() => deleteSpecialty(s.id)} tone="critical" size="slim" variant="plain">Eliminar</Button>
-                              </InlineStack>
-                            </Card>
-                          ))}
+                          <Checkbox label="Enviar recordatorio automático por WhatsApp"
+                            checked={!!newSpec.reminder_enabled}
+                            onChange={v => setNewSpec(s => ({ ...s, reminder_enabled: v }))} />
+                          {newSpec.reminder_enabled && (
+                            <TextField label="Horas antes del turno para recordatorio" type="number"
+                              value={String(newSpec.reminder_hours)}
+                              onChange={v => setNewSpec(s => ({ ...s, reminder_hours: Number(v) }))} autoComplete="off" />
+                          )}
+                          <InlineStack>
+                            <Button onClick={createSpecialty} loading={turnosSaving} variant="primary">Crear servicio</Button>
+                          </InlineStack>
                         </BlockStack>
-                      )}
-                    </BlockStack>
+                      </Card>
+                    )}
 
-                    <Divider />
+                    {/* ════ VISTA: AGENDA ════ */}
+                    {turnosView === 'agenda' && (
+                      <BlockStack gap="400">
 
-                    <BlockStack gap="300">
-                      <InlineStack align="space-between">
-                        <Text variant="headingMd" as="h2">Turnos</Text>
-                        <Button onClick={() => setShowNewAppt(v => !v)} size="slim" disabled={specialties.length === 0}>
-                          {showNewAppt ? 'Cancelar' : '+ Nuevo turno'}
-                        </Button>
-                      </InlineStack>
-
-                      <TextField label="Fecha" type="date" value={apptDate}
-                        onChange={v => setApptDate(v)} autoComplete="off" />
-
-                      {showNewAppt && (
-                        <Card>
-                          <BlockStack gap="300">
-                            <Select label="Servicio" options={specOptions} value={newAppt.specialty_id}
-                              onChange={v => setNewAppt(a => ({ ...a, specialty_id: v }))} />
-                            <InlineStack gap="400">
-                              <TextField label="Nombre del cliente" value={newAppt.client_name}
-                                onChange={v => setNewAppt(a => ({ ...a, client_name: v }))} autoComplete="off" />
-                              <TextField label="Teléfono *" value={newAppt.client_phone}
-                                onChange={v => setNewAppt(a => ({ ...a, client_phone: v }))}
-                                placeholder="5491123456789" autoComplete="off" />
-                            </InlineStack>
-                            <InlineStack gap="400">
-                              <TextField label="Fecha *" type="date" value={newAppt.date}
-                                onChange={v => setNewAppt(a => ({ ...a, date: v }))} autoComplete="off" />
-                              <TextField label="Hora *" type="time" value={newAppt.time}
-                                onChange={v => setNewAppt(a => ({ ...a, time: v }))} autoComplete="off" />
-                            </InlineStack>
-                            {turnosMsg && <Banner tone={turnosMsg.ok ? 'success' : 'critical'}>{turnosMsg.text}</Banner>}
-                            <InlineStack>
-                              <Button onClick={createAppointment} loading={turnosSaving} variant="primary">Crear turno</Button>
-                            </InlineStack>
-                          </BlockStack>
-                        </Card>
-                      )}
-
-                      {appointments.length === 0 ? (
-                        <Text variant="bodySm" tone="subdued">No hay turnos para esta fecha.</Text>
-                      ) : (
-                        <BlockStack gap="200">
-                          {appointments.map(a => (
-                            <Card key={a.id}>
-                              <InlineStack align="space-between">
-                                <BlockStack gap="100">
-                                  <InlineStack gap="200">
-                                    <Text variant="bodyMd" fontWeight="semibold">{a.time} — {a.client_name || a.client_phone}</Text>
-                                    <span style={{ background: statusColors[a.status] || '#64748b', color: '#fff', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20 }}>
-                                      {statusLabels[a.status] || a.status}
-                                    </span>
+                        {/* Selector de servicio */}
+                        {specialties.length > 0 && (
+                          <BlockStack gap="200">
+                            <Text variant="headingSm" as="h3">Filtrar por servicio</Text>
+                            <InlineStack gap="200" wrap>
+                              <Button size="slim" variant={selectedSpecId === null ? 'primary' : 'secondary'} onClick={() => setSelectedSpecId(null)}>Todos</Button>
+                              {specialties.map(s => (
+                                <Button key={s.id} size="slim" variant={selectedSpecId === s.id ? 'primary' : 'secondary'} onClick={() => setSelectedSpecId(s.id)}>
+                                  <InlineStack gap="100">
+                                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block', marginTop: 3, flexShrink: 0 }} />
+                                    <span>{s.name}</span>
                                   </InlineStack>
-                                  <Text variant="bodySm" tone="subdued">{a.specialty_name} · {a.client_phone}</Text>
-                                </BlockStack>
-                                {a.status === 'confirmed' && (
-                                  <Button onClick={() => cancelAppointment(a.id)} tone="critical" size="slim" variant="plain">Cancelar</Button>
-                                )}
+                                </Button>
+                              ))}
+                            </InlineStack>
+                          </BlockStack>
+                        )}
+
+                        {/* Navegación de semana */}
+                        <InlineStack align="space-between">
+                          <Button size="slim" onClick={() => setWeekOffset(w => w - 1)}>← Anterior</Button>
+                          <Button size="slim" variant="plain" onClick={() => setWeekOffset(0)}>Hoy</Button>
+                          <Button size="slim" onClick={() => setWeekOffset(w => w + 1)}>Siguiente →</Button>
+                        </InlineStack>
+
+                        {/* Grilla semanal */}
+                        {(() => {
+                          const weekDays = getWeekDays(weekOffset);
+                          const today = new Date().toISOString().split('T')[0];
+                          return (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+                              {weekDays.map((day, i) => {
+                                const dayAppts = appointments.filter(a =>
+                                  a.date === day && (selectedSpecId === null || a.specialty_id === selectedSpecId)
+                                );
+                                const isToday = day === today;
+                                const dd = day.split('-')[2];
+                                return (
+                                  <div key={day} style={{ borderRadius: 8, border: isToday ? '2px solid #7c3aed' : '1px solid #e5e7eb', background: isToday ? 'rgba(124,58,237,0.04)' : '#fafafa', minHeight: 90, padding: '6px 4px' }}>
+                                    <div style={{ textAlign: 'center', marginBottom: 6 }}>
+                                      <div style={{ fontSize: '0.62rem', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase' }}>{DAYS_SHORT[i]}</div>
+                                      <div style={{ width: 26, height: 26, borderRadius: '50%', margin: '2px auto', background: isToday ? '#7c3aed' : 'transparent', color: isToday ? '#fff' : '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.78rem', fontWeight: 700 }}>{dd}</div>
+                                    </div>
+                                    <BlockStack gap="100">
+                                      {dayAppts.map(a => {
+                                        const spec = specialties.find(s => s.id === a.specialty_id);
+                                        return (
+                                          <button key={a.id} onClick={() => setApptDetail(a)}
+                                            style={{ width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', background: (spec?.color || '#64748b') + '22', borderLeft: `3px solid ${spec?.color || '#64748b'}`, borderRadius: 4, padding: '3px 5px' }}>
+                                            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: spec?.color || '#374151' }}>{a.time?.slice(0, 5)}</div>
+                                            <div style={{ fontSize: '0.58rem', color: '#6b7280', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{a.client_name || a.client_phone}</div>
+                                          </button>
+                                        );
+                                      })}
+                                    </BlockStack>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
+
+                        {/* Nuevo turno */}
+                        <InlineStack align="space-between">
+                          <Text variant="headingSm" as="h3">Agendar turno</Text>
+                          <Button size="slim" onClick={() => setShowNewAppt(v => !v)} disabled={specialties.length === 0}>
+                            {showNewAppt ? 'Cancelar' : '+ Nuevo turno'}
+                          </Button>
+                        </InlineStack>
+
+                        {showNewAppt && (
+                          <Card>
+                            <BlockStack gap="300">
+                              <Select label="Servicio *" options={specOptions} value={newAppt.specialty_id}
+                                onChange={v => setNewAppt(a => ({ ...a, specialty_id: v, time: '' }))} />
+                              <InlineStack gap="400">
+                                <TextField label="Nombre del cliente" value={newAppt.client_name}
+                                  onChange={v => setNewAppt(a => ({ ...a, client_name: v }))} autoComplete="off" />
+                                <TextField label="Teléfono *" value={newAppt.client_phone}
+                                  onChange={v => setNewAppt(a => ({ ...a, client_phone: v }))}
+                                  placeholder="5491123456789" autoComplete="off" />
                               </InlineStack>
-                            </Card>
-                          ))}
-                        </BlockStack>
-                      )}
-                    </BlockStack>
+                              <TextField label="Fecha *" type="date" value={newAppt.date}
+                                onChange={v => setNewAppt(a => ({ ...a, date: v, time: '' }))} autoComplete="off" />
+                              {availableSlots.length > 0 ? (
+                                <Select label="Horario disponible *"
+                                  options={[{ label: 'Seleccioná un horario', value: '' }, ...availableSlots.map(s => ({ label: s, value: s }))]}
+                                  value={newAppt.time}
+                                  onChange={v => setNewAppt(a => ({ ...a, time: v }))} />
+                              ) : (
+                                <TextField label="Hora *" type="time" value={newAppt.time}
+                                  onChange={v => setNewAppt(a => ({ ...a, time: v }))} autoComplete="off"
+                                  helpText={newAppt.specialty_id && newAppt.date ? 'Sin horarios configurados para este día. Ingresá la hora manualmente.' : ''} />
+                              )}
+                              <TextField label="Notas" value={newAppt.notes}
+                                onChange={v => setNewAppt(a => ({ ...a, notes: v }))}
+                                multiline={2} placeholder="Observaciones..." autoComplete="off" />
+                              {apptMsg && <Banner tone={apptMsg.ok ? 'success' : 'critical'}>{apptMsg.text}</Banner>}
+                              <InlineStack>
+                                <Button onClick={createAppointment} loading={turnosSaving} variant="primary">Crear turno</Button>
+                              </InlineStack>
+                            </BlockStack>
+                          </Card>
+                        )}
+
+                        {/* Modal detalle de turno */}
+                        {apptDetail && (
+                          <Card>
+                            <BlockStack gap="300">
+                              <InlineStack align="space-between">
+                                <Text variant="headingSm" as="h3">Detalle del turno</Text>
+                                <Button size="slim" variant="plain" onClick={() => setApptDetail(null)}>✕ Cerrar</Button>
+                              </InlineStack>
+                              <BlockStack gap="100">
+                                <Text variant="bodyMd" fontWeight="semibold">{apptDetail.client_name || apptDetail.client_phone}</Text>
+                                <Text variant="bodySm" tone="subdued">{apptDetail.specialty_name} · {apptDetail.date} {apptDetail.time?.slice(0, 5)}</Text>
+                                {apptDetail.client_phone && <Text variant="bodySm" tone="subdued">📞 {apptDetail.client_phone}</Text>}
+                                {apptDetail.notes && <Text variant="bodySm">{apptDetail.notes}</Text>}
+                                <span style={{ background: statusColors[apptDetail.status] || '#64748b', color: '#fff', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20, alignSelf: 'flex-start', display: 'inline-block' }}>
+                                  {statusLabels[apptDetail.status] || apptDetail.status}
+                                </span>
+                              </BlockStack>
+                              {apptDetail.status === 'confirmed' && (
+                                <InlineStack gap="200">
+                                  <Button size="slim" variant="primary" onClick={() => updateApptStatus(apptDetail.id, 'completed')}>Marcar completado</Button>
+                                  <Button size="slim" tone="critical" onClick={() => updateApptStatus(apptDetail.id, 'cancelled')}>Cancelar turno</Button>
+                                </InlineStack>
+                              )}
+                            </BlockStack>
+                          </Card>
+                        )}
+
+                      </BlockStack>
+                    )}
+
+                    {/* ════ VISTA: SERVICIOS ════ */}
+                    {turnosView === 'servicios' && (
+                      <BlockStack gap="400">
+                        {specialties.length === 0 ? (
+                          <Banner tone="info">Creá un servicio usando el botón de arriba para configurar su horario de atención.</Banner>
+                        ) : (
+                          <>
+                            <BlockStack gap="200">
+                              <Text variant="headingSm" as="h3">Seleccioná el servicio a configurar</Text>
+                              <InlineStack gap="200" wrap>
+                                {specialties.map(s => (
+                                  <div key={s.id} onClick={() => setSelectedSpecId(s.id)}
+                                    style={{ cursor: 'pointer', padding: '8px 14px', borderRadius: 8, border: selectedSpecId === s.id ? `2px solid ${s.color}` : '2px solid #e5e7eb', background: selectedSpecId === s.id ? s.color + '15' : '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
+                                    <div>
+                                      <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151' }}>{s.name}</div>
+                                      <div style={{ fontSize: '0.7rem', color: '#9ca3af' }}>{s.duration_minutes} min</div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </InlineStack>
+                            </BlockStack>
+
+                            {selectedSpecId && schedule[selectedSpecId] && (() => {
+                              const activeSpec = specialties.find(s => s.id === selectedSpecId);
+                              return (
+                                <Card>
+                                  <BlockStack gap="400">
+                                    <InlineStack align="space-between">
+                                      <Text variant="headingSm" as="h3">Horarios — {activeSpec?.name}</Text>
+                                      <Button size="slim" tone="critical" variant="plain" onClick={() => deleteSpecialty(selectedSpecId)}>Eliminar servicio</Button>
+                                    </InlineStack>
+                                    {scheduleMsg && <Banner tone={scheduleMsg.ok ? 'success' : 'critical'}>{scheduleMsg.text}</Banner>}
+                                    <BlockStack gap="300">
+                                      {schedule[selectedSpecId].map((day, i) => (
+                                        <BlockStack key={i} gap="200">
+                                          <Checkbox label={DAYS[i]} checked={!!day.active} onChange={v => toggleDay(selectedSpecId, i, v)} />
+                                          {day.active && (
+                                            <BlockStack gap="100" inlineAlign="start">
+                                              {day.windows.map((w, wi) => (
+                                                <InlineStack key={wi} gap="200">
+                                                  <TextField label="" type="time" value={w.start_time}
+                                                    onChange={v => updateWindow(selectedSpecId, i, wi, 'start_time', v)} autoComplete="off" />
+                                                  <Text as="span" variant="bodySm" tone="subdued">a</Text>
+                                                  <TextField label="" type="time" value={w.end_time}
+                                                    onChange={v => updateWindow(selectedSpecId, i, wi, 'end_time', v)} autoComplete="off" />
+                                                  {day.windows.length > 1 && (
+                                                    <Button size="slim" variant="plain" tone="critical" onClick={() => removeWindow(selectedSpecId, i, wi)}>✕</Button>
+                                                  )}
+                                                </InlineStack>
+                                              ))}
+                                              <Button size="slim" variant="plain" onClick={() => addWindow(selectedSpecId, i)}>+ Agregar franja</Button>
+                                            </BlockStack>
+                                          )}
+                                          {i < 6 && <Divider />}
+                                        </BlockStack>
+                                      ))}
+                                    </BlockStack>
+                                    <InlineStack>
+                                      <Button onClick={() => saveSchedule(selectedSpecId)} loading={savingSchedule} variant="primary">Guardar horarios</Button>
+                                    </InlineStack>
+                                  </BlockStack>
+                                </Card>
+                              );
+                            })()}
+                          </>
+                        )}
+                      </BlockStack>
+                    )}
 
                   </BlockStack>
                 )}
