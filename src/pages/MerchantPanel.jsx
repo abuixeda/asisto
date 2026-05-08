@@ -1019,16 +1019,9 @@ function TurnosPanel({ botId, token, api }) {
             </button>
           ))}
         </div>
-        {view === 'agenda' && (
-          <button onClick={() => { setShowNewAppt(true); setApptMsg(null); }} style={{ marginLeft:'auto', background:'linear-gradient(135deg,#7c3aed,#3b82f6)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.875rem', fontWeight:600 }}>
-            + Nuevo turno
-          </button>
-        )}
-        {view === 'especialidades' && (
-          <button onClick={() => setShowNewSpec(true)} style={{ marginLeft:'auto', background:'linear-gradient(135deg,#7c3aed,#3b82f6)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.875rem', fontWeight:600 }}>
-            + Nuevo servicio
-          </button>
-        )}
+        <button onClick={() => setShowNewSpec(true)} style={{ marginLeft:'auto', background:'linear-gradient(135deg,#7c3aed,#3b82f6)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.875rem', fontWeight:600 }}>
+          + Nuevo servicio
+        </button>
       </div>
 
       {/* ── Vista: Horario tipo planilla ── */}
@@ -1057,19 +1050,17 @@ function TurnosPanel({ botId, token, api }) {
                 No hay servicios configurados. Creá uno en <strong>📋 Servicios</strong>.
               </div>
             ) : (
-              <div style={{ display:'flex', gap:'0.6rem', flexWrap:'wrap', marginBottom:'1.25rem' }}>
+              <div style={{ display:'flex', gap:'0.4rem', flexWrap:'wrap', marginBottom:'1rem' }}>
                 {specs.map(spec => {
-                  const specAppts = appointments.filter(a => a.specialty_id === spec.id);
-                  const confirmed = specAppts.filter(a => a.status==='confirmed').length;
+                  const confirmed = appointments.filter(a => a.specialty_id === spec.id && a.status==='confirmed').length;
                   const isActive = selectedSpecId === spec.id;
                   return (
-                    <div key={spec.id} onClick={() => setSelectedSpecId(spec.id)}
-                      style={{ display:'flex', alignItems:'center', gap:'0.6rem', padding:'0.6rem 1rem', borderRadius:'12px', border:`2px solid ${isActive ? spec.color : 'var(--border)'}`, background: isActive ? `${spec.color}18` : 'var(--card-bg)', cursor:'pointer', transition:'0.15s', minWidth:'160px' }}>
-                      <div style={{ width:'10px', height:'10px', borderRadius:'50%', background:spec.color, flexShrink:0 }} />
-                      <div>
-                        <div style={{ fontWeight:700, fontSize:'0.85rem', color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{spec.name}</div>
-                        <div style={{ fontSize:'0.72rem', color:'var(--text-secondary)' }}>{spec.duration_minutes}min{spec.capacity>1 ? ` · ${spec.capacity} lugares` : ''} · {confirmed} pendiente{confirmed!==1?'s':''}</div>
-                      </div>
+                    <div key={spec.id} onClick={() => setSelectedSpecId(isActive ? null : spec.id)}
+                      style={{ display:'flex', alignItems:'center', gap:'0.45rem', padding:'0.35rem 0.75rem', borderRadius:'20px', border:`1.5px solid ${isActive ? spec.color : 'var(--border)'}`, background: isActive ? `${spec.color}20` : 'var(--card-bg)', cursor:'pointer', transition:'all 0.15s' }}>
+                      <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:spec.color, flexShrink:0 }} />
+                      <span style={{ fontWeight:600, fontSize:'0.82rem', color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)', whiteSpace:'nowrap' }}>{spec.name}</span>
+                      {confirmed > 0 && <span style={{ fontSize:'0.7rem', fontWeight:700, background:spec.color, color:'#fff', borderRadius:'10px', padding:'0 5px', lineHeight:'1.4' }}>{confirmed}</span>}
+                      <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)', marginLeft:'1px' }}>{isActive ? '▲' : '▼'}</span>
                     </div>
                   );
                 })}

@@ -1055,18 +1055,10 @@ function ShopifyPanel() {
                           </button>
                         ))}
                       </div>
-                      {turnosView === 'agenda' && (
-                        <button onClick={() => { setShowNewAppt(true); setApptMsg(null); }} disabled={specialties.length === 0}
-                          style={{ marginLeft: 'auto', background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: 8, color: '#fff', cursor: specialties.length === 0 ? 'default' : 'pointer', padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: 600, opacity: specialties.length === 0 ? 0.5 : 1 }}>
-                          + Nuevo turno
-                        </button>
-                      )}
-                      {turnosView === 'servicios' && (
-                        <button onClick={() => setShowNewSpec(true)}
-                          style={{ marginLeft: 'auto', background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: 600 }}>
-                          + Nuevo servicio
-                        </button>
-                      )}
+                      <button onClick={() => setShowNewSpec(true)}
+                        style={{ marginLeft: 'auto', background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: 600 }}>
+                        + Nuevo servicio
+                      </button>
                     </div>
 
                     {/* ── Vista Agenda ── */}
@@ -1077,18 +1069,17 @@ function ShopifyPanel() {
                             No hay servicios configurados. Creá uno en <strong>📋 Servicios</strong>.
                           </div>
                         ) : (
-                          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+                          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
                             {specialties.map(spec => {
                               const confirmed = appointments.filter(a => a.specialty_id === spec.id && a.status === 'confirmed').length;
                               const isActive = selectedSpecId === spec.id;
                               return (
-                                <div key={spec.id} onClick={() => setSelectedSpecId(spec.id)}
-                                  style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 1rem', borderRadius: 12, border: `2px solid ${isActive ? spec.color : '#e1e3e5'}`, background: isActive ? `${spec.color}18` : '#fff', cursor: 'pointer', minWidth: 160 }}>
-                                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: spec.color, flexShrink: 0 }} />
-                                  <div>
-                                    <div style={{ fontWeight: 700, fontSize: '0.85rem', color: isActive ? '#202223' : '#6d7175' }}>{spec.name}</div>
-                                    <div style={{ fontSize: '0.72rem', color: '#6d7175' }}>{spec.duration_minutes}min{spec.capacity > 1 ? ` · ${spec.capacity} lug.` : ''} · {confirmed} pendiente{confirmed !== 1 ? 's' : ''}</div>
-                                  </div>
+                                <div key={spec.id} onClick={() => setSelectedSpecId(isActive ? null : spec.id)}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', padding: '0.35rem 0.75rem', borderRadius: 20, border: `1.5px solid ${isActive ? spec.color : '#c9cccf'}`, background: isActive ? `${spec.color}18` : '#f6f6f7', cursor: 'pointer', transition: 'all 0.15s' }}>
+                                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: spec.color, flexShrink: 0 }} />
+                                  <span style={{ fontWeight: 600, fontSize: '0.82rem', color: isActive ? '#202223' : '#6d7175', whiteSpace: 'nowrap' }}>{spec.name}</span>
+                                  {confirmed > 0 && <span style={{ fontSize: '0.7rem', fontWeight: 700, background: spec.color, color: '#fff', borderRadius: 10, padding: '0 5px', lineHeight: '1.4' }}>{confirmed}</span>}
+                                  <span style={{ fontSize: '0.75rem', color: '#6d7175', marginLeft: 1 }}>{isActive ? '▲' : '▼'}</span>
                                 </div>
                               );
                             })}
