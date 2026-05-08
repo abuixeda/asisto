@@ -1949,6 +1949,7 @@ function Dashboard() {
 
   const [theme, setTheme] = useState(() => localStorage.getItem('asisto_theme') || 'dark');
   const [currentView, setCurrentView] = useState('bots');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -2259,8 +2260,11 @@ function Dashboard() {
         </div>
       )}
 
+      {/* ── Sidebar overlay (mobile) ── */}
+      <div className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`} onClick={() => setSidebarOpen(false)} />
+
       {/* ══════════════════ SIDEBAR ══════════════════ */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">A</div>
           <span>Asisto AI</span>
@@ -2268,19 +2272,19 @@ function Dashboard() {
 
         <nav className="sidebar-nav">
           <div className="sidebar-nav-section">Principal</div>
-          <div className={`sidebar-nav-item ${currentView === 'bots' ? 'active' : ''}`} onClick={() => setCurrentView('bots')}>
+          <div className={`sidebar-nav-item ${currentView === 'bots' ? 'active' : ''}`} onClick={() => { setCurrentView('bots'); setSidebarOpen(false); }}>
             <Bot size={16} />
             <span>Bot Manager</span>
           </div>
-          <div className={`sidebar-nav-item ${currentView === 'conversations' ? 'active' : ''}`} onClick={() => setCurrentView('conversations')}>
+          <div className={`sidebar-nav-item ${currentView === 'conversations' ? 'active' : ''}`} onClick={() => { setCurrentView('conversations'); setSidebarOpen(false); }}>
             <MessageCircle size={16} />
             <span>Conversaciones</span>
           </div>
-          <div className={`sidebar-nav-item ${currentView === 'analytics' ? 'active' : ''}`} onClick={() => setCurrentView('analytics')}>
+          <div className={`sidebar-nav-item ${currentView === 'analytics' ? 'active' : ''}`} onClick={() => { setCurrentView('analytics'); setSidebarOpen(false); }}>
             <BarChart2 size={16} />
             <span>Analíticas</span>
           </div>
-          <div className={`sidebar-nav-item ${currentView === 'campaigns' ? 'active' : ''}`} onClick={() => setCurrentView('campaigns')}>
+          <div className={`sidebar-nav-item ${currentView === 'campaigns' ? 'active' : ''}`} onClick={() => { setCurrentView('campaigns'); setSidebarOpen(false); }}>
             <Megaphone size={16} />
             <span>Campañas</span>
           </div>
@@ -2317,6 +2321,13 @@ function Dashboard() {
 
         {/* ── Header ── */}
         <header className="main-header">
+          <button className="hamburger-btn" onClick={() => setSidebarOpen(o => !o)} aria-label="Menú">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="2" y1="4.5" x2="16" y2="4.5"/>
+              <line x1="2" y1="9" x2="16" y2="9"/>
+              <line x1="2" y1="13.5" x2="16" y2="13.5"/>
+            </svg>
+          </button>
           <div>
             <div className="page-title">
               {currentView === 'bots' && <>Bot Manager <span className="badge">PRO</span></>}
