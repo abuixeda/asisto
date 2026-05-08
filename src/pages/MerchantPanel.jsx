@@ -1015,6 +1015,12 @@ function TurnosPanel({ botId, token, api }) {
 
         const activeSpec = specs.find(s => s.id === selectedSpecId);
         const { slots, dayMap } = activeSpec ? getTimeSlotsForSpec(activeSpec) : { slots:[], dayMap:{} };
+        const hasSchedule = slots.length > 0;
+        const dur = activeSpec?.duration_minutes || 30;
+        const displaySlots = hasSchedule ? slots : Array.from(
+          { length: Math.ceil(720 / dur) },
+          (_, i) => { const m = 480 + i * dur; return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; }
+        );
 
         return (
           <div>
@@ -1076,9 +1082,9 @@ function TurnosPanel({ botId, token, api }) {
                           const isToday = date === todayStr;
                           const jsDay = new Date(date+'T12:00').getDay();
                           const dow = jsDay===0?6:jsDay-1;
-                          const hasSchedule = !!dayMap[dow];
+                          const colHasSchedule = hasSchedule ? !!dayMap[dow] : true;
                           return (
-                            <th key={date} style={{ padding:'0.5rem 0.25rem', background: isToday ? `${activeSpec.color}22` : 'rgba(255,255,255,0.03)', borderBottom:'2px solid var(--border)', borderRight: i<6?'1px solid var(--border)':'none', textAlign:'center', opacity: hasSchedule ? 1 : 0.45 }}>
+                            <th key={date} style={{ padding:'0.5rem 0.25rem', background: isToday ? `${activeSpec.color}22` : 'rgba(255,255,255,0.03)', borderBottom:'2px solid var(--border)', borderRight: i<6?'1px solid var(--border)':'none', textAlign:'center', opacity: colHasSchedule ? 1 : 0.45 }}>
                               <div style={{ fontSize:'0.7rem', fontWeight:700, color:'var(--text-secondary)', textTransform:'uppercase', letterSpacing:'0.04em' }}>{DAYS_SHORT[i]}</div>
                               <div style={{ fontSize:'0.82rem', fontWeight: isToday ? 800 : 600, color: isToday ? activeSpec.color : 'var(--text-primary)', marginTop:'0.1rem' }}>
                                 {new Date(date+'T12:00').getDate()}
@@ -1090,22 +1096,18 @@ function TurnosPanel({ botId, token, api }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {slots.length === 0 ? (
-                        <tr><td colSpan={8} style={{ padding:'2rem', textAlign:'center', color:'var(--text-secondary)', fontSize:'0.85rem' }}>
-                          Este servicio no tiene horarios configurados. Configuralos en <strong>📋 Servicios</strong>.
-                        </td></tr>
-                      ) : slots.map((slot) => (
+                      {displaySlots.map((slot) => (
                         <tr key={slot}>
                           {/* Hora */}
                           <td style={{ padding:'0.3rem 0.5rem', background:'rgba(255,255,255,0.02)', borderBottom:'1px solid var(--border)', borderRight:'1px solid var(--border)', fontSize:'0.75rem', fontWeight:600, color:'var(--text-secondary)', textAlign:'right', verticalAlign:'top', whiteSpace:'nowrap' }}>{slot}</td>
                           {weekDays.map((date, di) => {
                             const jsDay = new Date(date+'T12:00').getDay();
                             const dow = jsDay===0?6:jsDay-1;
-                            const inSchedule = dayMap[dow] && (() => {
-                              const [sh,sm] = slot.split(':').map(Number);
-                              const mins = sh*60+sm;
-                              return dayMap[dow].some(w => mins >= w.start && mins < w.end);
-                            })();
+                            const [sh,sm] = slot.split(':').map(Number);
+                            const mins = sh*60+sm;
+                            const inSchedule = hasSchedule
+                              ? (dayMap[dow]?.some(w => mins >= w.start && mins < w.end) ?? false)
+                              : true;
                             const appt = apptIndex[`${date}_${slot}_${activeSpec.id}`];
                             const isToday = date === todayStr;
 

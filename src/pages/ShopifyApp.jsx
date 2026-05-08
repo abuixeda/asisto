@@ -831,6 +831,12 @@ function ShopifyPanel() {
                   appointments.forEach(a => { apptIndex[`${a.date}_${a.time}_${a.specialty_id}`] = a; });
                   const activeSpec = specialties.find(s => s.id === selectedSpecId);
                   const { slots, dayMap } = activeSpec ? getTimeSlotsForSpec(activeSpec) : { slots: [], dayMap: {} };
+                  const hasSchedule = slots.length > 0;
+                  const dur = activeSpec?.duration_minutes || 30;
+                  const displaySlots = hasSchedule ? slots : Array.from(
+                    { length: Math.ceil(720 / dur) },
+                    (_, i) => { const m = 480 + i * dur; return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; }
+                  );
                   const inputSt = { width: '100%', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #c9cccf', background: '#fff', color: '#202223', fontSize: '0.9rem', boxSizing: 'border-box' };
                   const labelSt = { fontSize: '0.8rem', color: '#6d7175', display: 'block', marginBottom: '0.25rem' };
                   return (
@@ -1065,7 +1071,7 @@ function ShopifyPanel() {
                                       const jsDay = new Date(date + 'T12:00').getDay();
                                       const dow = jsDay === 0 ? 6 : jsDay - 1;
                                       return (
-                                        <th key={date} style={{ padding: '0.5rem 0.25rem', background: isToday ? `${activeSpec.color}18` : '#f6f6f7', borderBottom: '2px solid #e1e3e5', borderRight: i < 6 ? '1px solid #e1e3e5' : 'none', textAlign: 'center', opacity: dayMap[dow] ? 1 : 0.4 }}>
+                                        <th key={date} style={{ padding: '0.5rem 0.25rem', background: isToday ? `${activeSpec.color}18` : '#f6f6f7', borderBottom: '2px solid #e1e3e5', borderRight: i < 6 ? '1px solid #e1e3e5' : 'none', textAlign: 'center', opacity: (!hasSchedule || dayMap[dow]) ? 1 : 0.4 }}>
                                           <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6d7175', textTransform: 'uppercase' }}>{DAYS_SHORT[i]}</div>
                                           <div style={{ fontSize: '0.82rem', fontWeight: isToday ? 800 : 600, color: isToday ? activeSpec.color : '#202223' }}>{new Date(date + 'T12:00').getDate()}</div>
                                           {isToday && <div style={{ width: 5, height: 5, borderRadius: '50%', background: activeSpec.color, margin: '2px auto 0' }} />}
@@ -1075,11 +1081,7 @@ function ShopifyPanel() {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {slots.length === 0 ? (
-                                    <tr><td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#6d7175', fontSize: '0.85rem' }}>
-                                      Sin horarios configurados para este servicio. Configuralos en <strong>📋 Servicios</strong>.
-                                    </td></tr>
-                                  ) : slots.map(slot => (
+                                  {displaySlots.map(slot => (
                                     <tr key={slot}>
                                       <td style={{ padding: '0.3rem 0.5rem', background: '#f6f6f7', borderBottom: '1px solid #e1e3e5', borderRight: '1px solid #e1e3e5', fontSize: '0.75rem', fontWeight: 600, color: '#6d7175', textAlign: 'right', verticalAlign: 'top', whiteSpace: 'nowrap' }}>{slot}</td>
                                       {weekDays.map((date, di) => {
@@ -1087,7 +1089,9 @@ function ShopifyPanel() {
                                         const dow = jsDay === 0 ? 6 : jsDay - 1;
                                         const [sh, sm] = slot.split(':').map(Number);
                                         const mins = sh * 60 + sm;
-                                        const inSchedule = dayMap[dow]?.some(w => mins >= w.start && mins < w.end);
+                                        const inSchedule = hasSchedule
+                                          ? (dayMap[dow]?.some(w => mins >= w.start && mins < w.end) ?? false)
+                                          : true;
                                         const appt = apptIndex[`${date}_${slot}_${activeSpec.id}`];
                                         const isToday = date === todayStr;
                                         return (
