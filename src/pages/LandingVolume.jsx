@@ -207,7 +207,7 @@ function DemoChat() {
     setMessages([{ from: 'bot', text: t('demo.greeting') }]);
   }, [t]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
+  useEffect(() => { if (messages.length > 1 || loading) bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
   function send() {
     const txt = input.trim();
