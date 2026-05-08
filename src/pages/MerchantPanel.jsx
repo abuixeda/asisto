@@ -1943,10 +1943,21 @@ export default function MerchantPanel() {
               )}
             </div>
           ) : (
-            <div style={{ background: 'rgba(0,0,0,0.02)', border: '1px dashed rgba(255,255,255,0.1)', padding: '1.5rem', borderRadius: '8px', textAlign: 'center', opacity: '0.6' }}>
-              <span style={{ fontSize: '2rem', display: 'block', marginBottom: '10px' }}>🔒</span>
-              <h4 style={{ margin: '0 0 5px 0', color: 'gray' }}>Módulo de Redes Sociales Bloqueado</h4>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: 'gray' }}>Comunícate con Soporte para adquirir esta función Elite.</p>
+            <div style={{ background: 'linear-gradient(135deg, rgba(225,48,108,0.06), rgba(24,119,242,0.06))', border: '1px solid rgba(225,48,108,0.18)', borderRadius: '14px', padding: '1.25rem 1.5rem', display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
+              <span style={{ fontSize: '1.8rem', flexShrink: 0, lineHeight: 1, marginTop: '0.1rem' }}>🔒</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Instagram & Facebook DMs</span>
+                  <span style={{ background: 'linear-gradient(135deg,#e1306c,#1877f2)', color: '#fff', fontSize: '0.63rem', fontWeight: 700, padding: '2px 9px', borderRadius: 20, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>PREMIUM</span>
+                </div>
+                <p style={{ margin: '0 0 0.85rem', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                  Tu bot puede responder mensajes de Instagram y Facebook Messenger con el mismo conocimiento y personalidad que en WhatsApp. Contactá con soporte para activarlo en tu plan.
+                </p>
+                <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(225,48,108,0.1)', border: '1px solid rgba(225,48,108,0.25)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', color: '#e1306c', fontWeight: 600 }}>📸 Instagram DMs</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(24,119,242,0.1)', border: '1px solid rgba(24,119,242,0.25)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', color: '#1877f2', fontWeight: 600 }}>f Facebook Messenger</span>
+                </div>
+              </div>
             </div>
           )}
 

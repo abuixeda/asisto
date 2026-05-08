@@ -815,6 +815,28 @@ function ShopifyPanel() {
                       />
                     </BlockStack>
 
+                    <Divider />
+
+                    {/* ── Instagram & Facebook — Próximamente ── */}
+                    <BlockStack gap="300">
+                      <Text variant="headingMd" as="h2">📸 Instagram & Facebook DMs</Text>
+                      <div style={{ background: 'rgba(225,48,108,0.04)', border: '1px solid rgba(225,48,108,0.18)', borderRadius: 12, padding: '1.1rem 1.25rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', flexShrink: 0, paddingTop: '0.1rem' }}>
+                          <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>📸</span>
+                          <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>💬</span>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
+                            <Text variant="bodyMd" fontWeight="semibold">Respuestas automáticas por Instagram y Facebook</Text>
+                            <span style={{ background: '#ff6900', color: '#fff', fontSize: '0.63rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>Próximamente</span>
+                          </div>
+                          <Text variant="bodySm" tone="subdued">
+                            Estamos tramitando el acceso como Meta Partner. Cuando esté disponible, el asistente responderá DMs de Instagram y mensajes de Facebook Messenger sin configuración adicional.
+                          </Text>
+                        </div>
+                      </div>
+                    </BlockStack>
+
                     {saveMsg && <Banner tone={saveMsg.ok ? 'success' : 'critical'}>{saveMsg.text}</Banner>}
                     <InlineStack>
                       <Button onClick={saveConfig} loading={saving} variant="primary">Guardar configuración</Button>
