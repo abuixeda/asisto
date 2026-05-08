@@ -448,7 +448,7 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
             {(botName || 'B').charAt(0).toUpperCase()}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ color: '#e9edef', fontWeight: 600, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{botName || 'Mi Bot'}</div>
+            <div style={{ color: '#e9edef', fontWeight: 600, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{botName || 'Mi Asistente'}</div>
             <div style={{ color: '#aebac1', fontSize: '0.7rem' }}>en línea</div>
           </div>
           <div style={{ fontSize: '0.6rem', color: '#aebac1', background: '#2a3942', padding: '2px 7px', borderRadius: '8px', fontWeight: 600 }}>PREVIEW</div>
@@ -1279,7 +1279,7 @@ function TurnosPanel({ botId, token, api }) {
           {specs.length === 0 && (
             <div style={{ background:'rgba(255,255,255,0.02)', border:'1px dashed var(--border)', borderRadius:'12px', padding:'2.5rem', textAlign:'center' }}>
               <div style={{ fontSize:'2rem', marginBottom:'0.5rem' }}>📋</div>
-              <p style={{ color:'var(--text-secondary)', margin:0 }}>Todavía no configuraste ningún servicio. Creá uno arriba para que el bot pueda gestionar turnos automáticamente.</p>
+              <p style={{ color:'var(--text-secondary)', margin:0 }}>Todavía no configuraste ningún servicio. Creá uno arriba para que el asistente pueda gestionar turnos automáticamente.</p>
             </div>
           )}
           <div style={{ display:'flex', flexDirection:'column', gap:'1.25rem' }}>
@@ -1722,10 +1722,10 @@ export default function MerchantPanel() {
 
   const TOUR_STEPS = [
     { id: 'tour-tabs',           tab: 'config',    title: '🧭 Las 3 secciones del panel',  desc: 'Todo el panel se organiza en 3 pestañas. Cada una tiene una función distinta. El tour te va a mostrar para qué sirve cada una.' },
-    { id: 'tour-config-area',    tab: 'config',    title: '⚙️ Configuración del bot',       desc: 'Acá definís cómo habla tu bot: su nombre, su personalidad y las instrucciones de cómo debe responder. También cargás la base de conocimiento con info de tu negocio, catálogo, horarios y FAQ.' },
-    { id: 'tour-status',         tab: 'config',    title: '📱 Conectar y activar el bot',   desc: 'Con este botón iniciás o pausás tu bot. Cuando está activo, va a responder automáticamente todos los mensajes de tus clientes en WhatsApp.' },
-    { id: 'tour-campaigns-area', tab: 'campaigns', title: '📣 Campañas de mensajería',      desc: 'Desde acá podés enviar mensajes masivos a una lista de clientes. Cargás los contactos (manual, CSV o Google Sheets) y el bot manda el mensaje automáticamente.' },
-    { id: 'tour-turnos-area',    tab: 'turnos',    title: '📅 Gestión de turnos',           desc: 'Si tu negocio da turnos (médico, peluquería, estética, etc.), acá configurás los servicios, horarios y capacidad. El bot los reserva solo y manda recordatorios.' },
+    { id: 'tour-config-area',    tab: 'config',    title: '⚙️ Configuración del asistente',       desc: 'Acá definís cómo habla tu asistente: su nombre, su personalidad y las instrucciones de cómo debe responder. También cargás la base de conocimiento con info de tu negocio, catálogo, horarios y FAQ.' },
+    { id: 'tour-status',         tab: 'config',    title: '📱 Conectar y activar el asistente',   desc: 'Con este botón iniciás o pausás tu asistente. Cuando está activo, va a responder automáticamente todos los mensajes de tus clientes en WhatsApp.' },
+    { id: 'tour-campaigns-area', tab: 'campaigns', title: '📣 Campañas de mensajería',      desc: 'Desde acá podés enviar mensajes masivos a una lista de clientes. Cargás los contactos (manual, CSV o Google Sheets) y el asistente manda el mensaje automáticamente.' },
+    { id: 'tour-turnos-area',    tab: 'turnos',    title: '📅 Gestión de turnos',           desc: 'Si tu negocio da turnos (médico, peluquería, estética, etc.), acá configurás los servicios, horarios y capacidad. El asistente los reserva solo y manda recordatorios.' },
   ];
 
   return (
@@ -1790,18 +1790,18 @@ export default function MerchantPanel() {
           <div id="tour-config-area" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
             <div>
               <h1 style={{ margin: '0 0 0.3rem', fontSize: '1.8rem', fontWeight: 800 }}>
-                Bot Manager <span style={{ background: '#3b82f6', color: '#fff', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '6px', verticalAlign: 'middle', marginLeft: '0.4rem' }}>PRO</span>
+                Asistente Manager <span style={{ background: '#3b82f6', color: '#fff', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '6px', verticalAlign: 'middle', marginLeft: '0.4rem' }}>PRO</span>
               </h1>
               <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Panel de Auto-Gestión Inteligente</p>
             </div>
             <div id="tour-status" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
               <button onClick={() => setShowPreview(p => !p)} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #00a884', background: showPreview ? '#00a884' : 'transparent', color: showPreview ? '#fff' : '#00a884', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                📱 {showPreview ? 'Cerrar preview' : 'Probar bot'}
+                📱 {showPreview ? 'Cerrar preview' : 'Probar asistente'}
               </button>
               {isOn ? (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button onClick={stopBot} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #ef4444', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '0.9rem' }}>
-                    Detener bot
+                    Detener asistente
                   </button>
                   <button onClick={unlinkWhatsApp} disabled={unlinking} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #6b7280', background: 'transparent', color: '#9ca3af', cursor: 'pointer', fontSize: '0.9rem' }}>
                     {unlinking ? 'Desvinculando...' : 'Desvincular WhatsApp'}
@@ -1867,7 +1867,7 @@ export default function MerchantPanel() {
           {isOn && (
             <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
               <span>✅</span>
-              <p style={{ margin: 0, color: '#10b981', fontSize: '0.875rem' }}>WhatsApp conectado. El bot ya responde automáticamente.</p>
+              <p style={{ margin: 0, color: '#10b981', fontSize: '0.875rem' }}>WhatsApp conectado. El asistente ya responde automáticamente.</p>
             </div>
           )}
 
@@ -1883,7 +1883,7 @@ export default function MerchantPanel() {
           <textarea
             className="prompt-textarea editable"
             value={prompt} onChange={e => setPrompt(e.target.value)}
-            placeholder="Describí cómo debe hablar y comportarse el bot con tus clientes..."
+            placeholder="Describí cómo debe hablar y comportarse el asistente con tus clientes..."
           />
 
           {/* ── Catálogo Google Sheets ── */}
@@ -1945,7 +1945,7 @@ export default function MerchantPanel() {
             <h3>Tiempo de espera antes de responder</h3>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem' }}>
-            Si el cliente manda varios mensajes seguidos, el bot espera este tiempo antes de responder — así agrupa todos los mensajes y contesta una sola vez.
+            Si el cliente manda varios mensajes seguidos, el asistente espera este tiempo antes de responder — así agrupa todos los mensajes y contesta una sola vez.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
             <input
@@ -1968,7 +1968,7 @@ export default function MerchantPanel() {
             <h3>Horario de Atención (Anti-Nocturno)</h3>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem' }}>
-            Activá esta opción para que el bot solo responda dentro de tu horario comercial. Fuera de ese horario, enviará automáticamente el mensaje que escribas abajo.
+            Activá esta opción para que el asistente solo responda dentro de tu horario comercial. Fuera de ese horario, enviará automáticamente el mensaje que escribas abajo.
           </p>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
             <label className="ios-toggle">
@@ -2035,7 +2035,7 @@ export default function MerchantPanel() {
                   <span style={{ background: 'linear-gradient(135deg,#e1306c,#1877f2)', color: '#fff', fontSize: '0.63rem', fontWeight: 700, padding: '2px 9px', borderRadius: 20, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>PREMIUM</span>
                 </div>
                 <p style={{ margin: '0 0 0.85rem', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                  Tu bot puede responder mensajes de Instagram y Facebook Messenger con el mismo conocimiento y personalidad que en WhatsApp. Contactá con soporte para activarlo en tu plan.
+                  Tu asistente puede responder mensajes de Instagram y Facebook Messenger con el mismo conocimiento y personalidad que en WhatsApp. Contactá con soporte para activarlo en tu plan.
                 </p>
                 <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(225,48,108,0.1)', border: '1px solid rgba(225,48,108,0.25)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', color: '#e1306c', fontWeight: 600 }}>📸 Instagram DMs</span>
@@ -2079,7 +2079,7 @@ export default function MerchantPanel() {
             </div>
           ) : (
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem' }}>
-              Vinculá tu número para que el bot te reconozca como dueño y puedas darle instrucciones, lanzar difusiones y cambiar reglas directamente desde WhatsApp.
+              Vinculá tu número para que el asistente te reconozca como dueño y puedas darle instrucciones, lanzar difusiones y cambiar reglas directamente desde WhatsApp.
             </p>
           )}
           <div style={{ display: 'flex', gap: '10px' }}>
