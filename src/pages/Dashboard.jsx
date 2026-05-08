@@ -1170,8 +1170,8 @@ function atGetSlots(spec) {
 }
 
 // ─── AdminTurnosPanel ─────────────────────────────────────────────────────────
-function AdminTurnosPanel({ bots }) {
-  const [botId, setBotId]           = useState(bots?.[0]?.id || null);
+function AdminTurnosPanel({ bots, fixedBotId = null }) {
+  const [botId, setBotId]           = useState(fixedBotId || bots?.[0]?.id || null);
   const [specs, setSpecs]           = useState([]);
   const [appointments, setAppts]    = useState([]);
   const [selectedSpecId, setSpecId] = useState(null);
@@ -1262,15 +1262,17 @@ function AdminTurnosPanel({ bots }) {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
 
-      {/* Bot selector */}
-      <div style={{ display:'flex', flexWrap:'wrap', gap:'0.5rem' }}>
-        {bots.map(b => (
-          <button key={b.id} onClick={() => setBotId(b.id)} style={{
-            padding:'0.4rem 1rem', borderRadius:'20px', border:'1px solid var(--border)', cursor:'pointer', fontSize:'0.85rem', fontWeight: botId === b.id ? 700 : 400,
-            background: botId === b.id ? 'var(--gradient)' : 'var(--surface-2)', color: botId === b.id ? '#fff' : 'var(--text-2)', transition:'0.15s'
-          }}>{b.name}</button>
-        ))}
-      </div>
+      {/* Bot selector — solo visible cuando NO está anclado a un bot específico */}
+      {!fixedBotId && (
+        <div style={{ display:'flex', flexWrap:'wrap', gap:'0.5rem' }}>
+          {bots.map(b => (
+            <button key={b.id} onClick={() => setBotId(b.id)} style={{
+              padding:'0.4rem 1rem', borderRadius:'20px', border:'1px solid var(--border)', cursor:'pointer', fontSize:'0.85rem', fontWeight: botId === b.id ? 700 : 400,
+              background: botId === b.id ? 'var(--gradient)' : 'var(--surface-2)', color: botId === b.id ? '#fff' : 'var(--text-2)', transition:'0.15s'
+            }}>{b.name}</button>
+          ))}
+        </div>
+      )}
 
       {!specs.length ? (
         <div style={{ padding:'3rem', textAlign:'center', color:'var(--text-2)' }}>
@@ -1845,10 +1847,6 @@ function Dashboard() {
             <Megaphone size={16} />
             <span>Campañas</span>
           </div>
-          <div className={`sidebar-nav-item ${currentView === 'turnos' ? 'active' : ''}`} onClick={() => setCurrentView('turnos')}>
-            <Calendar size={16} />
-            <span>Turnos</span>
-          </div>
         </nav>
 
         <div className="sidebar-footer">
@@ -1888,14 +1886,12 @@ function Dashboard() {
               {currentView === 'conversations' && 'Conversaciones'}
               {currentView === 'analytics' && 'Analíticas'}
               {currentView === 'campaigns' && 'Campañas'}
-              {currentView === 'turnos' && 'Turnos'}
             </div>
             <div className="page-subtitle">
               {currentView === 'bots' && (user.role === 'admin' ? 'Vista Global Súper Administrador' : 'Panel de Auto-Gestión Inteligente')}
               {currentView === 'conversations' && 'Historial de mensajes por cliente y bot'}
               {currentView === 'analytics' && 'Métricas de actividad en tiempo real'}
               {currentView === 'campaigns' && 'Gestión de campañas de mensajería saliente'}
-              {currentView === 'turnos' && 'Gestión de turnos y servicios por bot'}
             </div>
           </div>
           <div className="header-actions">
@@ -1944,7 +1940,6 @@ function Dashboard() {
         {currentView === 'conversations' && <ConversationsPanel bots={bots} />}
         {currentView === 'analytics' && <AnalyticsPanel user={user} />}
         {currentView === 'campaigns' && <AdminCampaignsPanel bots={bots} />}
-        {currentView === 'turnos' && <AdminTurnosPanel bots={bots} />}
 
         {currentView === 'bots' && <>
         {/* ── KPI Cards ── */}
@@ -2508,6 +2503,14 @@ function Dashboard() {
                       {telegramMsg[bot.id] && <p style={{margin:'0.5rem 0 0', fontSize:'0.875rem', color: telegramMsg[bot.id].ok ? 'var(--success)' : 'var(--danger)'}}>{telegramMsg[bot.id].text}</p>}
                     </div>
                   </div>
+
+                  {/* ── Turnos ── */}
+                  <div className="prompt-header" style={{ marginTop:'1.5rem', borderTop:'1px solid var(--border)', paddingTop:'1rem' }}>
+                    <Calendar size={18} color="#818cf8" />
+                    <h3>Gestión de Turnos</h3>
+                  </div>
+                  <AdminTurnosPanel fixedBotId={bot.id} bots={bots} />
+
                 </div>
               )}
 
