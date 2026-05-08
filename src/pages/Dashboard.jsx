@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
-import { Settings, Smartphone, Loader, BrainCircuit, MessageCircle, Users, TrendingUp, Lock, Mail, ChevronRight, LogOut, Plus, X, Save, Bell, Clock, Trash2, Sun, Moon, Bot, BarChart2, Search, ChevronDown, ChevronUp, Megaphone } from 'lucide-react';
+import { Settings, Smartphone, Loader, BrainCircuit, MessageCircle, Users, TrendingUp, Lock, Mail, ChevronRight, LogOut, Plus, X, Save, Bell, Clock, Trash2, Sun, Moon, Bot, BarChart2, Search, ChevronDown, ChevronUp, Megaphone, Calendar, ChevronLeft } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import '../index.css';
 
@@ -1132,6 +1132,335 @@ function LoginScreen({ onLogin }) {
   );
 }
 
+// ─── Helpers compartidos con MerchantPanel ────────────────────────────────────
+const AT_DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const AT_DAYS_FULL = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+const STATUS_COLOR = { confirmed:'#3b82f6', completed:'#10b981', cancelled:'#ef4444' };
+const STATUS_LABEL = { confirmed:'Confirmado', completed:'Completado', cancelled:'Cancelado' };
+
+function atGetWeekDays(offset) {
+  const today = new Date();
+  const dow = today.getDay() === 0 ? 6 : today.getDay() - 1;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - dow + offset * 7);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday); d.setDate(monday.getDate() + i);
+    return d.toISOString().slice(0, 10);
+  });
+}
+
+function atGetSlots(spec) {
+  if (!spec?.schedule?.length) return { slots: [], dayMap: {} };
+  let minM = Infinity, maxM = -Infinity;
+  const dayMap = {};
+  spec.schedule.forEach(s => {
+    if (!s.active) return;
+    const [sh, sm] = s.start_time.split(':').map(Number);
+    const [eh, em] = s.end_time.split(':').map(Number);
+    const start = sh * 60 + sm, end = eh * 60 + em;
+    minM = Math.min(minM, start); maxM = Math.max(maxM, end);
+    if (!dayMap[s.day_of_week]) dayMap[s.day_of_week] = [];
+    dayMap[s.day_of_week].push({ start, end });
+  });
+  if (!isFinite(minM)) return { slots: [], dayMap };
+  const slots = [];
+  for (let cur = minM; cur < maxM; cur += (spec.duration_minutes || 30))
+    slots.push(`${String(Math.floor(cur/60)).padStart(2,'0')}:${String(cur%60).padStart(2,'0')}`);
+  return { slots, dayMap };
+}
+
+// ─── AdminTurnosPanel ─────────────────────────────────────────────────────────
+function AdminTurnosPanel({ bots }) {
+  const [botId, setBotId]           = useState(bots?.[0]?.id || null);
+  const [specs, setSpecs]           = useState([]);
+  const [appointments, setAppts]    = useState([]);
+  const [selectedSpecId, setSpecId] = useState(null);
+  const [weekOffset, setWeekOff]    = useState(0);
+  const [apptDetail, setDetail]     = useState(null);
+  const [showNew, setShowNew]       = useState(false);
+  const [newAppt, setNewAppt]       = useState({ specialty_id:'', client_phone:'', client_name:'', date:'', time:'', notes:'' });
+  const [avSlots, setAvSlots]       = useState([]);
+  const [saving, setSaving]         = useState(false);
+  const [msg, setMsg]               = useState(null);
+
+  const bot = bots?.find(b => b.id === botId);
+
+  async function load(bid) {
+    if (!bid) return;
+    try {
+      const [sr, ar] = await Promise.all([
+        authFetch(`${API_URL}/api/bots/${bid}/specialties`),
+        authFetch(`${API_URL}/api/bots/${bid}/appointments`),
+      ]);
+      const [sd, ad] = await Promise.all([sr.json(), ar.json()]);
+      const sl = Array.isArray(sd) ? sd : [];
+      const al = Array.isArray(ad) ? ad : [];
+      setSpecs(sl); setAppts(al);
+      setSpecId(prev => sl.find(s => s.id === prev) ? prev : sl[0]?.id || null);
+    } catch { setSpecs([]); setAppts([]); }
+  }
+
+  useEffect(() => { load(botId); }, [botId]);
+
+  useEffect(() => {
+    if (!newAppt.specialty_id || !newAppt.date) return;
+    authFetch(`${API_URL}/api/bots/${botId}/appointments/available?specialty_id=${newAppt.specialty_id}&date=${newAppt.date}`)
+      .then(r => r.json()).then(d => setAvSlots(Array.isArray(d) ? d : [])).catch(() => setAvSlots([]));
+  }, [newAppt.specialty_id, newAppt.date]);
+
+  async function updateStatus(id, status) {
+    await authFetch(`${API_URL}/api/bots/${botId}/appointments/${id}`, { method:'PUT', body: JSON.stringify({ status }) });
+    setDetail(p => p ? { ...p, status } : null);
+    setAppts(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+  }
+
+  async function updateNotes(id, notes) {
+    await authFetch(`${API_URL}/api/bots/${botId}/appointments/${id}`, { method:'PUT', body: JSON.stringify({ notes }) });
+    setAppts(prev => prev.map(a => a.id === id ? { ...a, notes } : a));
+    setDetail(p => p ? { ...p, notes } : null);
+  }
+
+  async function deleteAppt(id) {
+    if (!confirm('¿Eliminar este turno?')) return;
+    await authFetch(`${API_URL}/api/bots/${botId}/appointments/${id}`, { method:'DELETE' });
+    setDetail(null); load(botId);
+  }
+
+  async function createAppt() {
+    const { specialty_id, client_phone, client_name, date, time } = newAppt;
+    if (!specialty_id || !client_phone || !date || !time) { setMsg({ ok:false, text:'Completá todos los campos obligatorios.' }); return; }
+    setSaving(true); setMsg(null);
+    try {
+      const r = await authFetch(`${API_URL}/api/bots/${botId}/appointments`, { method:'POST', body: JSON.stringify(newAppt) });
+      if (r.ok) {
+        setShowNew(false);
+        setNewAppt({ specialty_id:'', client_phone:'', client_name:'', date:'', time:'', notes:'' });
+        load(botId);
+      } else { const d = await r.json(); setMsg({ ok:false, text: d.error || 'Error al crear turno.' }); }
+    } catch { setMsg({ ok:false, text:'Error de conexión.' }); }
+    finally { setSaving(false); }
+  }
+
+  const weekDays  = atGetWeekDays(weekOffset);
+  const todayStr  = new Date().toISOString().slice(0, 10);
+  const activeSpec = specs.find(s => s.id === selectedSpecId);
+  const { slots, dayMap } = activeSpec ? atGetSlots(activeSpec) : { slots:[], dayMap:{} };
+  const hasSchedule = slots.length > 0;
+  const dur = activeSpec?.duration_minutes || 30;
+  const displaySlots = hasSchedule ? slots : Array.from(
+    { length: Math.ceil(720 / dur) },
+    (_, i) => { const m = 480 + i*dur; return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; }
+  );
+  const apptIndex = {};
+  appointments.forEach(a => { apptIndex[`${a.date}_${a.time}_${a.specialty_id}`] = a; });
+
+  const cell   = { minWidth: 90, height: 44, border:'1px solid var(--border)', textAlign:'center', verticalAlign:'middle', fontSize:'0.72rem', padding:'2px' };
+  const hdrCell= { ...cell, background:'var(--surface-2)', fontWeight:600, fontSize:'0.75rem', padding:'0.5rem 0.25rem' };
+  const inputSt= { width:'100%', padding:'0.55rem 0.75rem', borderRadius:'8px', border:'1px solid var(--border)', background:'var(--surface-2)', color:'var(--text)', fontSize:'0.875rem', boxSizing:'border-box' };
+  const labelSt= { fontSize:'0.78rem', color:'var(--text-2)', display:'block', marginBottom:'0.25rem' };
+
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
+
+      {/* Bot selector */}
+      <div style={{ display:'flex', flexWrap:'wrap', gap:'0.5rem' }}>
+        {bots.map(b => (
+          <button key={b.id} onClick={() => setBotId(b.id)} style={{
+            padding:'0.4rem 1rem', borderRadius:'20px', border:'1px solid var(--border)', cursor:'pointer', fontSize:'0.85rem', fontWeight: botId === b.id ? 700 : 400,
+            background: botId === b.id ? 'var(--gradient)' : 'var(--surface-2)', color: botId === b.id ? '#fff' : 'var(--text-2)', transition:'0.15s'
+          }}>{b.name}</button>
+        ))}
+      </div>
+
+      {!specs.length ? (
+        <div style={{ padding:'3rem', textAlign:'center', color:'var(--text-2)' }}>
+          {botId ? 'Este bot no tiene servicios configurados.' : 'Seleccioná un bot.'}
+        </div>
+      ) : (
+        <>
+          {/* Selector de servicio */}
+          <div style={{ display:'flex', gap:'0.5rem', flexWrap:'wrap' }}>
+            {specs.map(s => (
+              <button key={s.id} onClick={() => setSpecId(s.id)} style={{
+                display:'flex', alignItems:'center', gap:'0.5rem', padding:'0.45rem 1rem',
+                borderRadius:'20px', border: selectedSpecId === s.id ? `2px solid ${s.color}` : '1px solid var(--border)',
+                background: selectedSpecId === s.id ? `${s.color}22` : 'var(--surface-2)',
+                color: selectedSpecId === s.id ? s.color : 'var(--text-2)', cursor:'pointer', fontWeight: selectedSpecId === s.id ? 700 : 400, fontSize:'0.85rem'
+              }}>
+                <span style={{ width:8, height:8, borderRadius:'50%', background:s.color, flexShrink:0 }} />
+                {s.name}
+                <span style={{ fontSize:'0.72rem', opacity:0.7 }}>{s.duration_minutes}min</span>
+              </button>
+            ))}
+            <button onClick={() => { setShowNew(true); setMsg(null); setNewAppt({ specialty_id: selectedSpecId||'', client_phone:'', client_name:'', date: todayStr, time:'', notes:'' }); }}
+              style={{ padding:'0.45rem 1rem', borderRadius:'20px', border:'1px dashed var(--border)', background:'transparent', color:'var(--text-2)', cursor:'pointer', fontSize:'0.85rem' }}>
+              + Nuevo turno
+            </button>
+          </div>
+
+          {/* Navegación de semana */}
+          <div style={{ display:'flex', alignItems:'center', gap:'0.75rem' }}>
+            <button onClick={() => setWeekOff(w => w-1)} style={{ background:'var(--surface-2)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-2)', cursor:'pointer', padding:'0.35rem 0.7rem' }}><ChevronLeft size={15}/></button>
+            <span style={{ fontSize:'0.9rem', fontWeight:600 }}>
+              {new Date(weekDays[0]).toLocaleDateString('es-AR',{day:'2-digit',month:'short'})} — {new Date(weekDays[6]).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})}
+            </span>
+            <button onClick={() => setWeekOff(w => w+1)} style={{ background:'var(--surface-2)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-2)', cursor:'pointer', padding:'0.35rem 0.7rem' }}>›</button>
+            {weekOffset !== 0 && <button onClick={() => setWeekOff(0)} style={{ background:'var(--gradient-soft)', border:'none', borderRadius:'8px', color:'#818cf8', cursor:'pointer', padding:'0.35rem 0.75rem', fontSize:'0.8rem', fontWeight:600 }}>Hoy</button>}
+          </div>
+
+          {/* Planilla semanal */}
+          <div style={{ overflowX:'auto', borderRadius:'12px', border:'1px solid var(--border)' }}>
+            <table style={{ borderCollapse:'collapse', width:'100%', minWidth:700 }}>
+              <thead>
+                <tr>
+                  <th style={{ ...hdrCell, minWidth:60 }}>Hora</th>
+                  {weekDays.map((d, i) => {
+                    const isToday = d === todayStr;
+                    const colHasSch = hasSchedule ? !!dayMap[i] : true;
+                    return (
+                      <th key={d} style={{ ...hdrCell, opacity: colHasSch ? 1 : 0.4, background: isToday ? 'var(--gradient-soft)' : 'var(--surface-2)' }}>
+                        <div style={{ color: isToday ? '#818cf8' : 'var(--text)' }}>{AT_DAYS[i]}</div>
+                        <div style={{ fontSize:'0.7rem', fontWeight:400, color:'var(--text-2)' }}>{new Date(d).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'})}</div>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {displaySlots.map(slot => {
+                  const [h, m] = slot.split(':').map(Number);
+                  const mins = h * 60 + m;
+                  return (
+                    <tr key={slot}>
+                      <td style={{ ...cell, background:'var(--surface-2)', fontWeight:600, color:'var(--text-2)', fontSize:'0.75rem', paddingRight:'0.5rem' }}>{slot}</td>
+                      {weekDays.map((d, i) => {
+                        const inSch = hasSchedule ? (dayMap[i]?.some(w => mins >= w.start && mins < w.end) ?? false) : true;
+                        const appt = apptIndex[`${d}_${slot}_${selectedSpecId}`];
+                        return (
+                          <td key={d} style={{ ...cell, background: !inSch ? 'rgba(0,0,0,0.15)' : 'transparent', cursor: appt ? 'pointer' : 'default' }}
+                            onClick={() => appt && setDetail({ ...appt })}>
+                            {appt ? (
+                              <div style={{ background: STATUS_COLOR[appt.status] + '22', border:`1px solid ${STATUS_COLOR[appt.status]}55`, borderRadius:6, padding:'2px 4px', overflow:'hidden' }}>
+                                <div style={{ fontWeight:700, color: STATUS_COLOR[appt.status], fontSize:'0.7rem', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{appt.client_name || appt.client_phone}</div>
+                                <div style={{ fontSize:'0.65rem', color:'var(--text-2)' }}>{STATUS_LABEL[appt.status]}</div>
+                              </div>
+                            ) : inSch ? <span style={{ color:'var(--border)', fontSize:'0.65rem' }}>·</span> : null}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Leyenda */}
+          <div style={{ display:'flex', gap:'1rem', flexWrap:'wrap', fontSize:'0.75rem', color:'var(--text-2)' }}>
+            {Object.entries(STATUS_LABEL).map(([k,v]) => (
+              <span key={k} style={{ display:'flex', alignItems:'center', gap:'0.3rem' }}>
+                <span style={{ width:10, height:10, borderRadius:'50%', background:STATUS_COLOR[k], display:'inline-block' }}/>
+                {v}
+              </span>
+            ))}
+            {hasSchedule && <span style={{ display:'flex', alignItems:'center', gap:'0.3rem' }}><span style={{ width:10, height:10, borderRadius:'50%', background:'rgba(0,0,0,0.3)', display:'inline-block'}}/>Sin horario</span>}
+          </div>
+        </>
+      )}
+
+      {/* Modal detalle turno */}
+      {apptDetail && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }}>
+          <div style={{ background:'var(--surface)', borderRadius:16, padding:'1.5rem', width:'100%', maxWidth:460, display:'flex', flexDirection:'column', gap:'1rem', boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span style={{ fontWeight:700, fontSize:'1rem' }}>📋 Detalle del turno</span>
+              <button onClick={() => setDetail(null)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-2)', cursor:'pointer', padding:'0.3rem 0.7rem' }}>✕</button>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.5rem', fontSize:'0.875rem' }}>
+              <div><span style={{ color:'var(--text-2)' }}>Paciente:</span><br/><strong>{apptDetail.client_name || '—'}</strong></div>
+              <div><span style={{ color:'var(--text-2)' }}>Teléfono:</span><br/><strong>{apptDetail.client_phone}</strong></div>
+              <div><span style={{ color:'var(--text-2)' }}>Fecha:</span><br/><strong>{apptDetail.date}</strong></div>
+              <div><span style={{ color:'var(--text-2)' }}>Hora:</span><br/><strong>{apptDetail.time}</strong></div>
+              <div><span style={{ color:'var(--text-2)' }}>Servicio:</span><br/><strong>{apptDetail.specialty_name || selectedSpecId}</strong></div>
+              <div><span style={{ color:'var(--text-2)' }}>Estado:</span><br/>
+                <span style={{ color: STATUS_COLOR[apptDetail.status], fontWeight:700 }}>{STATUS_LABEL[apptDetail.status]}</span>
+              </div>
+            </div>
+            <div>
+              <label style={labelSt}>Notas</label>
+              <textarea value={apptDetail.notes || ''} onChange={e => setDetail(p => ({ ...p, notes: e.target.value }))}
+                style={{ ...inputSt, minHeight:70, resize:'vertical' }} placeholder="Sin notas" />
+            </div>
+            <div style={{ display:'flex', gap:'0.5rem', flexWrap:'wrap' }}>
+              {['confirmed','completed','cancelled'].map(s => (
+                <button key={s} onClick={() => updateStatus(apptDetail.id, s)}
+                  style={{ flex:1, padding:'0.55rem 0.5rem', borderRadius:8, border:`1px solid ${STATUS_COLOR[s]}55`, background: apptDetail.status === s ? STATUS_COLOR[s] : `${STATUS_COLOR[s]}15`, color: apptDetail.status === s ? '#fff' : STATUS_COLOR[s], cursor:'pointer', fontWeight:600, fontSize:'0.8rem' }}>
+                  {STATUS_LABEL[s]}
+                </button>
+              ))}
+            </div>
+            <div style={{ display:'flex', gap:'0.5rem', justifyContent:'space-between' }}>
+              <button onClick={() => deleteAppt(apptDetail.id)} style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:8, color:'#f87171', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.85rem' }}>Eliminar turno</button>
+              <button onClick={() => updateNotes(apptDetail.id, apptDetail.notes)} style={{ background:'var(--gradient)', border:'none', borderRadius:8, color:'#fff', cursor:'pointer', padding:'0.5rem 1.25rem', fontWeight:600, fontSize:'0.85rem' }}>Guardar notas</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal nuevo turno */}
+      {showNew && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }}>
+          <div style={{ background:'var(--surface)', borderRadius:16, padding:'1.5rem', width:'100%', maxWidth:460, display:'flex', flexDirection:'column', gap:'1rem', boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+              <span style={{ fontWeight:700, fontSize:'1rem' }}>Nuevo turno — {bot?.name}</span>
+              <button onClick={() => setShowNew(false)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-2)', cursor:'pointer', padding:'0.3rem 0.7rem' }}>✕</button>
+            </div>
+            {msg && <div style={{ padding:'0.6rem 0.9rem', borderRadius:8, background: msg.ok ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: msg.ok ? '#10b981' : '#f87171', fontSize:'0.85rem' }}>{msg.text}</div>}
+            <div>
+              <label style={labelSt}>Servicio *</label>
+              <select style={inputSt} value={newAppt.specialty_id} onChange={e => setNewAppt(p => ({ ...p, specialty_id: e.target.value, time:'' }))}>
+                <option value="">— Seleccioná —</option>
+                {specs.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.75rem' }}>
+              <div>
+                <label style={labelSt}>Nombre del paciente</label>
+                <input style={inputSt} value={newAppt.client_name} onChange={e => setNewAppt(p => ({ ...p, client_name: e.target.value }))} placeholder="Ej: María García" />
+              </div>
+              <div>
+                <label style={labelSt}>Teléfono *</label>
+                <input style={inputSt} value={newAppt.client_phone} onChange={e => setNewAppt(p => ({ ...p, client_phone: e.target.value }))} placeholder="5491100001234" />
+              </div>
+              <div>
+                <label style={labelSt}>Fecha *</label>
+                <input style={inputSt} type="date" value={newAppt.date} onChange={e => setNewAppt(p => ({ ...p, date: e.target.value, time:'' }))} />
+              </div>
+              <div>
+                <label style={labelSt}>Horario *</label>
+                <select style={inputSt} value={newAppt.time} onChange={e => setNewAppt(p => ({ ...p, time: e.target.value }))}>
+                  <option value="">— Elegí —</option>
+                  {avSlots.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label style={labelSt}>Notas</label>
+              <input style={inputSt} value={newAppt.notes} onChange={e => setNewAppt(p => ({ ...p, notes: e.target.value }))} placeholder="Opcional" />
+            </div>
+            <div style={{ display:'flex', gap:'0.75rem', justifyContent:'flex-end' }}>
+              <button onClick={() => setShowNew(false)} style={{ background:'transparent', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-2)', cursor:'pointer', padding:'0.55rem 1rem' }}>Cancelar</button>
+              <button onClick={createAppt} disabled={saving} style={{ background:'var(--gradient)', border:'none', borderRadius:8, color:'#fff', cursor:'pointer', padding:'0.55rem 1.25rem', fontWeight:600 }}>
+                {saving ? 'Creando...' : 'Crear turno'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Dashboard() {
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('asisto_user');
@@ -1516,6 +1845,10 @@ function Dashboard() {
             <Megaphone size={16} />
             <span>Campañas</span>
           </div>
+          <div className={`sidebar-nav-item ${currentView === 'turnos' ? 'active' : ''}`} onClick={() => setCurrentView('turnos')}>
+            <Calendar size={16} />
+            <span>Turnos</span>
+          </div>
         </nav>
 
         <div className="sidebar-footer">
@@ -1555,12 +1888,14 @@ function Dashboard() {
               {currentView === 'conversations' && 'Conversaciones'}
               {currentView === 'analytics' && 'Analíticas'}
               {currentView === 'campaigns' && 'Campañas'}
+              {currentView === 'turnos' && 'Turnos'}
             </div>
             <div className="page-subtitle">
               {currentView === 'bots' && (user.role === 'admin' ? 'Vista Global Súper Administrador' : 'Panel de Auto-Gestión Inteligente')}
               {currentView === 'conversations' && 'Historial de mensajes por cliente y bot'}
               {currentView === 'analytics' && 'Métricas de actividad en tiempo real'}
               {currentView === 'campaigns' && 'Gestión de campañas de mensajería saliente'}
+              {currentView === 'turnos' && 'Gestión de turnos y servicios por bot'}
             </div>
           </div>
           <div className="header-actions">
@@ -1609,6 +1944,7 @@ function Dashboard() {
         {currentView === 'conversations' && <ConversationsPanel bots={bots} />}
         {currentView === 'analytics' && <AnalyticsPanel user={user} />}
         {currentView === 'campaigns' && <AdminCampaignsPanel bots={bots} />}
+        {currentView === 'turnos' && <AdminTurnosPanel bots={bots} />}
 
         {currentView === 'bots' && <>
         {/* ── KPI Cards ── */}
