@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+﻿import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAppBridge } from '@shopify/app-bridge-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -826,274 +826,394 @@ function ShopifyPanel() {
                 )}
 
                 {/* ════ TAB: TURNOS ════ */}
-                {selectedTab === 1 && (
-                  <BlockStack gap="400">
+                {selectedTab === 1 && (() => {
+                  const weekDays = getWeekDays(weekOffset);
+                  const todayStr = new Date().toISOString().slice(0, 10);
+                  const apptIndex = {};
+                  appointments.forEach(a => { apptIndex[`${a.date}_${a.time}_${a.specialty_id}`] = a; });
+                  const activeSpec = specialties.find(s => s.id === selectedSpecId);
+                  const { slots, dayMap } = activeSpec ? getTimeSlotsForSpec(activeSpec) : { slots: [], dayMap: {} };
+                  const inputSt = { width: '100%', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #c9cccf', background: '#fff', color: '#202223', fontSize: '0.9rem', boxSizing: 'border-box' };
+                  const labelSt = { fontSize: '0.8rem', color: '#6d7175', display: 'block', marginBottom: '0.25rem' };
+                  return (
+                  <div>
 
-                    {/* ── Encabezado y toggle de vista ── */}
-                    <InlineStack align="space-between">
-                      <Text variant="headingMd" as="h2">Turnos & Servicios</Text>
-                      <InlineStack gap="200">
-                        <Button variant={turnosView === 'agenda' ? 'primary' : 'secondary'} size="slim" onClick={() => setTurnosView('agenda')}>📅 Agenda</Button>
-                        <Button variant={turnosView === 'servicios' ? 'primary' : 'secondary'} size="slim" onClick={() => setTurnosView('servicios')}>⚙️ Servicios</Button>
-                      </InlineStack>
-                    </InlineStack>
-
-                    {/* ── Nuevo servicio ── */}
-                    <InlineStack align="space-between">
-                      <Text variant="bodySm" tone="subdued">
-                        {specialties.length === 0 ? 'Creá un servicio para empezar.' : `${specialties.length} servicio${specialties.length !== 1 ? 's' : ''} configurado${specialties.length !== 1 ? 's' : ''}.`}
-                      </Text>
-                      <Button onClick={() => setShowNewSpec(v => !v)} size="slim">{showNewSpec ? 'Cancelar' : '+ Nuevo servicio'}</Button>
-                    </InlineStack>
-
+                    {/* Modal nuevo servicio */}
                     {showNewSpec && (
-                      <Card>
-                        <BlockStack gap="300">
-                          <Text variant="headingSm" as="h3">Nuevo servicio</Text>
-                          <TextField label="Nombre del servicio" value={newSpec.name}
-                            onChange={v => setNewSpec(s => ({ ...s, name: v }))}
-                            placeholder="Ej: Corte de pelo, Masaje, Consulta..." autoComplete="off" />
-                          <InlineStack gap="400">
-                            <TextField label="Duración (min)" type="number" value={String(newSpec.duration_minutes)}
-                              onChange={v => setNewSpec(s => ({ ...s, duration_minutes: Number(v) }))} autoComplete="off" />
-                            <TextField label="Capacidad simultánea" type="number" value={String(newSpec.capacity)}
-                              onChange={v => setNewSpec(s => ({ ...s, capacity: Number(v) }))} autoComplete="off" />
-                          </InlineStack>
-                          <BlockStack gap="100">
-                            <Text variant="bodySm" as="p">Color</Text>
-                            <InlineStack gap="200">
-                              {SPEC_COLORS.map(c => (
-                                <button key={c} onClick={() => setNewSpec(s => ({ ...s, color: c }))}
-                                  style={{ width: 24, height: 24, borderRadius: '50%', border: newSpec.color === c ? '3px solid #374151' : '2px solid #e5e7eb', background: c, cursor: 'pointer', padding: 0 }} />
-                              ))}
-                            </InlineStack>
-                          </BlockStack>
-                          <Checkbox label="Enviar recordatorio automático por WhatsApp"
-                            checked={!!newSpec.reminder_enabled}
-                            onChange={v => setNewSpec(s => ({ ...s, reminder_enabled: v }))} />
+                      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                        <div style={{ background: '#fff', borderRadius: 16, padding: '1.5rem', width: '100%', maxWidth: 440, display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontWeight: 700, fontSize: '1rem', color: '#202223' }}>Nuevo servicio</span>
+                            <button onClick={() => setShowNewSpec(false)} style={{ background: 'none', border: '1px solid #c9cccf', borderRadius: 8, color: '#6d7175', cursor: 'pointer', padding: '0.3rem 0.7rem' }}>✕</button>
+                          </div>
+                          <div><label style={labelSt}>Nombre *</label>
+                            <input style={inputSt} value={newSpec.name} onChange={e => setNewSpec(p => ({ ...p, name: e.target.value }))} placeholder="Ej: Corte de cabello, Consulta médica..." />
+                          </div>
+                          <div style={{ display: 'flex', gap: '1rem' }}>
+                            <div style={{ flex: 1 }}><label style={labelSt}>Duración (min)</label>
+                              <input style={inputSt} type="number" min="5" max="480" value={newSpec.duration_minutes} onChange={e => setNewSpec(p => ({ ...p, duration_minutes: Number(e.target.value) }))} />
+                            </div>
+                            <div style={{ flex: 1 }}><label style={labelSt}>Lugares simultáneos</label>
+                              <input style={inputSt} type="number" min="1" max="100" value={newSpec.capacity} onChange={e => setNewSpec(p => ({ ...p, capacity: Number(e.target.value) }))} />
+                            </div>
+                            <div><label style={labelSt}>Color</label>
+                              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
+                                {SPEC_COLORS.map(c => (
+                                  <div key={c} onClick={() => setNewSpec(p => ({ ...p, color: c }))}
+                                    style={{ width: 24, height: 24, borderRadius: '50%', background: c, cursor: 'pointer', border: newSpec.color === c ? '2px solid #202223' : '2px solid transparent', boxSizing: 'border-box' }} />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 10, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#202223' }}>🔔 Recordatorio automático</div>
+                              <div style={{ fontSize: '0.75rem', color: '#6d7175' }}>Avisa al cliente por WhatsApp antes del turno</div>
+                            </div>
+                            <label style={{ position: 'relative', display: 'inline-block', width: 44, height: 24, flexShrink: 0 }}>
+                              <input type="checkbox" checked={!!newSpec.reminder_enabled} onChange={e => setNewSpec(p => ({ ...p, reminder_enabled: e.target.checked }))} style={{ opacity: 0, width: 0, height: 0 }} />
+                              <span style={{ position: 'absolute', cursor: 'pointer', inset: 0, borderRadius: 34, background: newSpec.reminder_enabled ? '#7c3aed' : '#c9cccf', transition: '0.2s' }}>
+                                <span style={{ position: 'absolute', height: 18, width: 18, left: newSpec.reminder_enabled ? 23 : 3, bottom: 3, background: 'white', borderRadius: '50%', transition: '0.2s' }} />
+                              </span>
+                            </label>
+                          </div>
                           {newSpec.reminder_enabled && (
-                            <TextField label="Horas antes del turno para recordatorio" type="number"
-                              value={String(newSpec.reminder_hours)}
-                              onChange={v => setNewSpec(s => ({ ...s, reminder_hours: Number(v) }))} autoComplete="off" />
+                            <div><label style={labelSt}>Horas antes del turno para recordar</label>
+                              <input style={{ ...inputSt, width: 120 }} type="number" min="1" max="72" value={newSpec.reminder_hours} onChange={e => setNewSpec(p => ({ ...p, reminder_hours: Number(e.target.value) }))} />
+                            </div>
                           )}
-                          <InlineStack>
-                            <Button onClick={createSpecialty} loading={turnosSaving} variant="primary">Crear servicio</Button>
-                          </InlineStack>
-                        </BlockStack>
-                      </Card>
+                          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                            <button onClick={() => setShowNewSpec(false)} style={{ background: 'transparent', border: '1px solid #c9cccf', borderRadius: 8, color: '#6d7175', cursor: 'pointer', padding: '0.6rem 1rem' }}>Cancelar</button>
+                            <button onClick={createSpecialty} disabled={turnosSaving || !newSpec.name.trim()} style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', padding: '0.6rem 1.25rem', fontWeight: 600 }}>
+                              {turnosSaving ? 'Creando...' : 'Crear servicio'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     )}
 
-                    {/* ════ VISTA: AGENDA ════ */}
-                    {turnosView === 'agenda' && (
-                      <BlockStack gap="400">
+                    {/* Modal nuevo turno */}
+                    {showNewAppt && (
+                      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                        <div style={{ background: '#fff', borderRadius: 16, padding: '1.5rem', width: '100%', maxWidth: 460, display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontWeight: 700, fontSize: '1rem', color: '#202223' }}>Nuevo turno manual</span>
+                            <button onClick={() => { setShowNewAppt(false); setApptMsg(null); }} style={{ background: 'none', border: '1px solid #c9cccf', borderRadius: 8, color: '#6d7175', cursor: 'pointer', padding: '0.3rem 0.7rem' }}>✕</button>
+                          </div>
+                          <div><label style={labelSt}>Servicio *</label>
+                            <select style={inputSt} value={newAppt.specialty_id} onChange={e => setNewAppt(p => ({ ...p, specialty_id: e.target.value, time: '' }))}>
+                              <option value="">— Seleccioná —</option>
+                              {specialties.map(s => <option key={s.id} value={s.id}>{s.name} ({s.duration_minutes}min)</option>)}
+                            </select>
+                          </div>
+                          <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <div style={{ flex: 1 }}><label style={labelSt}>Fecha *</label>
+                              <input style={inputSt} type="date" value={newAppt.date} onChange={e => setNewAppt(p => ({ ...p, date: e.target.value, time: '' }))} />
+                            </div>
+                            <div style={{ flex: 1 }}><label style={labelSt}>Horario *</label>
+                              {availableSlots.length > 0 ? (
+                                <select style={inputSt} value={newAppt.time} onChange={e => setNewAppt(p => ({ ...p, time: e.target.value }))}>
+                                  <option value="">— Seleccioná —</option>
+                                  {availableSlots.map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                              ) : (
+                                <input style={inputSt} type="time" value={newAppt.time} onChange={e => setNewAppt(p => ({ ...p, time: e.target.value }))} />
+                              )}
+                            </div>
+                          </div>
+                          <div><label style={labelSt}>Teléfono WhatsApp * <span style={{ opacity: 0.6 }}>(ej: 5491123456789)</span></label>
+                            <input style={inputSt} value={newAppt.client_phone} onChange={e => setNewAppt(p => ({ ...p, client_phone: e.target.value }))} placeholder="5491123456789" />
+                          </div>
+                          <div><label style={labelSt}>Nombre del cliente</label>
+                            <input style={inputSt} value={newAppt.client_name} onChange={e => setNewAppt(p => ({ ...p, client_name: e.target.value }))} placeholder="Ej: María González" />
+                          </div>
+                          <div><label style={labelSt}>Notas</label>
+                            <input style={inputSt} value={newAppt.notes} onChange={e => setNewAppt(p => ({ ...p, notes: e.target.value }))} placeholder="Ej: Primera vez, requiere confirmación..." />
+                          </div>
+                          {apptMsg && <p style={{ margin: 0, fontSize: '0.875rem', color: apptMsg.ok ? '#008060' : '#d82c0d' }}>{apptMsg.text}</p>}
+                          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                            <button onClick={() => { setShowNewAppt(false); setApptMsg(null); }} style={{ background: 'transparent', border: '1px solid #c9cccf', borderRadius: 8, color: '#6d7175', cursor: 'pointer', padding: '0.6rem 1rem' }}>Cancelar</button>
+                            <button onClick={createAppointment} disabled={turnosSaving} style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', padding: '0.6rem 1.25rem', fontWeight: 600 }}>
+                              {turnosSaving ? 'Guardando...' : 'Confirmar turno'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-                        {/* Selector de servicio */}
-                        {specialties.length > 0 && (
-                          <BlockStack gap="200">
-                            <Text variant="headingSm" as="h3">Filtrar por servicio</Text>
-                            <InlineStack gap="200" wrap>
-                              <Button size="slim" variant={selectedSpecId === null ? 'primary' : 'secondary'} onClick={() => setSelectedSpecId(null)}>Todos</Button>
-                              {specialties.map(s => (
-                                <Button key={s.id} size="slim" variant={selectedSpecId === s.id ? 'primary' : 'secondary'} onClick={() => setSelectedSpecId(s.id)}>
-                                  <InlineStack gap="100">
-                                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block', marginTop: 3, flexShrink: 0 }} />
-                                    <span>{s.name}</span>
-                                  </InlineStack>
-                                </Button>
-                              ))}
-                            </InlineStack>
-                          </BlockStack>
+                    {/* Modal detalle de turno */}
+                    {apptDetail && (() => {
+                      const spec = specialties.find(s => s.id === apptDetail.specialty_id);
+                      const sc = { confirmed: '#10b981', cancelled: '#d82c0d', completed: '#3b82f6' };
+                      const sl = { confirmed: 'Confirmado', cancelled: 'Cancelado', completed: 'Completado' };
+                      return (
+                        <div onClick={() => setApptDetail(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                          <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: 16, padding: '1.5rem', width: '100%', maxWidth: 380, display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              {spec && <div style={{ width: 10, height: 10, borderRadius: '50%', background: spec.color, flexShrink: 0 }} />}
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontWeight: 700, fontSize: '1rem', color: '#202223' }}>{apptDetail.client_name || 'Sin nombre'}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#6d7175' }}>{spec?.name} · {apptDetail.date} {apptDetail.time}</div>
+                              </div>
+                              <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: `${sc[apptDetail.status]}20`, color: sc[apptDetail.status], border: `1px solid ${sc[apptDetail.status]}50` }}>{sl[apptDetail.status]}</span>
+                              <button onClick={() => setApptDetail(null)} style={{ background: 'none', border: '1px solid #c9cccf', borderRadius: 8, color: '#6d7175', cursor: 'pointer', padding: '0.3rem 0.6rem', flexShrink: 0 }}>✕</button>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                              {apptDetail.client_phone && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 0.85rem', background: '#f6f6f7', borderRadius: 8, border: '1px solid #e1e3e5' }}>
+                                  <span>📱</span>
+                                  <span style={{ fontSize: '0.875rem', flex: 1, color: '#202223' }}>{apptDetail.client_phone}</span>
+                                  <a href={`https://wa.me/${apptDetail.client_phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"
+                                    style={{ fontSize: '0.72rem', background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.35)', borderRadius: 6, color: '#1a9c44', padding: '2px 8px', textDecoration: 'none', fontWeight: 600 }}>WhatsApp</a>
+                                </div>
+                              )}
+                              {apptDetail.notes && (
+                                <div style={{ display: 'flex', gap: '0.6rem', padding: '0.6rem 0.85rem', background: '#f6f6f7', borderRadius: 8, border: '1px solid #e1e3e5' }}>
+                                  <span style={{ flexShrink: 0 }}>📝</span>
+                                  <span style={{ fontSize: '0.875rem', color: '#6d7175', lineHeight: 1.4 }}>{apptDetail.notes}</span>
+                                </div>
+                              )}
+                            </div>
+                            {apptDetail.status === 'confirmed' && (
+                              <div style={{ display: 'flex', gap: '0.6rem' }}>
+                                <button onClick={() => { updateApptStatus(apptDetail.id, 'completed'); setApptDetail(p => ({ ...p, status: 'completed' })); }}
+                                  style={{ flex: 1, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.35)', borderRadius: 8, color: '#2563eb', cursor: 'pointer', padding: '0.55rem', fontWeight: 600, fontSize: '0.85rem' }}>✓ Completado</button>
+                                <button onClick={() => { updateApptStatus(apptDetail.id, 'cancelled'); setApptDetail(p => ({ ...p, status: 'cancelled' })); }}
+                                  style={{ flex: 1, background: 'rgba(216,44,13,0.08)', border: '1px solid rgba(216,44,13,0.3)', borderRadius: 8, color: '#d82c0d', cursor: 'pointer', padding: '0.55rem', fontWeight: 600, fontSize: '0.85rem' }}>✕ Cancelar</button>
+                              </div>
+                            )}
+                            {apptDetail.status === 'cancelled' && (
+                              <button onClick={() => { updateApptStatus(apptDetail.id, 'confirmed'); setApptDetail(p => ({ ...p, status: 'confirmed' })); }}
+                                style={{ width: '100%', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 8, color: '#008060', cursor: 'pointer', padding: '0.55rem', fontWeight: 600, fontSize: '0.85rem' }}>↩ Restaurar turno</button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Header y tabs de vista */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                        {[{ id: 'agenda', label: '📅 Agenda' }, { id: 'servicios', label: '📋 Servicios' }].map(t => (
+                          <button key={t.id} onClick={() => setTurnosView(t.id)}
+                            style={{ padding: '0.4rem 0.9rem', borderRadius: 20, border: '1px solid #c9cccf', background: turnosView === t.id ? 'linear-gradient(135deg,#7c3aed,#3b82f6)' : '#f6f6f7', color: turnosView === t.id ? '#fff' : '#6d7175', cursor: 'pointer', fontSize: '0.85rem', fontWeight: turnosView === t.id ? 700 : 400 }}>
+                            {t.label}
+                          </button>
+                        ))}
+                      </div>
+                      {turnosView === 'agenda' && (
+                        <button onClick={() => { setShowNewAppt(true); setApptMsg(null); }} disabled={specialties.length === 0}
+                          style={{ marginLeft: 'auto', background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: 8, color: '#fff', cursor: specialties.length === 0 ? 'default' : 'pointer', padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: 600, opacity: specialties.length === 0 ? 0.5 : 1 }}>
+                          + Nuevo turno
+                        </button>
+                      )}
+                      {turnosView === 'servicios' && (
+                        <button onClick={() => setShowNewSpec(true)}
+                          style={{ marginLeft: 'auto', background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: 600 }}>
+                          + Nuevo servicio
+                        </button>
+                      )}
+                    </div>
+
+                    {/* ── Vista Agenda ── */}
+                    {turnosView === 'agenda' && (
+                      <div>
+                        {specialties.length === 0 ? (
+                          <div style={{ background: '#f6f6f7', border: '1px dashed #c9cccf', borderRadius: 12, padding: '2rem', textAlign: 'center', color: '#6d7175', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                            No hay servicios configurados. Creá uno en <strong>📋 Servicios</strong>.
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+                            {specialties.map(spec => {
+                              const confirmed = appointments.filter(a => a.specialty_id === spec.id && a.status === 'confirmed').length;
+                              const isActive = selectedSpecId === spec.id;
+                              return (
+                                <div key={spec.id} onClick={() => setSelectedSpecId(spec.id)}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 1rem', borderRadius: 12, border: `2px solid ${isActive ? spec.color : '#e1e3e5'}`, background: isActive ? `${spec.color}18` : '#fff', cursor: 'pointer', minWidth: 160 }}>
+                                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: spec.color, flexShrink: 0 }} />
+                                  <div>
+                                    <div style={{ fontWeight: 700, fontSize: '0.85rem', color: isActive ? '#202223' : '#6d7175' }}>{spec.name}</div>
+                                    <div style={{ fontSize: '0.72rem', color: '#6d7175' }}>{spec.duration_minutes}min{spec.capacity > 1 ? ` · ${spec.capacity} lug.` : ''} · {confirmed} pendiente{confirmed !== 1 ? 's' : ''}</div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         )}
 
-                        {/* Navegación de semana */}
-                        <InlineStack align="space-between">
-                          <Button size="slim" onClick={() => setWeekOffset(w => w - 1)}>← Anterior</Button>
-                          <Button size="slim" variant="plain" onClick={() => setWeekOffset(0)}>Hoy</Button>
-                          <Button size="slim" onClick={() => setWeekOffset(w => w + 1)}>Siguiente →</Button>
-                        </InlineStack>
-
-                        {/* Grilla semanal */}
-                        {(() => {
-                          const weekDays = getWeekDays(weekOffset);
-                          const today = new Date().toISOString().split('T')[0];
-                          return (
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
-                              {weekDays.map((day, i) => {
-                                const dayAppts = appointments.filter(a =>
-                                  a.date === day && (selectedSpecId === null || a.specialty_id === selectedSpecId)
-                                );
-                                const isToday = day === today;
-                                const dd = day.split('-')[2];
-                                return (
-                                  <div key={day} style={{ borderRadius: 8, border: isToday ? '2px solid #7c3aed' : '1px solid #e5e7eb', background: isToday ? 'rgba(124,58,237,0.04)' : '#fafafa', minHeight: 90, padding: '6px 4px' }}>
-                                    <div style={{ textAlign: 'center', marginBottom: 6 }}>
-                                      <div style={{ fontSize: '0.62rem', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase' }}>{DAYS_SHORT[i]}</div>
-                                      <div style={{ width: 26, height: 26, borderRadius: '50%', margin: '2px auto', background: isToday ? '#7c3aed' : 'transparent', color: isToday ? '#fff' : '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.78rem', fontWeight: 700 }}>{dd}</div>
-                                    </div>
-                                    <BlockStack gap="100">
-                                      {dayAppts.map(a => {
-                                        const spec = specialties.find(s => s.id === a.specialty_id);
+                        {activeSpec && (
+                          <div style={{ background: '#fff', border: '1px solid #e1e3e5', borderRadius: 14, overflow: 'hidden' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', borderBottom: '1px solid #e1e3e5', background: '#f6f6f7' }}>
+                              <button onClick={() => setWeekOffset(w => w - 1)} style={{ background: 'none', border: '1px solid #c9cccf', borderRadius: 8, color: '#6d7175', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '1rem' }}>‹</button>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <div style={{ width: 10, height: 10, borderRadius: '50%', background: activeSpec.color }} />
+                                <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#202223' }}>{activeSpec.name}</span>
+                                <span style={{ fontSize: '0.78rem', color: '#6d7175' }}>
+                                  {new Date(weekDays[0] + 'T12:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })} — {new Date(weekDays[6] + 'T12:00').toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </span>
+                              </div>
+                              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                {weekOffset !== 0 && <button onClick={() => setWeekOffset(0)} style={{ background: 'none', border: '1px solid #c9cccf', borderRadius: 8, color: '#6d7175', cursor: 'pointer', padding: '0.25rem 0.55rem', fontSize: '0.72rem' }}>Hoy</button>}
+                                <button onClick={() => setWeekOffset(w => w + 1)} style={{ background: 'none', border: '1px solid #c9cccf', borderRadius: 8, color: '#6d7175', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '1rem' }}>›</button>
+                              </div>
+                            </div>
+                            <div style={{ overflowX: 'auto' }}>
+                              <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{ width: 64, padding: '0.5rem', background: '#f6f6f7', borderBottom: '2px solid #e1e3e5', borderRight: '1px solid #e1e3e5', fontSize: '0.7rem', fontWeight: 700, color: '#6d7175', textTransform: 'uppercase' }}>Hora</th>
+                                    {weekDays.map((date, i) => {
+                                      const isToday = date === todayStr;
+                                      const jsDay = new Date(date + 'T12:00').getDay();
+                                      const dow = jsDay === 0 ? 6 : jsDay - 1;
+                                      return (
+                                        <th key={date} style={{ padding: '0.5rem 0.25rem', background: isToday ? `${activeSpec.color}18` : '#f6f6f7', borderBottom: '2px solid #e1e3e5', borderRight: i < 6 ? '1px solid #e1e3e5' : 'none', textAlign: 'center', opacity: dayMap[dow] ? 1 : 0.4 }}>
+                                          <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6d7175', textTransform: 'uppercase' }}>{DAYS_SHORT[i]}</div>
+                                          <div style={{ fontSize: '0.82rem', fontWeight: isToday ? 800 : 600, color: isToday ? activeSpec.color : '#202223' }}>{new Date(date + 'T12:00').getDate()}</div>
+                                          {isToday && <div style={{ width: 5, height: 5, borderRadius: '50%', background: activeSpec.color, margin: '2px auto 0' }} />}
+                                        </th>
+                                      );
+                                    })}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {slots.length === 0 ? (
+                                    <tr><td colSpan={8} style={{ padding: '2rem', textAlign: 'center', color: '#6d7175', fontSize: '0.85rem' }}>
+                                      Sin horarios configurados para este servicio. Configuralos en <strong>📋 Servicios</strong>.
+                                    </td></tr>
+                                  ) : slots.map(slot => (
+                                    <tr key={slot}>
+                                      <td style={{ padding: '0.3rem 0.5rem', background: '#f6f6f7', borderBottom: '1px solid #e1e3e5', borderRight: '1px solid #e1e3e5', fontSize: '0.75rem', fontWeight: 600, color: '#6d7175', textAlign: 'right', verticalAlign: 'top', whiteSpace: 'nowrap' }}>{slot}</td>
+                                      {weekDays.map((date, di) => {
+                                        const jsDay = new Date(date + 'T12:00').getDay();
+                                        const dow = jsDay === 0 ? 6 : jsDay - 1;
+                                        const [sh, sm] = slot.split(':').map(Number);
+                                        const mins = sh * 60 + sm;
+                                        const inSchedule = dayMap[dow]?.some(w => mins >= w.start && mins < w.end);
+                                        const appt = apptIndex[`${date}_${slot}_${activeSpec.id}`];
+                                        const isToday = date === todayStr;
                                         return (
-                                          <button key={a.id} onClick={() => setApptDetail(a)}
-                                            style={{ width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', background: (spec?.color || '#64748b') + '22', borderLeft: `3px solid ${spec?.color || '#64748b'}`, borderRadius: 4, padding: '3px 5px' }}>
-                                            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: spec?.color || '#374151' }}>{a.time?.slice(0, 5)}</div>
-                                            <div style={{ fontSize: '0.58rem', color: '#6b7280', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{a.client_name || a.client_phone}</div>
-                                          </button>
+                                          <td key={date} style={{ padding: '0.25rem', borderBottom: '1px solid #e1e3e5', borderRight: di < 6 ? '1px solid #e1e3e5' : 'none', verticalAlign: 'top', background: isToday ? `${activeSpec.color}06` : 'transparent', height: 42 }}>
+                                            {!inSchedule ? (
+                                              <div style={{ height: '100%', background: '#f6f6f7', borderRadius: 4, minHeight: 36 }} />
+                                            ) : appt ? (
+                                              <div onClick={() => setApptDetail(appt)}
+                                                style={{ background: appt.status === 'cancelled' ? 'rgba(216,44,13,0.1)' : appt.status === 'completed' ? 'rgba(59,130,246,0.12)' : `${activeSpec.color}22`, border: `1px solid ${appt.status === 'cancelled' ? 'rgba(216,44,13,0.4)' : appt.status === 'completed' ? 'rgba(59,130,246,0.4)' : `${activeSpec.color}55`}`, borderRadius: 6, padding: '0.25rem 0.4rem', cursor: 'pointer', minHeight: 36 }}>
+                                                <div style={{ fontSize: '0.7rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: appt.status === 'cancelled' ? '#d82c0d' : appt.status === 'completed' ? '#2563eb' : '#202223' }}>{appt.client_name || '—'}</div>
+                                                {appt.client_phone && <div style={{ fontSize: '0.62rem', color: '#6d7175', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📱 {appt.client_phone}</div>}
+                                              </div>
+                                            ) : (
+                                              <div onClick={() => { setNewAppt({ specialty_id: activeSpec.id, date, time: slot, client_phone: '', client_name: '', notes: '' }); setShowNewAppt(true); setApptMsg(null); }}
+                                                style={{ minHeight: 36, borderRadius: 6, cursor: 'pointer', border: '1px dashed transparent', transition: '0.12s' }}
+                                                onMouseEnter={e => { e.currentTarget.style.borderColor = `${activeSpec.color}55`; e.currentTarget.style.background = `${activeSpec.color}08`; }}
+                                                onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'transparent'; }} />
+                                            )}
+                                          </td>
                                         );
                                       })}
-                                    </BlockStack>
-                                  </div>
-                                );
-                              })}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
                             </div>
-                          );
-                        })()}
-
-                        {/* Nuevo turno */}
-                        <InlineStack align="space-between">
-                          <Text variant="headingSm" as="h3">Agendar turno</Text>
-                          <Button size="slim" onClick={() => setShowNewAppt(v => !v)} disabled={specialties.length === 0}>
-                            {showNewAppt ? 'Cancelar' : '+ Nuevo turno'}
-                          </Button>
-                        </InlineStack>
-
-                        {showNewAppt && (
-                          <Card>
-                            <BlockStack gap="300">
-                              <Select label="Servicio *" options={specOptions} value={newAppt.specialty_id}
-                                onChange={v => setNewAppt(a => ({ ...a, specialty_id: v, time: '' }))} />
-                              <InlineStack gap="400">
-                                <TextField label="Nombre del cliente" value={newAppt.client_name}
-                                  onChange={v => setNewAppt(a => ({ ...a, client_name: v }))} autoComplete="off" />
-                                <TextField label="Teléfono *" value={newAppt.client_phone}
-                                  onChange={v => setNewAppt(a => ({ ...a, client_phone: v }))}
-                                  placeholder="5491123456789" autoComplete="off" />
-                              </InlineStack>
-                              <TextField label="Fecha *" type="date" value={newAppt.date}
-                                onChange={v => setNewAppt(a => ({ ...a, date: v, time: '' }))} autoComplete="off" />
-                              {availableSlots.length > 0 ? (
-                                <Select label="Horario disponible *"
-                                  options={[{ label: 'Seleccioná un horario', value: '' }, ...availableSlots.map(s => ({ label: s, value: s }))]}
-                                  value={newAppt.time}
-                                  onChange={v => setNewAppt(a => ({ ...a, time: v }))} />
-                              ) : (
-                                <TextField label="Hora *" type="time" value={newAppt.time}
-                                  onChange={v => setNewAppt(a => ({ ...a, time: v }))} autoComplete="off"
-                                  helpText={newAppt.specialty_id && newAppt.date ? 'Sin horarios configurados para este día. Ingresá la hora manualmente.' : ''} />
-                              )}
-                              <TextField label="Notas" value={newAppt.notes}
-                                onChange={v => setNewAppt(a => ({ ...a, notes: v }))}
-                                multiline={2} placeholder="Observaciones..." autoComplete="off" />
-                              {apptMsg && <Banner tone={apptMsg.ok ? 'success' : 'critical'}>{apptMsg.text}</Banner>}
-                              <InlineStack>
-                                <Button onClick={createAppointment} loading={turnosSaving} variant="primary">Crear turno</Button>
-                              </InlineStack>
-                            </BlockStack>
-                          </Card>
+                            <div style={{ padding: '0.5rem 1rem', borderTop: '1px solid #e1e3e5', display: 'flex', gap: '1.25rem', flexWrap: 'wrap', alignItems: 'center', background: '#fafafa' }}>
+                              {[{ color: activeSpec.color, label: 'Confirmado' }, { color: '#3b82f6', label: 'Completado' }, { color: '#d82c0d', label: 'Cancelado' }, { color: '#e1e3e5', label: 'Sin horario' }].map(l => (
+                                <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.72rem', color: '#6d7175' }}>
+                                  <div style={{ width: 10, height: 10, borderRadius: 2, background: l.color }} />{l.label}
+                                </div>
+                              ))}
+                              <div style={{ marginLeft: 'auto', fontSize: '0.72rem', color: '#6d7175' }}>Clic en un casillero vacío para crear un turno</div>
+                            </div>
+                          </div>
                         )}
-
-                        {/* Modal detalle de turno */}
-                        {apptDetail && (
-                          <Card>
-                            <BlockStack gap="300">
-                              <InlineStack align="space-between">
-                                <Text variant="headingSm" as="h3">Detalle del turno</Text>
-                                <Button size="slim" variant="plain" onClick={() => setApptDetail(null)}>✕ Cerrar</Button>
-                              </InlineStack>
-                              <BlockStack gap="100">
-                                <Text variant="bodyMd" fontWeight="semibold">{apptDetail.client_name || apptDetail.client_phone}</Text>
-                                <Text variant="bodySm" tone="subdued">{apptDetail.specialty_name} · {apptDetail.date} {apptDetail.time?.slice(0, 5)}</Text>
-                                {apptDetail.client_phone && <Text variant="bodySm" tone="subdued">📞 {apptDetail.client_phone}</Text>}
-                                {apptDetail.notes && <Text variant="bodySm">{apptDetail.notes}</Text>}
-                                <span style={{ background: statusColors[apptDetail.status] || '#64748b', color: '#fff', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20, alignSelf: 'flex-start', display: 'inline-block' }}>
-                                  {statusLabels[apptDetail.status] || apptDetail.status}
-                                </span>
-                              </BlockStack>
-                              {apptDetail.status === 'confirmed' && (
-                                <InlineStack gap="200">
-                                  <Button size="slim" variant="primary" onClick={() => updateApptStatus(apptDetail.id, 'completed')}>Marcar completado</Button>
-                                  <Button size="slim" tone="critical" onClick={() => updateApptStatus(apptDetail.id, 'cancelled')}>Cancelar turno</Button>
-                                </InlineStack>
-                              )}
-                            </BlockStack>
-                          </Card>
-                        )}
-
-                      </BlockStack>
+                      </div>
                     )}
 
-                    {/* ════ VISTA: SERVICIOS ════ */}
+                    {/* ── Vista Servicios ── */}
                     {turnosView === 'servicios' && (
-                      <BlockStack gap="400">
-                        {specialties.length === 0 ? (
-                          <Banner tone="info">Creá un servicio usando el botón de arriba para configurar su horario de atención.</Banner>
-                        ) : (
-                          <>
-                            <BlockStack gap="200">
-                              <Text variant="headingSm" as="h3">Seleccioná el servicio a configurar</Text>
-                              <InlineStack gap="200" wrap>
-                                {specialties.map(s => (
-                                  <div key={s.id} onClick={() => setSelectedSpecId(s.id)}
-                                    style={{ cursor: 'pointer', padding: '8px 14px', borderRadius: 8, border: selectedSpecId === s.id ? `2px solid ${s.color}` : '2px solid #e5e7eb', background: selectedSpecId === s.id ? s.color + '15' : '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: s.color, flexShrink: 0 }} />
-                                    <div>
-                                      <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151' }}>{s.name}</div>
-                                      <div style={{ fontSize: '0.7rem', color: '#9ca3af' }}>{s.duration_minutes} min</div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </InlineStack>
-                            </BlockStack>
-
-                            {selectedSpecId && schedule[selectedSpecId] && (() => {
-                              const activeSpec = specialties.find(s => s.id === selectedSpecId);
-                              return (
-                                <Card>
-                                  <BlockStack gap="400">
-                                    <InlineStack align="space-between">
-                                      <Text variant="headingSm" as="h3">Horarios — {activeSpec?.name}</Text>
-                                      <Button size="slim" tone="critical" variant="plain" onClick={() => deleteSpecialty(selectedSpecId)}>Eliminar servicio</Button>
-                                    </InlineStack>
-                                    {scheduleMsg && <Banner tone={scheduleMsg.ok ? 'success' : 'critical'}>{scheduleMsg.text}</Banner>}
-                                    <BlockStack gap="300">
-                                      {schedule[selectedSpecId].map((day, i) => (
-                                        <BlockStack key={i} gap="200">
-                                          <Checkbox label={DAYS[i]} checked={!!day.active} onChange={v => toggleDay(selectedSpecId, i, v)} />
-                                          {day.active && (
-                                            <BlockStack gap="100" inlineAlign="start">
-                                              {day.windows.map((w, wi) => (
-                                                <InlineStack key={wi} gap="200">
-                                                  <TextField label="" type="time" value={w.start_time}
-                                                    onChange={v => updateWindow(selectedSpecId, i, wi, 'start_time', v)} autoComplete="off" />
-                                                  <Text as="span" variant="bodySm" tone="subdued">a</Text>
-                                                  <TextField label="" type="time" value={w.end_time}
-                                                    onChange={v => updateWindow(selectedSpecId, i, wi, 'end_time', v)} autoComplete="off" />
-                                                  {day.windows.length > 1 && (
-                                                    <Button size="slim" variant="plain" tone="critical" onClick={() => removeWindow(selectedSpecId, i, wi)}>✕</Button>
-                                                  )}
-                                                </InlineStack>
-                                              ))}
-                                              <Button size="slim" variant="plain" onClick={() => addWindow(selectedSpecId, i)}>+ Agregar franja</Button>
-                                            </BlockStack>
-                                          )}
-                                          {i < 6 && <Divider />}
-                                        </BlockStack>
-                                      ))}
-                                    </BlockStack>
-                                    <InlineStack>
-                                      <Button onClick={() => saveSchedule(selectedSpecId)} loading={savingSchedule} variant="primary">Guardar horarios</Button>
-                                    </InlineStack>
-                                  </BlockStack>
-                                </Card>
-                              );
-                            })()}
-                          </>
+                      <div>
+                        {specialties.length === 0 && (
+                          <div style={{ background: '#f6f6f7', border: '1px dashed #c9cccf', borderRadius: 12, padding: '2.5rem', textAlign: 'center' }}>
+                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📋</div>
+                            <p style={{ color: '#6d7175', margin: 0 }}>No hay servicios configurados. Creá uno con el botón de arriba.</p>
+                          </div>
                         )}
-                      </BlockStack>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                          {specialties.map(spec => (
+                            <div key={spec.id} style={{ background: '#fff', border: '1px solid #e1e3e5', borderRadius: 14, overflow: 'hidden' }}>
+                              <div style={{ padding: '0.85rem 1.1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid #e1e3e5', background: '#f6f6f7' }}>
+                                <div style={{ width: 12, height: 12, borderRadius: '50%', background: spec.color, flexShrink: 0 }} />
+                                <span style={{ fontWeight: 700, flex: 1, color: '#202223' }}>{spec.name}</span>
+                                <span style={{ fontSize: '0.78rem', color: '#6d7175', background: '#fff', border: '1px solid #e1e3e5', borderRadius: 20, padding: '2px 8px' }}>{spec.duration_minutes} min{spec.capacity > 1 ? ` · ${spec.capacity} lugares` : ''}</span>
+                                {spec.reminder_enabled ? (
+                                  <span style={{ fontSize: '0.72rem', color: '#008060', background: 'rgba(0,128,96,0.08)', border: '1px solid rgba(0,128,96,0.25)', borderRadius: 20, padding: '2px 8px' }}>🔔 {spec.reminder_hours}h antes</span>
+                                ) : (
+                                  <span style={{ fontSize: '0.72rem', color: '#6d7175', opacity: 0.6 }}>Sin recordatorio</span>
+                                )}
+                                <button onClick={() => deleteSpecialty(spec.id)} style={{ background: 'rgba(216,44,13,0.08)', border: '1px solid rgba(216,44,13,0.25)', borderRadius: 7, color: '#d82c0d', cursor: 'pointer', padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>Eliminar</button>
+                              </div>
+                              <div style={{ padding: '1rem 1.1rem' }}>
+                                <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6d7175', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.75rem' }}>Horarios disponibles</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                  {DAYS.map((dayName, i) => {
+                                    const day = (schedule[spec.id] || [])[i] || { day_of_week: i, active: false, windows: [{ start_time: '09:00', end_time: '18:00' }] };
+                                    const tInput = (disabled, val, onChange) => (
+                                      <input type="time" value={val} disabled={disabled} onChange={onChange}
+                                        style={{ padding: '0.3rem 0.5rem', borderRadius: 6, border: '1px solid #c9cccf', background: !disabled ? '#fff' : '#f6f6f7', color: !disabled ? '#202223' : '#6d7175', fontSize: '0.82rem', opacity: !disabled ? 1 : 0.5 }} />
+                                    );
+                                    const totalSlots = day.active ? day.windows.reduce((acc, w) => {
+                                      const [sh, sm] = w.start_time.split(':').map(Number);
+                                      const [eh, em] = w.end_time.split(':').map(Number);
+                                      return acc + Math.max(0, Math.floor(((eh * 60 + em) - (sh * 60 + sm)) / spec.duration_minutes));
+                                    }, 0) : 0;
+                                    return (
+                                      <div key={i} style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', minWidth: 105, paddingTop: '0.35rem' }}>
+                                          <input type="checkbox" checked={!!day.active} onChange={e => toggleDay(spec.id, i, e.target.checked)} style={{ accentColor: spec.color, width: 15, height: 15, flexShrink: 0 }} />
+                                          <span style={{ fontSize: '0.82rem', color: day.active ? '#202223' : '#6d7175', fontWeight: day.active ? 600 : 400 }}>{dayName}</span>
+                                        </label>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', flex: 1 }}>
+                                          {day.windows.map((win, wi) => (
+                                            <div key={wi} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                                              {tInput(!day.active, win.start_time, e => updateWindow(spec.id, i, wi, 'start_time', e.target.value))}
+                                              <span style={{ fontSize: '0.75rem', color: '#6d7175' }}>a</span>
+                                              {tInput(!day.active, win.end_time, e => updateWindow(spec.id, i, wi, 'end_time', e.target.value))}
+                                              {day.active && wi === 0 && day.windows.length === 1 && (
+                                                <button onClick={() => addWindow(spec.id, i)} title="Agregar horario cortado"
+                                                  style={{ background: '#f6f6f7', border: '1px solid #c9cccf', borderRadius: 6, color: '#6d7175', cursor: 'pointer', padding: '0.25rem 0.55rem', fontSize: '0.8rem', fontWeight: 700 }}>+</button>
+                                              )}
+                                              {day.active && wi > 0 && (
+                                                <button onClick={() => removeWindow(spec.id, i, wi)}
+                                                  style={{ background: 'rgba(216,44,13,0.08)', border: '1px solid rgba(216,44,13,0.25)', borderRadius: 6, color: '#d82c0d', cursor: 'pointer', padding: '0.25rem 0.55rem', fontSize: '0.8rem', fontWeight: 700 }}>−</button>
+                                              )}
+                                              {day.active && wi === day.windows.length - 1 && totalSlots > 0 && (
+                                                <span style={{ fontSize: '0.71rem', color: '#6d7175', opacity: 0.7 }}>{totalSlots} turnos/día</span>
+                                              )}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.85rem' }}>
+                                  <button onClick={() => saveSchedule(spec.id)} disabled={savingSchedule}
+                                    style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', padding: '0.5rem 1.1rem', fontSize: '0.85rem', fontWeight: 600 }}>
+                                    {savingSchedule ? 'Guardando...' : 'Guardar horarios'}
+                                  </button>
+                                  {scheduleMsg && <span style={{ fontSize: '0.82rem', color: scheduleMsg.ok ? '#008060' : '#d82c0d' }}>{scheduleMsg.text}</span>}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
 
-                  </BlockStack>
-                )}
+                  </div>
+                  );
+                })()}
+
 
                 {/* ════ TAB: PROBAR ASISTENTE ════ */}
                 {selectedTab === 2 && (
