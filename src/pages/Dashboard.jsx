@@ -2541,19 +2541,15 @@ function Dashboard() {
               {/* ── Settings Panel ── */}
               {openSettingsId === bot.id && (
                 <div className="bot-card-expanded prompt-editor-container">
-                  {user.role === 'admin' && (
-                    <>
-                      <div className="prompt-header">
-                        <BrainCircuit size={18} className="icon-purple" />
-                        <h3 style={{ flex: 1 }}>Comportamiento Psicológico de la IA</h3>
-                        <button onClick={() => { if (editingPrompt[bot.id] === undefined) setEditingPrompt(p => ({...p, [bot.id]: bot.prompt || ''})); setExpandedField({ botId: bot.id, field: 'prompt' }); }} style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-2)', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}>⛶ Expandir</button>
-                      </div>
-                      <textarea className="prompt-textarea editable"
-                        value={editingPrompt[bot.id] !== undefined ? editingPrompt[bot.id] : bot.prompt}
-                        onChange={(e) => setEditingPrompt({...editingPrompt, [bot.id]: e.target.value})}
-                        placeholder="Instrucciones para tu vendedor IA..." />
-                    </>
-                  )}
+                  <div className="prompt-header">
+                    <BrainCircuit size={18} className="icon-purple" />
+                    <h3 style={{ flex: 1 }}>Comportamiento Psicológico de la IA</h3>
+                    <button onClick={() => { if (editingPrompt[bot.id] === undefined) setEditingPrompt(p => ({...p, [bot.id]: bot.prompt || ''})); setExpandedField({ botId: bot.id, field: 'prompt' }); }} style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-2)', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}>⛶ Expandir</button>
+                  </div>
+                  <textarea className="prompt-textarea editable"
+                    value={editingPrompt[bot.id] !== undefined ? editingPrompt[bot.id] : bot.prompt}
+                    onChange={(e) => setEditingPrompt({...editingPrompt, [bot.id]: e.target.value})}
+                    placeholder="Instrucciones para tu vendedor IA..." />
 
                   <div className="prompt-header" style={{marginTop:'1.5rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
                     <Settings size={18} className="icon-blue" />
