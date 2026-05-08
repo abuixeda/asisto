@@ -35,8 +35,12 @@ export default function LoginAgency() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Error al ingresar.'); return; }
-      localStorage.setItem('merchant_token', data.token);
-      localStorage.setItem('merchant_bot_id', data.user.botId);
+      if (data.user.role === 'admin' || data.user.role === 'manager') {
+        localStorage.setItem('asisto_token', data.token);
+      } else {
+        localStorage.setItem('merchant_token', data.token);
+        localStorage.setItem('merchant_bot_id', data.user.botId);
+      }
       nav(data.user.role === 'admin' ? '/admin' : '/mi-panel');
     } catch {
       setError('No se pudo conectar con el servidor.');
