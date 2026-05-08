@@ -184,6 +184,7 @@ function ShopifyPanel() {
   const [apptMsg, setApptMsg] = useState(null);
   const [showNewSpec, setShowNewSpec] = useState(false);
   const [showNewAppt, setShowNewAppt] = useState(false);
+  const [editingSpec, setEditingSpec] = useState(null);
 
   // ── Marketing ──
   const [customers, setCustomers] = useState([]);
@@ -354,6 +355,16 @@ function ShopifyPanel() {
       loadTurnos();
     } catch (_e) { setApptMsg({ ok: false, text: 'Error al crear servicio.' }); }
     finally { setTurnosSaving(false); }
+  }
+
+  async function updateSpecialty() {
+    if (!editingSpec?.name.trim()) return;
+    setTurnosSaving(true);
+    await shopifyFetch(`${API}/api/shopify/embedded/specialties/${editingSpec.id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name: editingSpec.name, duration_minutes: editingSpec.duration_minutes, capacity: editingSpec.capacity, color: editingSpec.color, reminder_enabled: editingSpec.reminder_enabled, reminder_hours: editingSpec.reminder_hours })
+    });
+    setTurnosSaving(false); setEditingSpec(null); loadTurnos();
   }
 
   async function deleteSpecialty(id) {
@@ -870,6 +881,78 @@ function ShopifyPanel() {
                   return (
                   <div>
 
+                    {/* Modal editar servicio */}
+                    {editingSpec && (
+                      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                        <div style={{ background: '#fff', borderRadius: 16, padding: '1.5rem', width: '100%', maxWidth: 440, display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontWeight: 700, fontSize: '1rem', color: '#202223' }}>Editar servicio</span>
+                            <button onClick={() => setEditingSpec(null)} style={{ background: 'none', border: '1px solid #c9cccf', borderRadius: 8, color: '#6d7175', cursor: 'pointer', padding: '0.3rem 0.7rem' }}>✕</button>
+                          </div>
+                          <div><label style={labelSt}>Nombre *</label>
+                            <input style={inputSt} value={editingSpec.name} onChange={e => setEditingSpec(p => ({ ...p, name: e.target.value }))} placeholder="Nombre del servicio..." />
+                          </div>
+                          <div style={{ display: 'flex', gap: '1rem' }}>
+                            <div style={{ flex: 1 }}><label style={labelSt}>Duración (min)</label>
+                              <input style={inputSt} type="number" min="5" max="480" value={editingSpec.duration_minutes} onChange={e => setEditingSpec(p => ({ ...p, duration_minutes: Number(e.target.value) }))} />
+                            </div>
+                            <div style={{ flex: 1 }}><label style={labelSt}>Lugares simultáneos</label>
+                              <input style={inputSt} type="number" min="1" max="100" value={editingSpec.capacity} onChange={e => setEditingSpec(p => ({ ...p, capacity: Number(e.target.value) }))} />
+                            </div>
+                            <div><label style={labelSt}>Color</label>
+                              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
+                                {SPEC_COLORS.map(c => (
+                                  <div key={c} onClick={() => setEditingSpec(p => ({ ...p, color: c }))}
+                                    style={{ width: 24, height: 24, borderRadius: '50%', background: c, cursor: 'pointer', border: editingSpec.color === c ? '2px solid #202223' : '2px solid transparent', boxSizing: 'border-box' }} />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 10, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#202223' }}>🔔 Recordatorio automático</div>
+                              <div style={{ fontSize: '0.75rem', color: '#6d7175' }}>Avisa al cliente por WhatsApp antes del turno</div>
+                            </div>
+                            <label style={{ position: 'relative', display: 'inline-block', width: 44, height: 24, flexShrink: 0 }}>
+                              <input type="checkbox" checked={!!editingSpec.reminder_enabled} onChange={e => setEditingSpec(p => ({ ...p, reminder_enabled: e.target.checked }))} style={{ opacity: 0, width: 0, height: 0 }} />
+                              <span style={{ position: 'absolute', cursor: 'pointer', inset: 0, borderRadius: 34, background: editingSpec.reminder_enabled ? '#7c3aed' : '#c9cccf', transition: '0.2s' }}>
+                                <span style={{ position: 'absolute', height: 18, width: 18, left: editingSpec.reminder_enabled ? 23 : 3, bottom: 3, background: 'white', borderRadius: '50%', transition: '0.2s' }} />
+                              </span>
+                            </label>
+                          </div>
+                          {editingSpec.reminder_enabled && (
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                                <label style={labelSt}>Avisos antes del turno</label>
+                                <button onClick={() => setEditingSpec(p => ({ ...p, reminder_hours: [...p.reminder_hours, 2] }))}
+                                  style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: 6, color: '#fff', cursor: 'pointer', padding: '0.2rem 0.65rem', fontSize: '1rem', fontWeight: 700, lineHeight: 1 }}>+</button>
+                              </div>
+                              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                {editingSpec.reminder_hours.map((h, i) => (
+                                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.22)', borderRadius: 8, padding: '0.3rem 0.5rem' }}>
+                                    <input type="number" min="1" max="168" value={h}
+                                      onChange={e => setEditingSpec(p => ({ ...p, reminder_hours: p.reminder_hours.map((v, j) => j === i ? Number(e.target.value) : v) }))}
+                                      style={{ ...inputSt, width: 56, margin: 0, padding: '0.25rem 0.4rem' }} />
+                                    <span style={{ fontSize: '0.75rem', color: '#6d7175' }}>h antes</span>
+                                    {editingSpec.reminder_hours.length > 1 && (
+                                      <button onClick={() => setEditingSpec(p => ({ ...p, reminder_hours: p.reminder_hours.filter((_, j) => j !== i) }))}
+                                        style={{ background: 'none', border: 'none', color: '#c9cccf', cursor: 'pointer', fontSize: '1rem', padding: '0 2px', lineHeight: 1 }}>×</button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                            <button onClick={() => setEditingSpec(null)} style={{ background: 'transparent', border: '1px solid #c9cccf', borderRadius: 8, color: '#6d7175', cursor: 'pointer', padding: '0.6rem 1rem' }}>Cancelar</button>
+                            <button onClick={updateSpecialty} disabled={turnosSaving || !editingSpec.name.trim()} style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', padding: '0.6rem 1.25rem', fontWeight: 600 }}>
+                              {turnosSaving ? 'Guardando...' : 'Guardar cambios'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Modal nuevo servicio */}
                     {showNewSpec && (
                       <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
@@ -1195,6 +1278,7 @@ function ShopifyPanel() {
                                 ) : (
                                   <span style={{ fontSize: '0.72rem', color: '#6d7175', opacity: 0.6 }}>Sin recordatorio</span>
                                 )}
+                                <button onClick={() => setEditingSpec({ ...spec, reminder_hours: Array.isArray(spec.reminder_hours) ? spec.reminder_hours : [spec.reminder_hours || 24] })} style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: 7, color: '#7c3aed', cursor: 'pointer', padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>Editar</button>
                                 <button onClick={() => deleteSpecialty(spec.id)} style={{ background: 'rgba(216,44,13,0.08)', border: '1px solid rgba(216,44,13,0.25)', borderRadius: 7, color: '#d82c0d', cursor: 'pointer', padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}>Eliminar</button>
                               </div>
                               <div style={{ padding: '1rem 1.1rem' }}>
