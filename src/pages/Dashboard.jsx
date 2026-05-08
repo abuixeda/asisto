@@ -1170,294 +1170,656 @@ function atGetSlots(spec) {
 }
 
 // ─── AdminTurnosPanel ─────────────────────────────────────────────────────────
-function AdminTurnosPanel({ bots, fixedBotId = null }) {
-  const [botId, setBotId]           = useState(fixedBotId || bots?.[0]?.id || null);
-  const [specs, setSpecs]           = useState([]);
-  const [appointments, setAppts]    = useState([]);
-  const [selectedSpecId, setSpecId] = useState(null);
-  const [weekOffset, setWeekOff]    = useState(0);
-  const [apptDetail, setDetail]     = useState(null);
-  const [showNew, setShowNew]       = useState(false);
-  const [newAppt, setNewAppt]       = useState({ specialty_id:'', client_phone:'', client_name:'', date:'', time:'', notes:'' });
-  const [avSlots, setAvSlots]       = useState([]);
-  const [saving, setSaving]         = useState(false);
-  const [msg, setMsg]               = useState(null);
+const SPEC_COLORS = ['#7c3aed','#3b82f6','#10b981','#f59e0b','#ef4444','#ec4899','#06b6d4'];
 
-  const bot = bots?.find(b => b.id === botId);
+function AdminTurnosPanel({ botId }) {
+  const [specs, setSpecs] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [view, setView] = useState('agenda'); // 'agenda' | 'especialidades'
+  const [newSpec, setNewSpec] = useState({ name:'', duration_minutes:30, color:'#7c3aed', reminder_enabled:true, reminder_hours:[24], capacity:1 });
+  const [showNewSpec, setShowNewSpec] = useState(false);
+  const [schedule, setSchedule] = useState({});
+  const [savingSchedule, setSavingSchedule] = useState(false);
+  const [scheduleMsg, setScheduleMsg] = useState(null);
+  const [showNewAppt, setShowNewAppt] = useState(false);
+  const [newAppt, setNewAppt] = useState({ specialty_id:'', client_phone:'', client_name:'', date:'', time:'', notes:'' });
+  const [apptDetail, setApptDetail] = useState(null);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [apptMsg, setApptMsg] = useState(null);
+  const [saving, setSaving] = useState(false);
+  // Timetable state
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedSpecId, setSelectedSpecId] = useState(null);
 
-  async function load(bid) {
-    if (!bid) return;
+  async function loadSpecs() {
     try {
-      const [sr, ar] = await Promise.all([
-        authFetch(`${API_URL}/api/bots/${bid}/specialties`),
-        authFetch(`${API_URL}/api/bots/${bid}/appointments`),
-      ]);
-      const [sd, ad] = await Promise.all([sr.json(), ar.json()]);
-      const sl = Array.isArray(sd) ? sd : [];
-      const al = Array.isArray(ad) ? ad : [];
-      setSpecs(sl); setAppts(al);
-      setSpecId(prev => sl.find(s => s.id === prev) ? prev : sl[0]?.id || null);
-    } catch { setSpecs([]); setAppts([]); }
+      const res = await authFetch(`${API_URL}/api/bots/${botId}/specialties`);
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : [];
+      setSpecs(list);
+      if (list.length > 0) setSelectedSpecId(prev => prev || list[0].id);
+      const sch = {};
+      for (const s of list) {
+        sch[s.id] = AT_DAYS_FULL.map((_, i) => {
+          const daySlots = (s.schedule || []).filter(sl => sl.day_of_week === i && sl.active);
+          if (daySlots.length > 0) {
+            return { day_of_week: i, active: true, windows: daySlots.map(sl => ({ start_time: sl.start_time, end_time: sl.end_time })) };
+          }
+          return { day_of_week: i, active: false, windows: [{ start_time: '09:00', end_time: '18:00' }] };
+        });
+      }
+      setSchedule(sch);
+    } catch { setSpecs([]); }
   }
 
-  useEffect(() => { load(botId); }, [botId]);
-
-  useEffect(() => {
-    if (!newAppt.specialty_id || !newAppt.date) return;
-    authFetch(`${API_URL}/api/bots/${botId}/appointments/available?specialty_id=${newAppt.specialty_id}&date=${newAppt.date}`)
-      .then(r => r.json()).then(d => setAvSlots(Array.isArray(d) ? d : [])).catch(() => setAvSlots([]));
-  }, [newAppt.specialty_id, newAppt.date]);
-
-  async function updateStatus(id, status) {
-    await authFetch(`${API_URL}/api/bots/${botId}/appointments/${id}`, { method:'PUT', body: JSON.stringify({ status }) });
-    setDetail(p => p ? { ...p, status } : null);
-    setAppts(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-  }
-
-  async function updateNotes(id, notes) {
-    await authFetch(`${API_URL}/api/bots/${botId}/appointments/${id}`, { method:'PUT', body: JSON.stringify({ notes }) });
-    setAppts(prev => prev.map(a => a.id === id ? { ...a, notes } : a));
-    setDetail(p => p ? { ...p, notes } : null);
-  }
-
-  async function deleteAppt(id) {
-    if (!confirm('¿Eliminar este turno?')) return;
-    await authFetch(`${API_URL}/api/bots/${botId}/appointments/${id}`, { method:'DELETE' });
-    setDetail(null); load(botId);
-  }
-
-  async function createAppt() {
-    const { specialty_id, client_phone, client_name, date, time } = newAppt;
-    if (!specialty_id || !client_phone || !date || !time) { setMsg({ ok:false, text:'Completá todos los campos obligatorios.' }); return; }
-    setSaving(true); setMsg(null);
+  async function loadAppointments() {
     try {
-      const r = await authFetch(`${API_URL}/api/bots/${botId}/appointments`, { method:'POST', body: JSON.stringify(newAppt) });
-      if (r.ok) {
-        setShowNew(false);
+      const res = await authFetch(`${API_URL}/api/bots/${botId}/appointments`);
+      const data = await res.json();
+      setAppointments(Array.isArray(data) ? data : []);
+    } catch { setAppointments([]); }
+  }
+
+  useEffect(() => { loadSpecs(); }, [botId]);
+  useEffect(() => { loadAppointments(); }, [botId]);
+
+  async function createSpec() {
+    if (!newSpec.name.trim()) return;
+    setSaving(true);
+    try {
+      await authFetch(`${API_URL}/api/bots/${botId}/specialties`, { method:'POST', body: JSON.stringify(newSpec) });
+      setShowNewSpec(false);
+      setNewSpec({ name:'', duration_minutes:30, color:'#7c3aed', reminder_enabled:true, reminder_hours:[24], capacity:1 });
+      loadSpecs();
+    } finally { setSaving(false); }
+  }
+
+  async function deleteSpec(sid) {
+    if (!confirm('¿Eliminar este servicio y todos sus turnos?')) return;
+    await authFetch(`${API_URL}/api/bots/${botId}/specialties/${sid}`, { method:'DELETE' });
+    loadSpecs(); loadAppointments();
+  }
+
+  async function saveSchedule(sid) {
+    setSavingSchedule(true); setScheduleMsg(null);
+    try {
+      const slots = [];
+      for (const day of (schedule[sid] || [])) {
+        if (!day.active) continue;
+        for (const win of day.windows) {
+          slots.push({ day_of_week: day.day_of_week, start_time: win.start_time, end_time: win.end_time, active: 1 });
+        }
+      }
+      await authFetch(`${API_URL}/api/bots/${botId}/specialties/${sid}/schedule`, {
+        method:'PUT', body: JSON.stringify({ slots })
+      });
+      setScheduleMsg({ ok:true, text:'✅ Horarios guardados.' });
+      loadSpecs();
+    } catch { setScheduleMsg({ ok:false, text:'❌ Error al guardar.' }); }
+    finally { setSavingSchedule(false); }
+  }
+
+  function toggleDay(sid, dayIdx, active) {
+    setSchedule(prev => ({ ...prev, [sid]: prev[sid].map((d, i) => i === dayIdx ? { ...d, active } : d) }));
+  }
+
+  function updateWindow(sid, dayIdx, winIdx, field, value) {
+    setSchedule(prev => ({
+      ...prev,
+      [sid]: prev[sid].map((d, i) => i !== dayIdx ? d : {
+        ...d, windows: d.windows.map((w, wi) => wi === winIdx ? { ...w, [field]: value } : w)
+      })
+    }));
+  }
+
+  function addWindow(sid, dayIdx) {
+    setSchedule(prev => ({
+      ...prev,
+      [sid]: prev[sid].map((d, i) => i !== dayIdx ? d : {
+        ...d, windows: [...d.windows, { start_time: '15:00', end_time: '18:00' }]
+      })
+    }));
+  }
+
+  function removeWindow(sid, dayIdx, winIdx) {
+    setSchedule(prev => ({
+      ...prev,
+      [sid]: prev[sid].map((d, i) => i !== dayIdx ? d : {
+        ...d, windows: d.windows.filter((_, wi) => wi !== winIdx)
+      })
+    }));
+  }
+
+  async function loadAvailableSlots() {
+    if (!newAppt.specialty_id || !newAppt.date) { setAvailableSlots([]); return; }
+    try {
+      const res = await authFetch(`${API_URL}/api/bots/${botId}/appointments/available?specialty_id=${newAppt.specialty_id}&date=${newAppt.date}`);
+      setAvailableSlots(await res.json());
+    } catch { setAvailableSlots([]); }
+  }
+
+  useEffect(() => { loadAvailableSlots(); }, [newAppt.specialty_id, newAppt.date]);
+
+  async function createAppointment() {
+    if (!newAppt.specialty_id || !newAppt.client_phone || !newAppt.date || !newAppt.time) {
+      setApptMsg({ ok:false, text:'Completá todos los campos obligatorios.' }); return;
+    }
+    setSaving(true); setApptMsg(null);
+    try {
+      const res = await authFetch(`${API_URL}/api/bots/${botId}/appointments`, { method:'POST', body: JSON.stringify(newAppt) });
+      const data = await res.json();
+      if (res.ok) {
+        setShowNewAppt(false);
         setNewAppt({ specialty_id:'', client_phone:'', client_name:'', date:'', time:'', notes:'' });
-        load(botId);
-      } else { const d = await r.json(); setMsg({ ok:false, text: d.error || 'Error al crear turno.' }); }
-    } catch { setMsg({ ok:false, text:'Error de conexión.' }); }
-    finally { setSaving(false); }
+        loadAppointments();
+      } else { setApptMsg({ ok:false, text: data.error || 'Error al crear.' }); }
+    } finally { setSaving(false); }
   }
 
-  const weekDays  = atGetWeekDays(weekOffset);
-  const todayStr  = new Date().toISOString().slice(0, 10);
-  const activeSpec = specs.find(s => s.id === selectedSpecId);
-  const { slots, dayMap } = activeSpec ? atGetSlots(activeSpec) : { slots:[], dayMap:{} };
-  const hasSchedule = slots.length > 0;
-  const dur = activeSpec?.duration_minutes || 30;
-  const displaySlots = hasSchedule ? slots : Array.from(
-    { length: Math.ceil(720 / dur) },
-    (_, i) => { const m = 480 + i*dur; return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; }
-  );
-  const apptIndex = {};
-  appointments.forEach(a => { apptIndex[`${a.date}_${a.time}_${a.specialty_id}`] = a; });
+  async function updateApptStatus(aid, status) {
+    await authFetch(`${API_URL}/api/bots/${botId}/appointments/${aid}`, { method:'PUT', body: JSON.stringify({ status }) });
+    loadAppointments();
+  }
 
-  const cell   = { minWidth: 90, height: 44, border:'1px solid var(--border)', textAlign:'center', verticalAlign:'middle', fontSize:'0.72rem', padding:'2px' };
-  const hdrCell= { ...cell, background:'var(--surface-2)', fontWeight:600, fontSize:'0.75rem', padding:'0.5rem 0.25rem' };
-  const inputSt= { width:'100%', padding:'0.55rem 0.75rem', borderRadius:'8px', border:'1px solid var(--border)', background:'var(--surface-2)', color:'var(--text)', fontSize:'0.875rem', boxSizing:'border-box' };
-  const labelSt= { fontSize:'0.78rem', color:'var(--text-2)', display:'block', marginBottom:'0.25rem' };
+  async function deleteAppt(aid) {
+    if (!confirm('¿Eliminar este turno definitivamente? Esta acción no se puede deshacer.')) return;
+    await authFetch(`${API_URL}/api/bots/${botId}/appointments/${aid}`, { method:'DELETE' });
+    setApptDetail(null); loadAppointments();
+  }
+
+  const inputStyle = { width:'100%', padding:'0.65rem 0.85rem', borderRadius:'8px', border:'1px solid var(--border)', background:'rgba(255,255,255,0.05)', color:'var(--text-primary)', fontSize:'0.9rem', boxSizing:'border-box' };
+  const labelStyle = { fontSize:'0.8rem', color:'var(--text-secondary)', display:'block', marginBottom:'0.25rem' };
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap:'1rem' }}>
+    <div style={{ padding:'1.5rem 2rem' }}>
 
-      {/* Bot selector — solo visible cuando NO está anclado a un bot específico */}
-      {!fixedBotId && (
-        <div style={{ display:'flex', flexWrap:'wrap', gap:'0.5rem' }}>
-          {bots.map(b => (
-            <button key={b.id} onClick={() => setBotId(b.id)} style={{
-              padding:'0.4rem 1rem', borderRadius:'20px', border:'1px solid var(--border)', cursor:'pointer', fontSize:'0.85rem', fontWeight: botId === b.id ? 700 : 400,
-              background: botId === b.id ? 'var(--gradient)' : 'var(--surface-2)', color: botId === b.id ? '#fff' : 'var(--text-2)', transition:'0.15s'
-            }}>{b.name}</button>
-          ))}
-        </div>
-      )}
-
-      {!specs.length ? (
-        <div style={{ padding:'3rem', textAlign:'center', color:'var(--text-2)' }}>
-          {botId ? 'Este bot no tiene servicios configurados.' : 'Seleccioná un bot.'}
-        </div>
-      ) : (
-        <>
-          {/* Selector de servicio */}
-          <div style={{ display:'flex', gap:'0.5rem', flexWrap:'wrap' }}>
-            {specs.map(s => (
-              <button key={s.id} onClick={() => setSpecId(s.id)} style={{
-                display:'flex', alignItems:'center', gap:'0.5rem', padding:'0.45rem 1rem',
-                borderRadius:'20px', border: selectedSpecId === s.id ? `2px solid ${s.color}` : '1px solid var(--border)',
-                background: selectedSpecId === s.id ? `${s.color}22` : 'var(--surface-2)',
-                color: selectedSpecId === s.id ? s.color : 'var(--text-2)', cursor:'pointer', fontWeight: selectedSpecId === s.id ? 700 : 400, fontSize:'0.85rem'
-              }}>
-                <span style={{ width:8, height:8, borderRadius:'50%', background:s.color, flexShrink:0 }} />
-                {s.name}
-                <span style={{ fontSize:'0.72rem', opacity:0.7 }}>{s.duration_minutes}min</span>
-              </button>
-            ))}
-            <button onClick={() => { setShowNew(true); setMsg(null); setNewAppt({ specialty_id: selectedSpecId||'', client_phone:'', client_name:'', date: todayStr, time:'', notes:'' }); }}
-              style={{ padding:'0.45rem 1rem', borderRadius:'20px', border:'1px dashed var(--border)', background:'transparent', color:'var(--text-2)', cursor:'pointer', fontSize:'0.85rem' }}>
-              + Nuevo turno
-            </button>
-          </div>
-
-          {/* Navegación de semana */}
-          <div style={{ display:'flex', alignItems:'center', gap:'0.75rem' }}>
-            <button onClick={() => setWeekOff(w => w-1)} style={{ background:'var(--surface-2)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-2)', cursor:'pointer', padding:'0.35rem 0.7rem' }}><ChevronLeft size={15}/></button>
-            <span style={{ fontSize:'0.9rem', fontWeight:600 }}>
-              {new Date(weekDays[0]).toLocaleDateString('es-AR',{day:'2-digit',month:'short'})} — {new Date(weekDays[6]).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'})}
-            </span>
-            <button onClick={() => setWeekOff(w => w+1)} style={{ background:'var(--surface-2)', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-2)', cursor:'pointer', padding:'0.35rem 0.7rem' }}>›</button>
-            {weekOffset !== 0 && <button onClick={() => setWeekOff(0)} style={{ background:'var(--gradient-soft)', border:'none', borderRadius:'8px', color:'#818cf8', cursor:'pointer', padding:'0.35rem 0.75rem', fontSize:'0.8rem', fontWeight:600 }}>Hoy</button>}
-          </div>
-
-          {/* Planilla semanal */}
-          <div style={{ overflowX:'auto', borderRadius:'12px', border:'1px solid var(--border)' }}>
-            <table style={{ borderCollapse:'collapse', width:'100%', minWidth:700 }}>
-              <thead>
-                <tr>
-                  <th style={{ ...hdrCell, minWidth:60 }}>Hora</th>
-                  {weekDays.map((d, i) => {
-                    const isToday = d === todayStr;
-                    const colHasSch = hasSchedule ? !!dayMap[i] : true;
-                    return (
-                      <th key={d} style={{ ...hdrCell, opacity: colHasSch ? 1 : 0.4, background: isToday ? 'var(--gradient-soft)' : 'var(--surface-2)' }}>
-                        <div style={{ color: isToday ? '#818cf8' : 'var(--text)' }}>{AT_DAYS[i]}</div>
-                        <div style={{ fontSize:'0.7rem', fontWeight:400, color:'var(--text-2)' }}>{new Date(d).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'})}</div>
-                      </th>
-                    );
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                {displaySlots.map(slot => {
-                  const [h, m] = slot.split(':').map(Number);
-                  const mins = h * 60 + m;
-                  return (
-                    <tr key={slot}>
-                      <td style={{ ...cell, background:'var(--surface-2)', fontWeight:600, color:'var(--text-2)', fontSize:'0.75rem', paddingRight:'0.5rem' }}>{slot}</td>
-                      {weekDays.map((d, i) => {
-                        const inSch = hasSchedule ? (dayMap[i]?.some(w => mins >= w.start && mins < w.end) ?? false) : true;
-                        const appt = apptIndex[`${d}_${slot}_${selectedSpecId}`];
-                        return (
-                          <td key={d} style={{ ...cell, background: !inSch ? 'rgba(0,0,0,0.15)' : 'transparent', cursor: appt ? 'pointer' : 'default' }}
-                            onClick={() => appt && setDetail({ ...appt })}>
-                            {appt ? (
-                              <div style={{ background: STATUS_COLOR[appt.status] + '22', border:`1px solid ${STATUS_COLOR[appt.status]}55`, borderRadius:6, padding:'2px 4px', overflow:'hidden' }}>
-                                <div style={{ fontWeight:700, color: STATUS_COLOR[appt.status], fontSize:'0.7rem', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{appt.client_name || appt.client_phone}</div>
-                                <div style={{ fontSize:'0.65rem', color:'var(--text-2)' }}>{STATUS_LABEL[appt.status]}</div>
-                              </div>
-                            ) : inSch ? <span style={{ color:'var(--border)', fontSize:'0.65rem' }}>·</span> : null}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Leyenda */}
-          <div style={{ display:'flex', gap:'1rem', flexWrap:'wrap', fontSize:'0.75rem', color:'var(--text-2)' }}>
-            {Object.entries(STATUS_LABEL).map(([k,v]) => (
-              <span key={k} style={{ display:'flex', alignItems:'center', gap:'0.3rem' }}>
-                <span style={{ width:10, height:10, borderRadius:'50%', background:STATUS_COLOR[k], display:'inline-block' }}/>
-                {v}
-              </span>
-            ))}
-            {hasSchedule && <span style={{ display:'flex', alignItems:'center', gap:'0.3rem' }}><span style={{ width:10, height:10, borderRadius:'50%', background:'rgba(0,0,0,0.3)', display:'inline-block'}}/>Sin horario</span>}
-          </div>
-        </>
-      )}
-
-      {/* Modal detalle turno */}
-      {apptDetail && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }}>
-          <div style={{ background:'var(--surface)', borderRadius:16, padding:'1.5rem', width:'100%', maxWidth:460, display:'flex', flexDirection:'column', gap:'1rem', boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }}>
+      {/* Modal nuevo servicio */}
+      {showNewSpec && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:10000, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }}>
+          <div style={{ background:'var(--card-bg)', border:'1px solid var(--border)', borderRadius:'16px', padding:'1.5rem', width:'100%', maxWidth:'420px', display:'flex', flexDirection:'column', gap:'1rem' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-              <span style={{ fontWeight:700, fontSize:'1rem' }}>📋 Detalle del turno</span>
-              <button onClick={() => setDetail(null)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-2)', cursor:'pointer', padding:'0.3rem 0.7rem' }}>✕</button>
+              <span style={{ fontWeight:700, fontSize:'1rem' }}>Nuevo servicio</span>
+              <button onClick={() => setShowNewSpec(false)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.3rem 0.7rem' }}>✕</button>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.5rem', fontSize:'0.875rem' }}>
-              <div><span style={{ color:'var(--text-2)' }}>Paciente:</span><br/><strong>{apptDetail.client_name || '—'}</strong></div>
-              <div><span style={{ color:'var(--text-2)' }}>Teléfono:</span><br/><strong>{apptDetail.client_phone}</strong></div>
-              <div><span style={{ color:'var(--text-2)' }}>Fecha:</span><br/><strong>{apptDetail.date}</strong></div>
-              <div><span style={{ color:'var(--text-2)' }}>Hora:</span><br/><strong>{apptDetail.time}</strong></div>
-              <div><span style={{ color:'var(--text-2)' }}>Servicio:</span><br/><strong>{apptDetail.specialty_name || selectedSpecId}</strong></div>
-              <div><span style={{ color:'var(--text-2)' }}>Estado:</span><br/>
-                <span style={{ color: STATUS_COLOR[apptDetail.status], fontWeight:700 }}>{STATUS_LABEL[apptDetail.status]}</span>
+            <div>
+              <label style={labelStyle}>Nombre *</label>
+              <input style={inputStyle} value={newSpec.name} onChange={e => setNewSpec(p=>({...p,name:e.target.value}))} placeholder="Ej: Corte de cabello, Consulta médica, Asesoría..." />
+            </div>
+            <div style={{ display:'flex', gap:'1rem' }}>
+              <div style={{ flex:1 }}>
+                <label style={labelStyle}>Duración del turno (min)</label>
+                <input style={{...inputStyle}} type="number" min="5" max="480" value={newSpec.duration_minutes} onChange={e => setNewSpec(p=>({...p,duration_minutes:Number(e.target.value)}))} />
+              </div>
+              <div style={{ flex:1 }}>
+                <label style={labelStyle}>Lugares simultáneos</label>
+                <input style={{...inputStyle}} type="number" min="1" max="100" value={newSpec.capacity} onChange={e => setNewSpec(p=>({...p,capacity:Number(e.target.value)}))} />
+              </div>
+              <div>
+                <label style={labelStyle}>Color</label>
+                <div style={{ display:'flex', gap:'0.4rem', flexWrap:'wrap', marginTop:'0.25rem' }}>
+                  {SPEC_COLORS.map(c => (
+                    <div key={c} onClick={() => setNewSpec(p=>({...p,color:c}))}
+                      style={{ width:'24px', height:'24px', borderRadius:'50%', background:c, cursor:'pointer', border: newSpec.color===c ? '2px solid white' : '2px solid transparent', boxSizing:'border-box' }} />
+                  ))}
+                </div>
               </div>
             </div>
-            <div>
-              <label style={labelSt}>Notas</label>
-              <textarea value={apptDetail.notes || ''} onChange={e => setDetail(p => ({ ...p, notes: e.target.value }))}
-                style={{ ...inputSt, minHeight:70, resize:'vertical' }} placeholder="Sin notas" />
+            <div style={{ background:'rgba(124,58,237,0.08)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'10px', padding:'0.75rem 1rem', display:'flex', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
+              <div>
+                <div style={{ fontWeight:600, fontSize:'0.875rem' }}>🔔 Recordatorio automático</div>
+                <div style={{ fontSize:'0.75rem', color:'var(--text-secondary)' }}>Avisa al cliente por WhatsApp antes del turno</div>
+              </div>
+              <label style={{ position:'relative', display:'inline-block', width:'44px', height:'24px', flexShrink:0 }}>
+                <input type="checkbox" checked={!!newSpec.reminder_enabled} onChange={e => setNewSpec(p=>({...p,reminder_enabled:e.target.checked}))} style={{ opacity:0, width:0, height:0 }} />
+                <span style={{ position:'absolute', cursor:'pointer', inset:0, borderRadius:'34px', background:newSpec.reminder_enabled?'#7c3aed':'rgba(255,255,255,0.15)', transition:'0.2s' }}>
+                  <span style={{ position:'absolute', height:'18px', width:'18px', left:newSpec.reminder_enabled?'23px':'3px', bottom:'3px', background:'white', borderRadius:'50%', transition:'0.2s' }} />
+                </span>
+              </label>
             </div>
-            <div style={{ display:'flex', gap:'0.5rem', flexWrap:'wrap' }}>
-              {['confirmed','completed','cancelled'].map(s => (
-                <button key={s} onClick={() => updateStatus(apptDetail.id, s)}
-                  style={{ flex:1, padding:'0.55rem 0.5rem', borderRadius:8, border:`1px solid ${STATUS_COLOR[s]}55`, background: apptDetail.status === s ? STATUS_COLOR[s] : `${STATUS_COLOR[s]}15`, color: apptDetail.status === s ? '#fff' : STATUS_COLOR[s], cursor:'pointer', fontWeight:600, fontSize:'0.8rem' }}>
-                  {STATUS_LABEL[s]}
-                </button>
-              ))}
-            </div>
-            <div style={{ display:'flex', gap:'0.5rem', justifyContent:'space-between' }}>
-              <button onClick={() => deleteAppt(apptDetail.id)} style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:8, color:'#f87171', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.85rem' }}>Eliminar turno</button>
-              <button onClick={() => updateNotes(apptDetail.id, apptDetail.notes)} style={{ background:'var(--gradient)', border:'none', borderRadius:8, color:'#fff', cursor:'pointer', padding:'0.5rem 1.25rem', fontWeight:600, fontSize:'0.85rem' }}>Guardar notas</button>
+            {newSpec.reminder_enabled && (
+              <div>
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'0.4rem' }}>
+                  <label style={labelStyle}>Avisos antes del turno</label>
+                  <button onClick={() => setNewSpec(p => ({ ...p, reminder_hours: [...p.reminder_hours, 2] }))}
+                    style={{ background:'linear-gradient(135deg,#7c3aed,#3b82f6)', border:'none', borderRadius:'6px', color:'#fff', cursor:'pointer', padding:'0.2rem 0.65rem', fontSize:'1rem', fontWeight:700, lineHeight:1 }}>+</button>
+                </div>
+                <div style={{ display:'flex', gap:'0.5rem', flexWrap:'wrap' }}>
+                  {newSpec.reminder_hours.map((h, i) => (
+                    <div key={i} style={{ display:'flex', alignItems:'center', gap:'0.3rem', background:'rgba(124,58,237,0.08)', border:'1px solid rgba(124,58,237,0.22)', borderRadius:'8px', padding:'0.3rem 0.5rem' }}>
+                      <input type="number" min="1" max="168" value={h}
+                        onChange={e => setNewSpec(p => ({ ...p, reminder_hours: p.reminder_hours.map((v, j) => j === i ? Number(e.target.value) : v) }))}
+                        style={{...inputStyle, width:'56px', margin:0, padding:'0.25rem 0.4rem'}} />
+                      <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)' }}>h antes</span>
+                      {newSpec.reminder_hours.length > 1 && (
+                        <button onClick={() => setNewSpec(p => ({ ...p, reminder_hours: p.reminder_hours.filter((_, j) => j !== i) }))}
+                          style={{ background:'none', border:'none', color:'var(--text-secondary)', cursor:'pointer', fontSize:'1rem', padding:'0 2px', lineHeight:1, opacity:0.5 }}>×</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div style={{ display:'flex', gap:'0.75rem', justifyContent:'flex-end' }}>
+              <button onClick={() => setShowNewSpec(false)} style={{ background:'transparent', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.6rem 1rem' }}>Cancelar</button>
+              <button onClick={createSpec} disabled={saving || !newSpec.name.trim()} style={{ background:'linear-gradient(135deg,#7c3aed,#3b82f6)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.6rem 1.25rem', fontWeight:600 }}>
+                {saving ? 'Creando...' : 'Crear servicio'}
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal nuevo turno */}
-      {showNew && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }}>
-          <div style={{ background:'var(--surface)', borderRadius:16, padding:'1.5rem', width:'100%', maxWidth:460, display:'flex', flexDirection:'column', gap:'1rem', boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }}>
+      {/* Modal nuevo turno manual */}
+      {showNewAppt && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:10000, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }}>
+          <div style={{ background:'var(--card-bg)', border:'1px solid var(--border)', borderRadius:'16px', padding:'1.5rem', width:'100%', maxWidth:'460px', display:'flex', flexDirection:'column', gap:'1rem' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-              <span style={{ fontWeight:700, fontSize:'1rem' }}>Nuevo turno — {bot?.name}</span>
-              <button onClick={() => setShowNew(false)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-2)', cursor:'pointer', padding:'0.3rem 0.7rem' }}>✕</button>
+              <span style={{ fontWeight:700, fontSize:'1rem' }}>Nuevo turno manual</span>
+              <button onClick={() => { setShowNewAppt(false); setApptMsg(null); }} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.3rem 0.7rem' }}>✕</button>
             </div>
-            {msg && <div style={{ padding:'0.6rem 0.9rem', borderRadius:8, background: msg.ok ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: msg.ok ? '#10b981' : '#f87171', fontSize:'0.85rem' }}>{msg.text}</div>}
             <div>
-              <label style={labelSt}>Servicio *</label>
-              <select style={inputSt} value={newAppt.specialty_id} onChange={e => setNewAppt(p => ({ ...p, specialty_id: e.target.value, time:'' }))}>
+              <label style={labelStyle}>Servicio *</label>
+              <select style={inputStyle} value={newAppt.specialty_id} onChange={e => setNewAppt(p=>({...p,specialty_id:e.target.value,time:''}))}>
                 <option value="">— Seleccioná —</option>
-                {specs.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                {specs.map(s => <option key={s.id} value={s.id}>{s.name} ({s.duration_minutes}min)</option>)}
               </select>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.75rem' }}>
-              <div>
-                <label style={labelSt}>Nombre del paciente</label>
-                <input style={inputSt} value={newAppt.client_name} onChange={e => setNewAppt(p => ({ ...p, client_name: e.target.value }))} placeholder="Ej: María García" />
+            <div style={{ display:'flex', gap:'0.75rem' }}>
+              <div style={{ flex:1 }}>
+                <label style={labelStyle}>Fecha *</label>
+                <input style={inputStyle} type="date" value={newAppt.date} onChange={e => setNewAppt(p=>({...p,date:e.target.value,time:''}))} />
               </div>
-              <div>
-                <label style={labelSt}>Teléfono *</label>
-                <input style={inputSt} value={newAppt.client_phone} onChange={e => setNewAppt(p => ({ ...p, client_phone: e.target.value }))} placeholder="5491100001234" />
-              </div>
-              <div>
-                <label style={labelSt}>Fecha *</label>
-                <input style={inputSt} type="date" value={newAppt.date} onChange={e => setNewAppt(p => ({ ...p, date: e.target.value, time:'' }))} />
-              </div>
-              <div>
-                <label style={labelSt}>Horario *</label>
-                <select style={inputSt} value={newAppt.time} onChange={e => setNewAppt(p => ({ ...p, time: e.target.value }))}>
-                  <option value="">— Elegí —</option>
-                  {avSlots.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
+              <div style={{ flex:1 }}>
+                <label style={labelStyle}>Horario *</label>
+                {availableSlots.length > 0 ? (
+                  <select style={inputStyle} value={newAppt.time} onChange={e => setNewAppt(p=>({...p,time:e.target.value}))}>
+                    <option value="">— Seleccioná —</option>
+                    {availableSlots.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                ) : (
+                  <input style={inputStyle} type="time" value={newAppt.time} onChange={e => setNewAppt(p=>({...p,time:e.target.value}))} placeholder="HH:MM" />
+                )}
               </div>
             </div>
             <div>
-              <label style={labelSt}>Notas</label>
-              <input style={inputSt} value={newAppt.notes} onChange={e => setNewAppt(p => ({ ...p, notes: e.target.value }))} placeholder="Opcional" />
+              <label style={labelStyle}>Teléfono WhatsApp * <span style={{ opacity:0.6 }}>(con código de país, ej: 5491123456789)</span></label>
+              <input style={inputStyle} value={newAppt.client_phone} onChange={e => setNewAppt(p=>({...p,client_phone:e.target.value}))} placeholder="5491123456789" />
             </div>
+            <div>
+              <label style={labelStyle}>Nombre del cliente</label>
+              <input style={inputStyle} value={newAppt.client_name} onChange={e => setNewAppt(p=>({...p,client_name:e.target.value}))} placeholder="Ej: María González" />
+            </div>
+            <div>
+              <label style={labelStyle}>Notas</label>
+              <input style={inputStyle} value={newAppt.notes} onChange={e => setNewAppt(p=>({...p,notes:e.target.value}))} placeholder="Ej: Primera vez, trae documentación, requiere confirmación..." />
+            </div>
+            {apptMsg && <p style={{ margin:0, fontSize:'0.875rem', color:apptMsg.ok?'#10b981':'#f87171' }}>{apptMsg.text}</p>}
             <div style={{ display:'flex', gap:'0.75rem', justifyContent:'flex-end' }}>
-              <button onClick={() => setShowNew(false)} style={{ background:'transparent', border:'1px solid var(--border)', borderRadius:8, color:'var(--text-2)', cursor:'pointer', padding:'0.55rem 1rem' }}>Cancelar</button>
-              <button onClick={createAppt} disabled={saving} style={{ background:'var(--gradient)', border:'none', borderRadius:8, color:'#fff', cursor:'pointer', padding:'0.55rem 1.25rem', fontWeight:600 }}>
-                {saving ? 'Creando...' : 'Crear turno'}
+              <button onClick={() => { setShowNewAppt(false); setApptMsg(null); }} style={{ background:'transparent', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.6rem 1rem' }}>Cancelar</button>
+              <button onClick={createAppointment} disabled={saving} style={{ background:'linear-gradient(135deg,#7c3aed,#3b82f6)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.6rem 1.25rem', fontWeight:600 }}>
+                {saving ? 'Guardando...' : 'Confirmar turno'}
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal detalle de turno */}
+      {apptDetail && (() => {
+        const spec = specs.find(s => s.id === apptDetail.specialty_id);
+        const statusColors = { confirmed:'#10b981', cancelled:'#ef4444', completed:'#3b82f6' };
+        const statusLabels = { confirmed:'Confirmado', cancelled:'Cancelado', completed:'Completado' };
+        return (
+          <div onClick={() => setApptDetail(null)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.75)', zIndex:10000, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }}>
+            <div onClick={e => e.stopPropagation()} style={{ background:'var(--card-bg)', border:'1px solid var(--border)', borderRadius:'16px', padding:'1.5rem', width:'100%', maxWidth:'380px', display:'flex', flexDirection:'column', gap:'1rem' }}>
+              {/* Header */}
+              <div style={{ display:'flex', alignItems:'center', gap:'0.75rem' }}>
+                {spec && <div style={{ width:'10px', height:'10px', borderRadius:'50%', background:spec.color, flexShrink:0 }} />}
+                <div style={{ flex:1 }}>
+                  <div style={{ fontWeight:700, fontSize:'1rem' }}>{apptDetail.client_name || 'Sin nombre'}</div>
+                  <div style={{ fontSize:'0.75rem', color:'var(--text-secondary)' }}>{spec?.name} · {apptDetail.date} {apptDetail.time}</div>
+                </div>
+                <span style={{ fontSize:'0.72rem', fontWeight:700, padding:'3px 10px', borderRadius:'20px', background:`${statusColors[apptDetail.status]}20`, color:statusColors[apptDetail.status], border:`1px solid ${statusColors[apptDetail.status]}50` }}>
+                  {statusLabels[apptDetail.status]}
+                </span>
+                <button onClick={() => setApptDetail(null)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.3rem 0.6rem', flexShrink:0 }}>✕</button>
+              </div>
+              {/* Info */}
+              <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem' }}>
+                {apptDetail.client_phone && (
+                  <div style={{ display:'flex', alignItems:'center', gap:'0.6rem', padding:'0.6rem 0.85rem', background:'rgba(255,255,255,0.04)', borderRadius:'8px', border:'1px solid var(--border)' }}>
+                    <span style={{ fontSize:'1rem' }}>📱</span>
+                    <span style={{ fontSize:'0.875rem', flex:1 }}>{apptDetail.client_phone}</span>
+                    <a href={`https://wa.me/${apptDetail.client_phone.replace(/\D/g,'')}`} target="_blank" rel="noreferrer"
+                      style={{ fontSize:'0.72rem', background:'rgba(37,211,102,0.15)', border:'1px solid rgba(37,211,102,0.3)', borderRadius:'6px', color:'#25d366', padding:'2px 8px', textDecoration:'none', fontWeight:600 }}>
+                      WhatsApp
+                    </a>
+                  </div>
+                )}
+                {apptDetail.notes && (
+                  <div style={{ display:'flex', gap:'0.6rem', padding:'0.6rem 0.85rem', background:'rgba(255,255,255,0.04)', borderRadius:'8px', border:'1px solid var(--border)' }}>
+                    <span style={{ fontSize:'1rem', flexShrink:0 }}>📝</span>
+                    <span style={{ fontSize:'0.875rem', color:'var(--text-secondary)', lineHeight:1.4 }}>{apptDetail.notes}</span>
+                  </div>
+                )}
+                {!apptDetail.client_phone && !apptDetail.notes && (
+                  <p style={{ margin:0, fontSize:'0.8rem', color:'var(--text-secondary)', textAlign:'center' }}>Sin información adicional</p>
+                )}
+              </div>
+              {/* Acciones */}
+              {apptDetail.status === 'confirmed' && (
+                <div style={{ display:'flex', gap:'0.6rem' }}>
+                  <button onClick={() => { updateApptStatus(apptDetail.id,'completed'); setApptDetail(p => ({...p, status:'completed'})); }}
+                    style={{ flex:1, background:'rgba(59,130,246,0.15)', border:'1px solid rgba(59,130,246,0.4)', borderRadius:'8px', color:'#60a5fa', cursor:'pointer', padding:'0.55rem', fontWeight:600, fontSize:'0.85rem' }}>
+                    ✓ Completado
+                  </button>
+                  <button onClick={() => { updateApptStatus(apptDetail.id,'cancelled'); setApptDetail(p => ({...p, status:'cancelled'})); }}
+                    style={{ flex:1, background:'rgba(239,68,68,0.12)', border:'1px solid rgba(239,68,68,0.35)', borderRadius:'8px', color:'#f87171', cursor:'pointer', padding:'0.55rem', fontWeight:600, fontSize:'0.85rem' }}>
+                    ✕ Cancelar
+                  </button>
+                </div>
+              )}
+              {apptDetail.status === 'cancelled' && (
+                <button onClick={() => { updateApptStatus(apptDetail.id,'confirmed'); setApptDetail(p => ({...p, status:'confirmed'})); }}
+                  style={{ width:'100%', background:'rgba(16,185,129,0.15)', border:'1px solid rgba(16,185,129,0.35)', borderRadius:'8px', color:'#34d399', cursor:'pointer', padding:'0.55rem', fontWeight:600, fontSize:'0.85rem' }}>
+                  ↩ Restaurar turno
+                </button>
+              )}
+              <button onClick={() => deleteAppt(apptDetail.id)}
+                style={{ width:'100%', marginTop:'0.5rem', background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'8px', color:'#f87171', cursor:'pointer', padding:'0.45rem', fontWeight:600, fontSize:'0.8rem' }}>
+                🗑 Eliminar turno
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Header y tabs de vista */}
+      <div style={{ display:'flex', alignItems:'center', gap:'1rem', marginBottom:'1.25rem', flexWrap:'wrap' }}>
+        <div style={{ display:'flex', gap:'0.4rem' }}>
+          {[{id:'agenda',label:'📅 Agenda'},{id:'especialidades',label:'📋 Servicios'}].map(t => (
+            <button key={t.id} onClick={() => setView(t.id)}
+              style={{ padding:'0.4rem 0.9rem', borderRadius:'20px', border:'1px solid var(--border)', background:view===t.id?'linear-gradient(135deg,#7c3aed,#3b82f6)':'rgba(255,255,255,0.05)', color:view===t.id?'#fff':'var(--text-secondary)', cursor:'pointer', fontSize:'0.85rem', fontWeight:view===t.id?700:400, transition:'0.15s' }}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+        {view === 'agenda' && (
+          <button onClick={() => { setShowNewAppt(true); setApptMsg(null); }} style={{ marginLeft:'auto', background:'linear-gradient(135deg,#7c3aed,#3b82f6)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.875rem', fontWeight:600 }}>
+            + Nuevo turno
+          </button>
+        )}
+        {view === 'especialidades' && (
+          <button onClick={() => setShowNewSpec(true)} style={{ marginLeft:'auto', background:'linear-gradient(135deg,#7c3aed,#3b82f6)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.875rem', fontWeight:600 }}>
+            + Nuevo servicio
+          </button>
+        )}
+      </div>
+
+      {/* ── Vista: Horario tipo planilla ── */}
+      {view === 'agenda' && (() => {
+        const weekDays = atGetWeekDays(weekOffset);
+        const todayStr = new Date().toISOString().slice(0,10);
+
+        // Index appointments: {date_time: appointment}
+        const apptIndex = {};
+        appointments.forEach(a => { apptIndex[`${a.date}_${a.time}_${a.specialty_id}`] = a; });
+
+        const activeSpec = specs.find(s => s.id === selectedSpecId);
+        const { slots, dayMap } = activeSpec ? atGetSlots(activeSpec) : { slots:[], dayMap:{} };
+        const hasSchedule = slots.length > 0;
+        const dur = activeSpec?.duration_minutes || 30;
+        const displaySlots = hasSchedule ? slots : Array.from(
+          { length: Math.ceil(720 / dur) },
+          (_, i) => { const m = 480 + i * dur; return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`; }
+        );
+
+        return (
+          <div>
+            {/* Cards de servicios */}
+            {specs.length === 0 ? (
+              <div style={{ background:'rgba(255,255,255,0.02)', border:'1px dashed var(--border)', borderRadius:'12px', padding:'2rem', textAlign:'center', color:'var(--text-secondary)', fontSize:'0.85rem', marginBottom:'1rem' }}>
+                No hay servicios configurados. Creá uno en <strong>📋 Servicios</strong>.
+              </div>
+            ) : (
+              <div style={{ display:'flex', gap:'0.6rem', flexWrap:'wrap', marginBottom:'1.25rem' }}>
+                {specs.map(spec => {
+                  const specAppts = appointments.filter(a => a.specialty_id === spec.id);
+                  const confirmed = specAppts.filter(a => a.status==='confirmed').length;
+                  const isActive = selectedSpecId === spec.id;
+                  return (
+                    <div key={spec.id} onClick={() => setSelectedSpecId(spec.id)}
+                      style={{ display:'flex', alignItems:'center', gap:'0.6rem', padding:'0.6rem 1rem', borderRadius:'12px', border:`2px solid ${isActive ? spec.color : 'var(--border)'}`, background: isActive ? `${spec.color}18` : 'var(--card-bg)', cursor:'pointer', transition:'0.15s', minWidth:'160px' }}>
+                      <div style={{ width:'10px', height:'10px', borderRadius:'50%', background:spec.color, flexShrink:0 }} />
+                      <div>
+                        <div style={{ fontWeight:700, fontSize:'0.85rem', color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{spec.name}</div>
+                        <div style={{ fontSize:'0.72rem', color:'var(--text-secondary)' }}>{spec.duration_minutes}min{spec.capacity>1 ? ` · ${spec.capacity} lugares` : ''} · {confirmed} pendiente{confirmed!==1?'s':''}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Grilla semanal */}
+            {activeSpec && (
+              <div style={{ background:'var(--card-bg)', border:'1px solid var(--border)', borderRadius:'14px', overflow:'hidden' }}>
+
+                {/* Nav semana */}
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0.75rem 1rem', borderBottom:'1px solid var(--border)', background:'rgba(255,255,255,0.02)' }}>
+                  <button onClick={() => setWeekOffset(w => w-1)}
+                    style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.25rem 0.6rem', fontSize:'1rem' }}>‹</button>
+                  <div style={{ display:'flex', alignItems:'center', gap:'0.75rem' }}>
+                    <div style={{ width:'10px', height:'10px', borderRadius:'50%', background:activeSpec.color }} />
+                    <span style={{ fontWeight:700, fontSize:'0.9rem' }}>{activeSpec.name}</span>
+                    <span style={{ fontSize:'0.78rem', color:'var(--text-secondary)' }}>
+                      Semana del {new Date(weekDays[0]+'T12:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'})} al {new Date(weekDays[6]+'T12:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})}
+                    </span>
+                  </div>
+                  <div style={{ display:'flex', gap:'0.4rem' }}>
+                    {weekOffset !== 0 && <button onClick={() => setWeekOffset(0)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.25rem 0.55rem', fontSize:'0.72rem' }}>Hoy</button>}
+                    <button onClick={() => setWeekOffset(w => w+1)}
+                      style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.25rem 0.6rem', fontSize:'1rem' }}>›</button>
+                  </div>
+                </div>
+
+                {/* Tabla */}
+                <div style={{ overflowX:'auto' }}>
+                  <table style={{ width:'100%', borderCollapse:'collapse', tableLayout:'fixed' }}>
+                    <thead>
+                      <tr>
+                        {/* Col "Hora" */}
+                        <th style={{ width:'64px', padding:'0.5rem', background:'rgba(255,255,255,0.03)', borderBottom:'2px solid var(--border)', borderRight:'1px solid var(--border)', fontSize:'0.7rem', fontWeight:700, color:'var(--text-secondary)', textTransform:'uppercase', letterSpacing:'0.05em' }}>Hora</th>
+                        {weekDays.map((date, i) => {
+                          const isToday = date === todayStr;
+                          const jsDay = new Date(date+'T12:00').getDay();
+                          const dow = jsDay===0?6:jsDay-1;
+                          const colHasSchedule = hasSchedule ? !!dayMap[dow] : true;
+                          return (
+                            <th key={date} style={{ padding:'0.5rem 0.25rem', background: isToday ? `${activeSpec.color}22` : 'rgba(255,255,255,0.03)', borderBottom:'2px solid var(--border)', borderRight: i<6?'1px solid var(--border)':'none', textAlign:'center', opacity: colHasSchedule ? 1 : 0.45 }}>
+                              <div style={{ fontSize:'0.7rem', fontWeight:700, color:'var(--text-secondary)', textTransform:'uppercase', letterSpacing:'0.04em' }}>{AT_DAYS[i]}</div>
+                              <div style={{ fontSize:'0.82rem', fontWeight: isToday ? 800 : 600, color: isToday ? activeSpec.color : 'var(--text-primary)', marginTop:'0.1rem' }}>
+                                {new Date(date+'T12:00').getDate()}
+                              </div>
+                              {isToday && <div style={{ width:'5px', height:'5px', borderRadius:'50%', background:activeSpec.color, margin:'2px auto 0' }} />}
+                            </th>
+                          );
+                        })}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {displaySlots.map((slot) => (
+                        <tr key={slot}>
+                          {/* Hora */}
+                          <td style={{ padding:'0.3rem 0.5rem', background:'rgba(255,255,255,0.02)', borderBottom:'1px solid var(--border)', borderRight:'1px solid var(--border)', fontSize:'0.75rem', fontWeight:600, color:'var(--text-secondary)', textAlign:'right', verticalAlign:'top', whiteSpace:'nowrap' }}>{slot}</td>
+                          {weekDays.map((date, di) => {
+                            const jsDay = new Date(date+'T12:00').getDay();
+                            const dow = jsDay===0?6:jsDay-1;
+                            const [sh,sm] = slot.split(':').map(Number);
+                            const mins = sh*60+sm;
+                            const inSchedule = hasSchedule
+                              ? (dayMap[dow]?.some(w => mins >= w.start && mins < w.end) ?? false)
+                              : true;
+                            const appt = apptIndex[`${date}_${slot}_${activeSpec.id}`];
+                            const isToday = date === todayStr;
+
+                            return (
+                              <td key={date} style={{ padding:'0.25rem', borderBottom:'1px solid var(--border)', borderRight: di<6?'1px solid var(--border)':'none', verticalAlign:'top', background: isToday ? `${activeSpec.color}08` : 'transparent', minHeight:'42px', height:'42px' }}>
+                                {!inSchedule ? (
+                                  <div style={{ height:'100%', background:'rgba(0,0,0,0.15)', borderRadius:'4px', minHeight:'36px' }} />
+                                ) : appt ? (
+                                  <div onClick={() => setApptDetail(appt)} style={{
+                                    background: appt.status==='cancelled'?'rgba(239,68,68,0.15)':appt.status==='completed'?'rgba(59,130,246,0.18)':`${activeSpec.color}25`,
+                                    border:`1px solid ${appt.status==='cancelled'?'rgba(239,68,68,0.4)':appt.status==='completed'?'rgba(59,130,246,0.4)':`${activeSpec.color}55`}`,
+                                    borderRadius:'6px', padding:'0.25rem 0.4rem', cursor:'pointer', minHeight:'36px',
+                                  }}>
+                                    <div style={{ fontSize:'0.7rem', fontWeight:700, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', color: appt.status==='cancelled'?'#f87171':appt.status==='completed'?'#60a5fa':'var(--text-primary)' }}>
+                                      {appt.client_name || '—'}
+                                    </div>
+                                    {appt.client_phone && (
+                                      <div style={{ fontSize:'0.62rem', color:'var(--text-secondary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginTop:'1px' }}>
+                                        📱 {appt.client_phone}
+                                      </div>
+                                    )}
+                                    {appt.notes && (
+                                      <div style={{ fontSize:'0.62rem', color:'var(--text-secondary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginTop:'1px', opacity:0.8 }}>
+                                        📝 {appt.notes}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div onClick={() => { setNewAppt({ specialty_id:activeSpec.id, date, time:slot, client_phone:'', client_name:'', notes:'' }); setShowNewAppt(true); setApptMsg(null); }}
+                                    style={{ minHeight:'36px', borderRadius:'6px', cursor:'pointer', border:'1px dashed transparent', transition:'0.12s', display:'flex', alignItems:'center', justifyContent:'center' }}
+                                    onMouseEnter={e => { e.currentTarget.style.borderColor=`${activeSpec.color}55`; e.currentTarget.style.background=`${activeSpec.color}08`; }}
+                                    onMouseLeave={e => { e.currentTarget.style.borderColor='transparent'; e.currentTarget.style.background='transparent'; }}>
+                                    <span style={{ fontSize:'0.65rem', color:'var(--text-secondary)', opacity:0, transition:'0.12s' }}
+                                      onMouseEnter={e=>e.currentTarget.style.opacity=1}
+                                      onMouseLeave={e=>e.currentTarget.style.opacity=0}>+</span>
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Leyenda */}
+                <div style={{ padding:'0.5rem 1rem', borderTop:'1px solid var(--border)', display:'flex', gap:'1.25rem', flexWrap:'wrap', alignItems:'center' }}>
+                  {[{color:activeSpec.color,label:'Confirmado'},{color:'#3b82f6',label:'Completado'},{color:'#ef4444',label:'Cancelado'},{color:'rgba(0,0,0,0.4)',label:'Sin horario'}].map(l => (
+                    <div key={l.label} style={{ display:'flex', alignItems:'center', gap:'0.35rem', fontSize:'0.72rem', color:'var(--text-secondary)' }}>
+                      <div style={{ width:'10px', height:'10px', borderRadius:'2px', background:l.color }} />{l.label}
+                    </div>
+                  ))}
+                  <div style={{ marginLeft:'auto', fontSize:'0.72rem', color:'var(--text-secondary)' }}>Hacé clic en un casillero vacío para crear un turno</div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ── Vista: Servicios + Horarios ── */}
+      {view === 'especialidades' && (
+        <>
+          {specs.length === 0 && (
+            <div style={{ background:'rgba(255,255,255,0.02)', border:'1px dashed var(--border)', borderRadius:'12px', padding:'2.5rem', textAlign:'center' }}>
+              <div style={{ fontSize:'2rem', marginBottom:'0.5rem' }}>📋</div>
+              <p style={{ color:'var(--text-secondary)', margin:0 }}>Todavía no configuraste ningún servicio. Creá uno arriba para que el bot pueda gestionar turnos automáticamente.</p>
+            </div>
+          )}
+          <div style={{ display:'flex', flexDirection:'column', gap:'1.25rem' }}>
+            {specs.map(spec => (
+              <div key={spec.id} style={{ background:'var(--card-bg)', border:'1px solid var(--border)', borderRadius:'14px', overflow:'hidden' }}>
+                {/* Header servicio */}
+                <div style={{ padding:'0.85rem 1.1rem', display:'flex', alignItems:'center', gap:'0.75rem', borderBottom:'1px solid var(--border)', background:'rgba(255,255,255,0.02)' }}>
+                  <div style={{ width:'12px', height:'12px', borderRadius:'50%', background:spec.color, flexShrink:0 }} />
+                  <span style={{ fontWeight:700, flex:1 }}>{spec.name}</span>
+                  <span style={{ fontSize:'0.78rem', color:'var(--text-secondary)', background:'rgba(255,255,255,0.06)', border:'1px solid var(--border)', borderRadius:'20px', padding:'2px 8px' }}>
+                    {spec.duration_minutes} min / turno{spec.capacity > 1 ? ` · ${spec.capacity} lugares` : ''}
+                  </span>
+                  {spec.reminder_enabled ? (
+                    <span style={{ fontSize:'0.72rem', color:'#10b981', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'20px', padding:'2px 8px' }}>
+                      🔔 {(Array.isArray(spec.reminder_hours) ? spec.reminder_hours : [spec.reminder_hours]).join('h / ')}h antes
+                    </span>
+                  ) : (
+                    <span style={{ fontSize:'0.72rem', color:'var(--text-secondary)', opacity:0.5 }}>Sin recordatorio</span>
+                  )}
+                  <button onClick={() => deleteSpec(spec.id)} style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'7px', color:'#f87171', cursor:'pointer', padding:'0.3rem 0.6rem', fontSize:'0.75rem' }}>Eliminar</button>
+                </div>
+
+                {/* Grilla de horarios semanal */}
+                <div style={{ padding:'1rem 1.1rem' }}>
+                  <div style={{ fontSize:'0.78rem', fontWeight:600, color:'var(--text-secondary)', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'0.75rem' }}>Horarios disponibles</div>
+                  <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem' }}>
+                    {AT_DAYS_FULL.map((dayName, i) => {
+                      const day = (schedule[spec.id] || [])[i] || { day_of_week:i, active:false, windows:[{start_time:'09:00',end_time:'18:00'}] };
+                      const timeInput = (disabled, val, onChange) => (
+                        <input type="time" value={val} disabled={disabled} onChange={onChange}
+                          style={{ padding:'0.3rem 0.5rem', borderRadius:'6px', border:'1px solid var(--border)', background:!disabled?'rgba(255,255,255,0.07)':'rgba(255,255,255,0.02)', color:!disabled?'var(--text-primary)':'var(--text-secondary)', fontSize:'0.82rem', opacity:!disabled?1:0.4 }} />
+                      );
+                      const totalSlots = day.active ? day.windows.reduce((acc, w) => {
+                        const [sh,sm]=w.start_time.split(':').map(Number);
+                        const [eh,em]=w.end_time.split(':').map(Number);
+                        return acc + Math.max(0, Math.floor(((eh*60+em)-(sh*60+sm))/spec.duration_minutes));
+                      }, 0) : 0;
+
+                      return (
+                        <div key={i} style={{ display:'flex', gap:'0.6rem', alignItems:'flex-start' }}>
+                          {/* Checkbox + nombre día */}
+                          <label style={{ display:'flex', alignItems:'center', gap:'0.4rem', cursor:'pointer', minWidth:'105px', paddingTop:'0.35rem' }}>
+                            <input type="checkbox" checked={!!day.active} onChange={e => toggleDay(spec.id, i, e.target.checked)}
+                              style={{ accentColor:spec.color, width:'15px', height:'15px', flexShrink:0 }} />
+                            <span style={{ fontSize:'0.82rem', color:day.active?'var(--text-primary)':'var(--text-secondary)', fontWeight:day.active?600:400 }}>{dayName}</span>
+                          </label>
+
+                          {/* Ventanas horarias */}
+                          <div style={{ display:'flex', flexDirection:'column', gap:'0.3rem', flex:1 }}>
+                            {day.windows.map((win, wi) => (
+                              <div key={wi} style={{ display:'flex', alignItems:'center', gap:'0.4rem', flexWrap:'wrap' }}>
+                                {timeInput(!day.active, win.start_time, e => updateWindow(spec.id, i, wi, 'start_time', e.target.value))}
+                                <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)' }}>a</span>
+                                {timeInput(!day.active, win.end_time, e => updateWindow(spec.id, i, wi, 'end_time', e.target.value))}
+
+                                {/* Botón + (solo en primer turno si hay 1 ventana) */}
+                                {day.active && wi === 0 && day.windows.length === 1 && (
+                                  <button onClick={() => addWindow(spec.id, i)}
+                                    title="Agregar horario cortado"
+                                    style={{ background:'rgba(255,255,255,0.07)', border:'1px solid var(--border)', borderRadius:'6px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.25rem 0.55rem', fontSize:'0.8rem', fontWeight:700, lineHeight:1 }}>+</button>
+                                )}
+
+                                {/* Botón − (solo en la segunda ventana) */}
+                                {day.active && wi > 0 && (
+                                  <button onClick={() => removeWindow(spec.id, i, wi)}
+                                    title="Quitar este horario"
+                                    style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'6px', color:'#f87171', cursor:'pointer', padding:'0.25rem 0.55rem', fontSize:'0.8rem', fontWeight:700, lineHeight:1 }}>−</button>
+                                )}
+
+                                {/* Contador de turnos (solo en última ventana) */}
+                                {day.active && wi === day.windows.length - 1 && totalSlots > 0 && (
+                                  <span style={{ fontSize:'0.71rem', color:'var(--text-secondary)', opacity:0.7 }}>{totalSlots} turnos/día</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{ display:'flex', alignItems:'center', gap:'0.75rem', marginTop:'0.85rem' }}>
+                    <button onClick={() => saveSchedule(spec.id)} disabled={savingSchedule}
+                      style={{ background:'linear-gradient(135deg,#7c3aed,#3b82f6)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1.1rem', fontSize:'0.85rem', fontWeight:600 }}>
+                      {savingSchedule ? 'Guardando...' : 'Guardar horarios'}
+                    </button>
+                    {scheduleMsg && <span style={{ fontSize:'0.82rem', color:scheduleMsg.ok?'#10b981':'#f87171' }}>{scheduleMsg.text}</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
@@ -2509,7 +2871,7 @@ function Dashboard() {
                     <Calendar size={18} color="#818cf8" />
                     <h3>Gestión de Turnos</h3>
                   </div>
-                  <AdminTurnosPanel fixedBotId={bot.id} bots={bots} />
+                  <AdminTurnosPanel botId={bot.id} />
 
                 </div>
               )}

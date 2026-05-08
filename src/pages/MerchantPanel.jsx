@@ -715,6 +715,12 @@ function TurnosPanel({ botId, token, api }) {
     loadSpecs(); loadAppointments();
   }
 
+  async function deleteAppt(aid) {
+    if (!confirm('¿Eliminar este turno definitivamente? Esta acción no se puede deshacer.')) return;
+    await authFetch(`${api}/api/bots/${botId}/appointments/${aid}`, { method:'DELETE' }, token);
+    setApptDetail(null); loadAppointments();
+  }
+
   async function saveSchedule(sid) {
     setSavingSchedule(true); setScheduleMsg(null);
     try {
@@ -994,6 +1000,10 @@ function TurnosPanel({ botId, token, api }) {
                   ↩ Restaurar turno
                 </button>
               )}
+              <button onClick={() => deleteAppt(apptDetail.id)}
+                style={{ width:'100%', marginTop:'0.5rem', background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'8px', color:'#f87171', cursor:'pointer', padding:'0.45rem', fontWeight:600, fontSize:'0.8rem' }}>
+                🗑 Eliminar turno
+              </button>
             </div>
           </div>
         );

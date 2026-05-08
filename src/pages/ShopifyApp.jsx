@@ -383,6 +383,12 @@ function ShopifyPanel() {
     loadTurnos();
   }
 
+  async function deleteAppt(id) {
+    if (!confirm('¿Eliminar este turno definitivamente? Esta acción no se puede deshacer.')) return;
+    await shopifyFetch(`${API}/api/shopify/embedded/appointments/${id}`, { method: 'DELETE' });
+    setApptDetail(null); loadTurnos();
+  }
+
   function toggleDay(specId, dayIndex, active) {
     setSchedule(prev => {
       const days = [...(prev[specId] || [])];
@@ -1030,6 +1036,10 @@ function ShopifyPanel() {
                               <button onClick={() => { updateApptStatus(apptDetail.id, 'confirmed'); setApptDetail(p => ({ ...p, status: 'confirmed' })); }}
                                 style={{ width: '100%', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 8, color: '#008060', cursor: 'pointer', padding: '0.55rem', fontWeight: 600, fontSize: '0.85rem' }}>↩ Restaurar turno</button>
                             )}
+                            <button onClick={() => deleteAppt(apptDetail.id)}
+                              style={{ width: '100%', marginTop: '0.5rem', background: 'rgba(216,44,13,0.06)', border: '1px solid rgba(216,44,13,0.25)', borderRadius: 8, color: '#d82c0d', cursor: 'pointer', padding: '0.45rem', fontWeight: 600, fontSize: '0.8rem' }}>
+                              🗑 Eliminar turno
+                            </button>
                           </div>
                         </div>
                       );
