@@ -651,7 +651,7 @@ function TurnosPanel({ botId, token, api }) {
   const [specs, setSpecs] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [view, setView] = useState('agenda'); // 'agenda' | 'especialidades'
-  const [newSpec, setNewSpec] = useState({ name:'', duration_minutes:30, color:'#7c3aed', reminder_enabled:true, reminder_hours:24, capacity:1 });
+  const [newSpec, setNewSpec] = useState({ name:'', duration_minutes:30, color:'#7c3aed', reminder_enabled:true, reminder_hours:[24], capacity:1 });
   const [showNewSpec, setShowNewSpec] = useState(false);
   const [schedule, setSchedule] = useState({});
   const [savingSchedule, setSavingSchedule] = useState(false);
@@ -704,7 +704,7 @@ function TurnosPanel({ botId, token, api }) {
     try {
       await authFetch(`${api}/api/bots/${botId}/specialties`, { method:'POST', body: JSON.stringify(newSpec) }, token);
       setShowNewSpec(false);
-      setNewSpec({ name:'', duration_minutes:30, color:'#7c3aed', reminder_enabled:true, reminder_hours:24, capacity:1 });
+      setNewSpec({ name:'', duration_minutes:30, color:'#7c3aed', reminder_enabled:true, reminder_hours:[24], capacity:1 });
       loadSpecs();
     } finally { setSaving(false); }
   }
@@ -847,8 +847,25 @@ function TurnosPanel({ botId, token, api }) {
             </div>
             {newSpec.reminder_enabled && (
               <div>
-                <label style={labelStyle}>Horas antes del turno para recordar</label>
-                <input style={{...inputStyle, width:'120px'}} type="number" min="1" max="72" value={newSpec.reminder_hours} onChange={e => setNewSpec(p=>({...p,reminder_hours:Number(e.target.value)}))} />
+                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'0.4rem' }}>
+                  <label style={labelStyle}>Avisos antes del turno</label>
+                  <button onClick={() => setNewSpec(p => ({ ...p, reminder_hours: [...p.reminder_hours, 2] }))}
+                    style={{ background:'linear-gradient(135deg,#7c3aed,#3b82f6)', border:'none', borderRadius:'6px', color:'#fff', cursor:'pointer', padding:'0.2rem 0.65rem', fontSize:'1rem', fontWeight:700, lineHeight:1 }}>+</button>
+                </div>
+                <div style={{ display:'flex', gap:'0.5rem', flexWrap:'wrap' }}>
+                  {newSpec.reminder_hours.map((h, i) => (
+                    <div key={i} style={{ display:'flex', alignItems:'center', gap:'0.3rem', background:'rgba(124,58,237,0.08)', border:'1px solid rgba(124,58,237,0.22)', borderRadius:'8px', padding:'0.3rem 0.5rem' }}>
+                      <input type="number" min="1" max="168" value={h}
+                        onChange={e => setNewSpec(p => ({ ...p, reminder_hours: p.reminder_hours.map((v, j) => j === i ? Number(e.target.value) : v) }))}
+                        style={{...inputStyle, width:'56px', margin:0, padding:'0.25rem 0.4rem'}} />
+                      <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)' }}>h antes</span>
+                      {newSpec.reminder_hours.length > 1 && (
+                        <button onClick={() => setNewSpec(p => ({ ...p, reminder_hours: p.reminder_hours.filter((_, j) => j !== i) }))}
+                          style={{ background:'none', border:'none', color:'var(--text-secondary)', cursor:'pointer', fontSize:'1rem', padding:'0 2px', lineHeight:1, opacity:0.5 }}>×</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
             <div style={{ display:'flex', gap:'0.75rem', justifyContent:'flex-end' }}>
@@ -1190,7 +1207,7 @@ function TurnosPanel({ botId, token, api }) {
                   </span>
                   {spec.reminder_enabled ? (
                     <span style={{ fontSize:'0.72rem', color:'#10b981', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'20px', padding:'2px 8px' }}>
-                      🔔 Recordatorio {spec.reminder_hours}h antes
+                      🔔 {(Array.isArray(spec.reminder_hours) ? spec.reminder_hours : [spec.reminder_hours]).join('h / ')}h antes
                     </span>
                   ) : (
                     <span style={{ fontSize:'0.72rem', color:'var(--text-secondary)', opacity:0.5 }}>Sin recordatorio</span>

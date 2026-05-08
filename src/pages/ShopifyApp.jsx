@@ -178,7 +178,7 @@ function ShopifyPanel() {
   const [scheduleMsg, setScheduleMsg] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [apptDetail, setApptDetail] = useState(null);
-  const [newSpec, setNewSpec] = useState({ name: '', duration_minutes: 30, color: '#7c3aed', capacity: 1, reminder_enabled: true, reminder_hours: 24 });
+  const [newSpec, setNewSpec] = useState({ name: '', duration_minutes: 30, color: '#7c3aed', capacity: 1, reminder_enabled: true, reminder_hours: [24] });
   const [newAppt, setNewAppt] = useState({ specialty_id: '', client_name: '', client_phone: '', date: new Date().toISOString().slice(0, 10), time: '', notes: '' });
   const [turnosSaving, setTurnosSaving] = useState(false);
   const [apptMsg, setApptMsg] = useState(null);
@@ -349,7 +349,7 @@ function ShopifyPanel() {
     setTurnosSaving(true); setApptMsg(null);
     try {
       await shopifyFetch(`${API}/api/shopify/embedded/specialties`, { method: 'POST', body: JSON.stringify(newSpec) });
-      setNewSpec({ name: '', duration_minutes: 30, color: '#7c3aed', capacity: 1, reminder_enabled: true, reminder_hours: 24 });
+      setNewSpec({ name: '', duration_minutes: 30, color: '#7c3aed', capacity: 1, reminder_enabled: true, reminder_hours: [24] });
       setShowNewSpec(false);
       loadTurnos();
     } catch (_e) { setApptMsg({ ok: false, text: 'Error al crear servicio.' }); }
@@ -882,8 +882,26 @@ function ShopifyPanel() {
                             </label>
                           </div>
                           {newSpec.reminder_enabled && (
-                            <div><label style={labelSt}>Horas antes del turno para recordar</label>
-                              <input style={{ ...inputSt, width: 120 }} type="number" min="1" max="72" value={newSpec.reminder_hours} onChange={e => setNewSpec(p => ({ ...p, reminder_hours: Number(e.target.value) }))} />
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                                <label style={labelSt}>Avisos antes del turno</label>
+                                <button onClick={() => setNewSpec(p => ({ ...p, reminder_hours: [...p.reminder_hours, 2] }))}
+                                  style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: 6, color: '#fff', cursor: 'pointer', padding: '0.2rem 0.65rem', fontSize: '1rem', fontWeight: 700, lineHeight: 1 }}>+</button>
+                              </div>
+                              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                {newSpec.reminder_hours.map((h, i) => (
+                                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.22)', borderRadius: 8, padding: '0.3rem 0.5rem' }}>
+                                    <input type="number" min="1" max="168" value={h}
+                                      onChange={e => setNewSpec(p => ({ ...p, reminder_hours: p.reminder_hours.map((v, j) => j === i ? Number(e.target.value) : v) }))}
+                                      style={{ ...inputSt, width: 56, margin: 0, padding: '0.25rem 0.4rem' }} />
+                                    <span style={{ fontSize: '0.75rem', color: '#6d7175' }}>h antes</span>
+                                    {newSpec.reminder_hours.length > 1 && (
+                                      <button onClick={() => setNewSpec(p => ({ ...p, reminder_hours: p.reminder_hours.filter((_, j) => j !== i) }))}
+                                        style={{ background: 'none', border: 'none', color: '#c9cccf', cursor: 'pointer', fontSize: '1rem', padding: '0 2px', lineHeight: 1 }}>×</button>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
                           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
@@ -1148,7 +1166,9 @@ function ShopifyPanel() {
                                 <span style={{ fontWeight: 700, flex: 1, color: '#202223' }}>{spec.name}</span>
                                 <span style={{ fontSize: '0.78rem', color: '#6d7175', background: '#fff', border: '1px solid #e1e3e5', borderRadius: 20, padding: '2px 8px' }}>{spec.duration_minutes} min{spec.capacity > 1 ? ` · ${spec.capacity} lugares` : ''}</span>
                                 {spec.reminder_enabled ? (
-                                  <span style={{ fontSize: '0.72rem', color: '#008060', background: 'rgba(0,128,96,0.08)', border: '1px solid rgba(0,128,96,0.25)', borderRadius: 20, padding: '2px 8px' }}>🔔 {spec.reminder_hours}h antes</span>
+                                  <span style={{ fontSize: '0.72rem', color: '#008060', background: 'rgba(0,128,96,0.08)', border: '1px solid rgba(0,128,96,0.25)', borderRadius: 20, padding: '2px 8px' }}>
+                                    🔔 {(Array.isArray(spec.reminder_hours) ? spec.reminder_hours : [spec.reminder_hours]).join('h / ')}h antes
+                                  </span>
                                 ) : (
                                   <span style={{ fontSize: '0.72rem', color: '#6d7175', opacity: 0.6 }}>Sin recordatorio</span>
                                 )}
