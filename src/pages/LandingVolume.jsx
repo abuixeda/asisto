@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronRight, Check, Star, Menu, X, ChevronDown, Send,
@@ -154,7 +154,7 @@ function LiveToast() {
 function BarChart() {
   const [ref, inView] = useInView(0.3);
   const bars = [
-    { label: 'Con Asisto',      pct: 97, color: 'linear-gradient(90deg,#e040fb,#9333ea)' },
+    { label: 'Con Atento',      pct: 97, color: 'linear-gradient(90deg,#e040fb,#9333ea)' },
     { label: 'Atención manual', pct: 42, color: 'linear-gradient(90deg,#7c3aed,#a855f7)' },
     { label: 'Chatbot básico',  pct: 61, color: 'linear-gradient(90deg,#00d4ff,#38bdf8)' },
     { label: 'Sin atención',    pct: 18, color: 'linear-gradient(90deg,#e040fb,#00d4ff)' },
@@ -276,7 +276,7 @@ function ProductDemo() {
           {['#ff5f57','#febc2e','#28c840'].map(c => <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />)}
         </div>
         <div style={{ flex: 1, background: C.bgCard2, borderRadius: '6px', padding: '4px 12px', fontSize: '0.7rem', color: C.textMuted, marginLeft: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ color: C.green, fontSize: '0.6rem' }}>🔒</span> app.asisto.ai/dashboard
+          <span style={{ color: C.green, fontSize: '0.6rem' }}>🔒</span> app.atento.ai/dashboard
         </div>
       </div>
       <div style={{ padding: '1.25rem', background: '#090912' }}>
@@ -395,7 +395,7 @@ export default function LandingVolume() {
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '62px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }} onClick={() => scrollTo('hero')}>
             <span style={{ fontSize: '1.4rem' }}>🤖</span>
-            <span style={{ fontWeight: 800, fontSize: '1.05rem', color: C.text }}>Asisto AI</span>
+            <span style={{ fontWeight: 800, fontSize: '1.05rem', color: C.text }}>Atento AI</span>
           </div>
           <div className="desktop-nav" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
             {[['features', t('nav.features')],['pricing', t('nav.pricing')],['reviews', t('nav.clients')]].map(([id, label]) => (
@@ -484,7 +484,7 @@ export default function LandingVolume() {
 
       {/* ════════════ SOCIAL PROOF ════════════ */}
       <section style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '1.75rem 0', overflow: 'hidden', background: C.bgCard2 }}>
-        <p style={{ textAlign: 'center', fontSize: '0.72rem', color: C.textMuted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.1rem', fontWeight: 700 }}>Negocios que ya confían en Asisto AI</p>
+        <p style={{ textAlign: 'center', fontSize: '0.72rem', color: C.textMuted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.1rem', fontWeight: 700 }}>Negocios que ya confían en Atento AI</p>
         <div style={{ display: 'flex', width: 'max-content', animation: 'marquee 22s linear infinite' }}>
           {[...brands, ...brands].map((b, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '99px', padding: '0.38rem 1rem', marginRight: '0.75rem', whiteSpace: 'nowrap', fontSize: '0.82rem', color: C.textSec, fontWeight: 500 }}>
@@ -559,7 +559,7 @@ export default function LandingVolume() {
                   <h3 style={{ fontWeight: 800, fontSize: '1.3rem', color: C.text }}>Velocidad de respuesta</h3>
                 </div>
                 <p style={{ color: C.textSec, fontSize: '1rem', lineHeight: 1.75, marginBottom: '1.5rem' }}>
-                  Mientras la atención manual promedia 2 horas de espera, Asisto responde en menos de 3 segundos — los 7 días de la semana, sin importar el horario.
+                  Mientras la atención manual promedia 2 horas de espera, Atento responde en menos de 3 segundos — los 7 días de la semana, sin importar el horario.
                 </p>
                 <div style={{ display: 'flex', gap: '2rem' }}>
                   {[{ n: '< 3', unit: 'seg', label: 'respuesta' }, { n: '24/7', unit: '', label: 'disponible' }, { n: '0', unit: '', label: 'errores por cansancio' }].map((m, i) => (
@@ -732,7 +732,7 @@ export default function LandingVolume() {
           </div>
           <FadeIn>
             <p style={{ textAlign: 'center', color: C.textSec, fontSize: '0.88rem' }}>
-              Precios en USD · <a href="mailto:hola@asisto.ai" style={{ color: C.pink, textDecoration: 'none', fontWeight: 700 }}>¿Múltiples negocios? Consultá el plan Agency →</a>
+              Precios en USD · <a href="mailto:hola@atento.ai" style={{ color: C.pink, textDecoration: 'none', fontWeight: 700 }}>¿Múltiples negocios? Consultá el plan Agency →</a>
             </p>
           </FadeIn>
           <FadeIn delay={0.1} style={{ maxWidth: '620px', margin: '3rem auto 0' }}>
@@ -773,7 +773,7 @@ export default function LandingVolume() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.75rem' }}>
                 <span style={{ fontSize: '1.3rem' }}>🤖</span>
-                <span style={{ fontWeight: 800, fontSize: '1.05rem', color: C.text }}>Asisto AI</span>
+                <span style={{ fontWeight: 800, fontSize: '1.05rem', color: C.text }}>Atento AI</span>
               </div>
               <p style={{ color: C.textMuted, fontSize: '0.87rem', lineHeight: 1.65, maxWidth: '240px', margin: 0 }}>El empleado que nunca falla. Disponible 24/7, conoce tu negocio al detalle y responde como humano.</p>
             </div>
@@ -785,15 +785,15 @@ export default function LandingVolume() {
             </div>
             <div>
               <div style={{ fontWeight: 700, fontSize: '0.78rem', color: C.textSec, marginBottom: '1rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Legal</div>
-              {[['Política de privacidad','/privacidad'],['Términos y condiciones','/terminos'],['Contacto','mailto:hola@asisto.ai']].map(([label, href]) => (
+              {[['Política de privacidad','/privacidad'],['Términos y condiciones','/terminos'],['Contacto','mailto:hola@atento.ai']].map(([label, href]) => (
                 <div key={label} style={{ marginBottom: '0.6rem' }}><a href={href} style={{ color: C.textMuted, textDecoration: 'none', fontSize: '0.87rem' }}>{label}</a></div>
               ))}
             </div>
           </div>
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-            <span style={{ fontSize: '0.8rem', color: C.textMuted }}>© 2026 Asisto AI. {t('footer.rights')} · Hecho en Argentina 🇦🇷</span>
+            <span style={{ fontSize: '0.8rem', color: C.textMuted }}>© 2026 Atento AI. {t('footer.rights')} · Hecho en Argentina 🇦🇷</span>
             <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.8rem' }}>
-              <a href="mailto:hola@asisto.ai" style={{ color: C.textMuted, textDecoration: 'none' }}>hola@asisto.ai</a>
+              <a href="mailto:hola@atento.ai" style={{ color: C.textMuted, textDecoration: 'none' }}>hola@atento.ai</a>
               <a href="/login" style={{ color: C.textMuted, textDecoration: 'none' }}>{t('nav.login')}</a>
               <a href="/registro" style={{ background: C.gradText, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textDecoration: 'none', fontWeight: 700 }}>{t('nav.start')}</a>
             </div>

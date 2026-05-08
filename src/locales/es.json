@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "features": "Funciones",
     "howItWorks": "Cómo funciona",
@@ -8,10 +8,10 @@
     "start": "Empezar gratis"
   },
   "hero": {
-    "badge": "Asisto AI 2.0 · Multi-idioma · WhatsApp + Instagram",
+    "badge": "Atento AI 2.0 · Multi-idioma · WhatsApp + Instagram",
     "title": "Tu negocio responde solo.",
     "titleHighlight": "24hs. Sin errores. Sin sueldo.",
-    "subtitle": "Asisto AI atiende las consultas de WhatsApp de tu negocio, conoce tu catálogo al detalle y responde como un humano — sin que vos estés presente.",
+    "subtitle": "Atento AI atiende las consultas de WhatsApp de tu negocio, conoce tu catálogo al detalle y responde como un humano — sin que vos estés presente.",
     "hint": "Configuración en 5 minutos. Sin conocimientos técnicos.",
     "cta": "Empezar gratis",
     "ctaSecondary": "▶ Ver demo en vivo",
@@ -24,7 +24,7 @@
   },
   "demo": {
     "online": "● en línea ahora",
-    "title": "Demo — Asisto AI",
+    "title": "Demo — Atento AI",
     "placeholder": "Escribí tu consulta...",
     "greeting": "¡Hola! Soy el asistente virtual. Preguntame sobre precios, stock, envíos o lo que necesites 😊",
     "responses": {
@@ -32,7 +32,7 @@
       "stock": "Sí, tenemos stock disponible 👌 ¿En qué talle, color o modelo te interesa?",
       "shipping": "Enviamos a todo el país 🚚 El envío demora 24-48hs hábiles por Correo Argentino o Andreani.",
       "payment": "Aceptamos transferencia bancaria, Mercado Pago y tarjeta de crédito en cuotas 💳",
-      "hours": "Asisto responde automáticamente las 24 horas, los 7 días de la semana, feriados incluidos 😄",
+      "hours": "Atento responde automáticamente las 24 horas, los 7 días de la semana, feriados incluidos 😄",
       "returns": "Tenemos 30 días de garantía. Si el producto llega en mal estado, el cambio es sin costo.",
       "default": "¡Hola! Podés preguntarme sobre precios, stock, envíos, formas de pago o cualquier duda 😊"
     }
@@ -50,10 +50,10 @@
   "features": {
     "title": "Todo lo que necesitás,",
     "titleHighlight": "sin complicaciones",
-    "subtitle": "Asisto se adapta a tu negocio, no al revés.",
+    "subtitle": "Atento se adapta a tu negocio, no al revés.",
     "items": [
       { "icon": "💬", "title": "Responde como humano", "desc": "No hay menús, no hay botones. Entiende el contexto, recuerda lo que se habló y responde de forma natural en cada conversación." },
-      { "icon": "🕐", "title": "Disponible las 24 horas", "desc": "Tu competidor tarda 2 horas en responder. Asisto lo hace en 3 segundos, a las 3am del domingo. Cada mensaje sin respuesta es una venta que se va." },
+      { "icon": "🕐", "title": "Disponible las 24 horas", "desc": "Tu competidor tarda 2 horas en responder. Atento lo hace en 3 segundos, a las 3am del domingo. Cada mensaje sin respuesta es una venta que se va." },
       { "icon": "⚡", "title": "Conoce tu catálogo en vivo", "desc": "Se conecta con tu tienda y sabe en tiempo real qué hay en stock, a qué precio y con qué características. Nunca inventa un precio." },
       { "icon": "🛡️", "title": "Aprende las reglas de tu negocio", "desc": "Le explicás cómo funciona tu local, tus condiciones de venta, tus políticas. Él las aplica en cada conversación." },
       { "icon": "📈", "title": "Convierte consultas en ventas", "desc": "No solo informa — guía al cliente hacia la compra. Sugiere productos, calcula precios y cierra el trato cuando el cliente está listo." },
@@ -63,7 +63,7 @@
   "beforeAfter": {
     "title": "Antes y después",
     "before": "Antes",
-    "after": "Con Asisto",
+    "after": "Con Atento",
     "items": [
       { "bad": "Perdés ventas mientras dormís", "good": "Respondés en 3 segundos a las 3am" },
       { "bad": "Prometés precios que no tenés", "good": "Siempre informa el stock real" },
@@ -86,11 +86,11 @@
     "title": "Lo que dicen",
     "titleHighlight": "nuestros clientes",
     "items": [
-      { "name": "Marcelo R.", "biz": "Indumentaria CABA", "text": "Tenía miedo de que fuera un bot genérico, pero Asisto entiende el contexto. Mis clientes no saben que están hablando con una IA. Triplicamos las consultas respondidas en el primer mes." },
+      { "name": "Marcelo R.", "biz": "Indumentaria CABA", "text": "Tenía miedo de que fuera un bot genérico, pero Atento entiende el contexto. Mis clientes no saben que están hablando con una IA. Triplicamos las consultas respondidas en el primer mes." },
       { "name": "Valentina G.", "biz": "Tienda de suplementos", "text": "Antes perdía ventas porque no podía responder a la noche. Ahora el bot atiende a las 3am igual que a las 3pm. Las ventas de madrugada solas amortizaron el costo del plan." },
       { "name": "Diego M.", "biz": "Electrónica Rosario", "text": "Lo que más me sorprendió es que sabe cuándo hay stock y cuándo no. Nunca le prometió algo a un cliente que no teníamos. Eso solo ya vale el precio." },
       { "name": "Carolina F.", "biz": "Joyería online", "text": "Mis clientes son exigentes y pensé que iban a notar que era un bot. Nada. El tono que configuré es exactamente el de nuestra marca. Resultados increíbles desde el día 1." },
-      { "name": "Tomás B.", "biz": "Ferretería mayorista", "text": "Manejo más de 2000 productos y Asisto los conoce todos. Precio, disponibilidad, descripción. Mis vendedores ahora se enfocan en cerrar los pedidos grandes." },
+      { "name": "Tomás B.", "biz": "Ferretería mayorista", "text": "Manejo más de 2000 productos y Atento los conoce todos. Precio, disponibilidad, descripción. Mis vendedores ahora se enfocan en cerrar los pedidos grandes." },
       { "name": "Lucía P.", "biz": "Cosméticos Mar del Plata", "text": "En dos semanas ya recuperé lo que pagué. Los clientes escriben, el bot responde, yo solo confirmo el pedido. No puedo creer que antes no lo tenía." }
     ]
   },

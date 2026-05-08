@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -25,8 +25,8 @@ export default function Login() {
       if (!res.ok) { setError(data.error || 'Error al ingresar.'); return; }
       localStorage.setItem('merchant_token', data.token);
       localStorage.setItem('merchant_bot_id', data.user.botId);
-      localStorage.setItem('asisto_token', data.token);
-      localStorage.setItem('asisto_user', JSON.stringify(data.user));
+      localStorage.setItem('atento_token', data.token);
+      localStorage.setItem('atento_user', JSON.stringify(data.user));
       if (data.user.role === 'admin') {
         nav('/admin');
       } else {
@@ -45,7 +45,7 @@ export default function Login() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', fontWeight: '800', fontSize: '1.3rem' }}>
           <div className="brand-logo" style={{ width: '32px', height: '32px', fontSize: '1rem', margin: 0, boxShadow: 'none' }}>TJ</div>
-          Asisto AI
+          Atento AI
         </div>
 
         <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem' }}>Ingresar</h2>

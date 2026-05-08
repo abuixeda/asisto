@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const C = {
@@ -22,7 +22,7 @@ export default function PrivacyPolicy() {
         <div style={{ maxWidth: '860px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '60px' }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
             <span style={{ fontSize: '1.2rem' }}>🤖</span>
-            <span style={{ fontWeight: 700, fontSize: '0.95rem', color: C.text }}>Asisto AI</span>
+            <span style={{ fontWeight: 700, fontSize: '0.95rem', color: C.text }}>Atento AI</span>
           </Link>
           <Link to="/" style={{ fontSize: '0.875rem', color: C.textSec, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
             ← Volver al inicio
@@ -40,9 +40,9 @@ export default function PrivacyPolicy() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
           <Section title="1. Quiénes somos">
-            <p>Asisto AI (&quot;Asisto&quot;, &quot;nosotros&quot;, &quot;nuestro&quot;) es un servicio de automatización de atención al cliente mediante inteligencia artificial para WhatsApp e Instagram, operado desde Argentina.</p>
+            <p>Atento AI (&quot;Atento&quot;, &quot;nosotros&quot;, &quot;nuestro&quot;) es un servicio de automatización de atención al cliente mediante inteligencia artificial para WhatsApp e Instagram, operado desde Argentina.</p>
             <p>Esta Política de Privacidad describe cómo recopilamos, usamos y protegemos la información de nuestros usuarios y visitantes.</p>
-            <p>Contacto: <a href="mailto:hola@asisto.ai" style={{ color: C.accent }}>hola@asisto.ai</a></p>
+            <p>Contacto: <a href="mailto:hola@atento.ai" style={{ color: C.accent }}>hola@atento.ai</a></p>
           </Section>
 
           <Section title="2. Información que recopilamos">
@@ -92,7 +92,7 @@ export default function PrivacyPolicy() {
             <ul>
               <li>Tus datos de configuración y conversaciones se eliminan dentro de los 30 días posteriores a la baja</li>
               <li>Los datos de facturación se conservan durante 5 años por obligación contable</li>
-              <li>Podés solicitar la eliminación anticipada escribiéndonos a <a href="mailto:hola@asisto.ai" style={{ color: C.accent }}>hola@asisto.ai</a></li>
+              <li>Podés solicitar la eliminación anticipada escribiéndonos a <a href="mailto:hola@atento.ai" style={{ color: C.accent }}>hola@atento.ai</a></li>
             </ul>
           </Section>
 
@@ -105,7 +105,7 @@ export default function PrivacyPolicy() {
               <li><strong style={{ color: C.text }}>Exportar</strong> tus datos en formato legible</li>
               <li><strong style={{ color: C.text }}>Oponerte</strong> al procesamiento de tus datos en ciertos contextos</li>
             </ul>
-            <p>Para ejercer cualquiera de estos derechos escribinos a <a href="mailto:hola@asisto.ai" style={{ color: C.accent }}>hola@asisto.ai</a>. Respondemos en un plazo de 10 días hábiles.</p>
+            <p>Para ejercer cualquiera de estos derechos escribinos a <a href="mailto:hola@atento.ai" style={{ color: C.accent }}>hola@atento.ai</a>. Respondemos en un plazo de 10 días hábiles.</p>
           </Section>
 
           <Section title="7. Seguridad">
@@ -135,8 +135,8 @@ export default function PrivacyPolicy() {
           <Section title="10. Contacto">
             <p>Para consultas sobre esta Política de Privacidad:</p>
             <p>
-              <strong style={{ color: C.text }}>Asisto AI</strong><br />
-              Email: <a href="mailto:hola@asisto.ai" style={{ color: C.accent }}>hola@asisto.ai</a><br />
+              <strong style={{ color: C.text }}>Atento AI</strong><br />
+              Email: <a href="mailto:hola@atento.ai" style={{ color: C.accent }}>hola@atento.ai</a><br />
               País: Argentina
             </p>
           </Section>

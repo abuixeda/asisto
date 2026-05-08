@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Check, Phone, Settings, CheckCircle, BarChart2, Menu, X } from 'lucide-react';
 
 /* ─── Paleta ─────────────────────────────────────────── */
@@ -153,7 +153,7 @@ function WhatsAppMockup() {
           <div style={{ background: '#075e54', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '9px' }}>
             <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#128c7e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>🤖</div>
             <div>
-              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white' }}>Asisto · Bot</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white' }}>Atento · Bot</div>
               <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.75)' }}>{typing ? 'escribiendo...' : 'en línea'}</div>
             </div>
           </div>
@@ -209,7 +209,7 @@ function CTAButton({ text = 'Agendar una llamada gratuita →', large = false, f
   const [hov, setHov] = useState(false);
   return (
     <a
-      href={`https://wa.me/${WA_NUMBER}?text=Hola%2C%20quiero%20agendar%20una%20llamada%20para%20conocer%20el%20servicio%20Asisto`}
+      href={`https://wa.me/${WA_NUMBER}?text=Hola%2C%20quiero%20agendar%20una%20llamada%20para%20conocer%20el%20servicio%20Atento`}
       target="_blank" rel="noreferrer"
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
@@ -279,7 +279,7 @@ export default function LandingAgency() {
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '66px' }}>
           {/* Logo */}
           <div onClick={() => scrollTo('hero')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
-            <span className="serif" style={{ fontSize: '1.25rem', fontWeight: 800, color: C.text }}>Asisto</span>
+            <span className="serif" style={{ fontSize: '1.25rem', fontWeight: 800, color: C.text }}>Atento</span>
             <span style={{ fontSize: '0.7rem', fontWeight: 500, letterSpacing: '0.04em', background: C.accentSubtle, padding: '2px 6px', borderRadius: '4px', color: C.accent }}>Servicio</span>
           </div>
           {/* Desktop nav */}
@@ -368,7 +368,7 @@ export default function LandingAgency() {
               No es un chatbot.<br />Es tu empleado más confiable.
             </h2>
             <p style={{ color: '#9ca3af', fontSize: '1.05rem', lineHeight: 1.75, maxWidth: '560px', margin: '0 auto' }}>
-              Los chatbots tradicionales tienen menús y respuestas predefinidas. Asisto entiende el contexto, recuerda la conversación y responde como lo haría tu mejor vendedor — pero sin sueldo, sin vacaciones y sin errores por el cansancio.
+              Los chatbots tradicionales tienen menús y respuestas predefinidas. Atento entiende el contexto, recuerda la conversación y responde como lo haría tu mejor vendedor — pero sin sueldo, sin vacaciones y sin errores por el cansancio.
             </p>
           </FadeIn>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: '2rem' }}>
@@ -500,8 +500,8 @@ export default function LandingAgency() {
           <FadeIn delay={0.14}>
             <CTAButton text="Agendar llamada gratuita →" large />
             <div style={{ marginTop: '1.1rem' }}>
-              <a href="mailto:hola@asisto.ai" style={{ fontSize: '0.88rem', color: C.textMuted, textDecoration: 'none' }}>
-                O escribinos directamente: <span style={{ color: C.accent, fontWeight: 600 }}>hola@asisto.ai</span>
+              <a href="mailto:hola@atento.ai" style={{ fontSize: '0.88rem', color: C.textMuted, textDecoration: 'none' }}>
+                O escribinos directamente: <span style={{ color: C.accent, fontWeight: 600 }}>hola@atento.ai</span>
               </a>
             </div>
             <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', marginTop: '1.75rem', flexWrap: 'wrap' }}>
@@ -520,7 +520,7 @@ export default function LandingAgency() {
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
-              <span className="serif" style={{ fontSize: '1.1rem', fontWeight: 800 }}>Asisto</span>
+              <span className="serif" style={{ fontSize: '1.1rem', fontWeight: 800 }}>Atento</span>
               <span style={{ fontSize: '0.7rem', color: C.accent, fontWeight: 500, background: C.accentSubtle, padding: '2px 6px', borderRadius: '4px' }}>Servicio</span>
             </div>
             <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
@@ -532,7 +532,7 @@ export default function LandingAgency() {
             </div>
           </div>
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-            <span style={{ fontSize: '0.82rem', color: C.textMuted }}>© 2026 Asisto AI. Todos los derechos reservados. · Hecho en Argentina 🇦🇷</span>
+            <span style={{ fontSize: '0.82rem', color: C.textMuted }}>© 2026 Atento AI. Todos los derechos reservados. · Hecho en Argentina 🇦🇷</span>
             <div style={{ display: 'flex', gap: '1rem' }}>
               {['Instagram','LinkedIn','WhatsApp'].map(s => (
                 <a key={s} href={s === 'WhatsApp' ? `https://wa.me/${WA_NUMBER}` : '#'} target="_blank" rel="noreferrer" style={{ fontSize: '0.82rem', color: C.textMuted, textDecoration: 'none' }}>{s}</a>

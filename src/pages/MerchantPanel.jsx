@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -201,7 +201,7 @@ function CampaignPanel({ botId, token, api }) {
                 <textarea className="prompt-textarea editable" style={{ minHeight: '90px' }}
                   value={newCampaign.campaign_goal}
                   onChange={e => setNewCampaign(p => ({ ...p, campaign_goal: e.target.value }))}
-                  placeholder={'Ej: Ofrecer Asisto AI a dueños de negocios locales para que automticen la atención de WhatsApp. Mencionar que tienen 7 días gratis y que configuramos todo nosotros.'} />
+                  placeholder={'Ej: Ofrecer Atento AI a dueños de negocios locales para que automticen la atención de WhatsApp. Mencionar que tienen 7 días gratis y que configuramos todo nosotros.'} />
               </div>
             )}
 
@@ -214,7 +214,7 @@ function CampaignPanel({ botId, token, api }) {
                 <textarea className="prompt-textarea editable" style={{ minHeight: '120px' }}
                   value={newCampaign.message_template}
                   onChange={e => setNewCampaign(p => ({ ...p, message_template: e.target.value }))}
-                  placeholder={'Hola {{nombre}}! Te contactamos desde Asisto AI...'} />
+                  placeholder={'Hola {{nombre}}! Te contactamos desde Atento AI...'} />
               </div>
             )}
 
@@ -546,7 +546,7 @@ function TourOverlay({ steps, onFinish, setActiveTab }) {
     return () => { window.removeEventListener('resize', update); window.removeEventListener('scroll', update, true); };
   }, [step]);
 
-  function finish() { localStorage.setItem('asisto_tour_done', '1'); onFinish(); }
+  function finish() { localStorage.setItem('atento_tour_done', '1'); onFinish(); }
   function goNext() { if (step === steps.length - 1) { finish(); return; } setStep(p => p + 1); }
   function goPrev() { if (step > 0) setStep(p => p - 1); }
 
@@ -1502,7 +1502,7 @@ export default function MerchantPanel() {
   const [expandedField, setExpandedField] = useState(null); // 'prompt' | 'kb'
   const [responseDelay, setResponseDelay] = useState(2.5);
   const [activeTab, setActiveTab] = useState('config'); // 'config' | 'campaigns'
-  const [showTour, setShowTour] = useState(() => !localStorage.getItem('asisto_tour_done'));
+  const [showTour, setShowTour] = useState(() => !localStorage.getItem('atento_tour_done'));
   const [showPreview, setShowPreview] = useState(false);
   const pollRef = useRef(null);
 
@@ -1755,7 +1755,7 @@ export default function MerchantPanel() {
         <aside className="sidebar">
           <div className="sidebar-logo">
             <div className="sidebar-logo-icon">TJ</div>
-            Asisto AI
+            Atento AI
           </div>
           <nav className="sidebar-nav" id="tour-tabs">
             <span className="sidebar-nav-section">Principal</span>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+﻿import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { Settings, Smartphone, Loader, BrainCircuit, MessageCircle, Users, TrendingUp, Lock, Mail, ChevronRight, LogOut, Plus, X, Save, Bell, Clock, Trash2, Sun, Moon, Bot, BarChart2, Search, ChevronDown, ChevronUp, Megaphone, Calendar, ChevronLeft } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -8,7 +8,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const socket = io(API_URL);
 
 function authFetch(url, options = {}) {
-  const token = localStorage.getItem('asisto_token');
+  const token = localStorage.getItem('atento_token');
   return fetch(url, {
     ...options,
     headers: {
@@ -18,8 +18,8 @@ function authFetch(url, options = {}) {
     },
   }).then(res => {
     if (res.status === 401) {
-      localStorage.removeItem('asisto_token');
-      localStorage.removeItem('asisto_user');
+      localStorage.removeItem('atento_token');
+      localStorage.removeItem('atento_user');
       window.location.reload();
     }
     return res;
@@ -318,7 +318,7 @@ function SmoothAreaChart({ data, color = '#3b82f6', height = 160, tooltipFn }) {
 
 // ─── Admin Campaigns Panel ─────────────────────────────────────
 function AdminCampaignsPanel({ bots }) {
-  const token = localStorage.getItem('asisto_token');
+  const token = localStorage.getItem('atento_token');
   const [selectedBotId, setSelectedBotId] = useState(bots?.[0]?.id || null);
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -547,14 +547,14 @@ function AdminCampaignsPanel({ bots }) {
                   {editForm.use_ai ? (
                     <div>
                       <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Objetivo de la campaña</label>
-                      <textarea className="prompt-textarea editable" style={{ minHeight: '90px' }} value={editForm.campaign_goal || ''} onChange={e => setEditForm(p => ({ ...p, campaign_goal: e.target.value }))} placeholder="Ej: Ofrecer Asisto AI a negocios locales. Mencionar los 7 días gratis." />
+                      <textarea className="prompt-textarea editable" style={{ minHeight: '90px' }} value={editForm.campaign_goal || ''} onChange={e => setEditForm(p => ({ ...p, campaign_goal: e.target.value }))} placeholder="Ej: Ofrecer Atento AI a negocios locales. Mencionar los 7 días gratis." />
                     </div>
                   ) : (
                     <div>
                       <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>
                         Mensaje <span style={{ opacity: 0.6 }}>(variables: {'{{nombre}}'}, {'{{negocio}}'}, {'{{ciudad}}'})</span>
                       </label>
-                      <textarea className="prompt-textarea editable" style={{ minHeight: '110px' }} value={editForm.message_template || ''} onChange={e => setEditForm(p => ({ ...p, message_template: e.target.value }))} placeholder="Hola {{nombre}}! Te escribimos desde Asisto AI..." />
+                      <textarea className="prompt-textarea editable" style={{ minHeight: '110px' }} value={editForm.message_template || ''} onChange={e => setEditForm(p => ({ ...p, message_template: e.target.value }))} placeholder="Hola {{nombre}}! Te escribimos desde Atento AI..." />
                     </div>
                   )}
 
@@ -679,12 +679,12 @@ function AdminCampaignsPanel({ bots }) {
             {newCampaign.use_ai ? (
               <div>
                 <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Objetivo de la campaña</label>
-                <textarea className="prompt-textarea editable" style={{ minHeight: '90px' }} value={newCampaign.campaign_goal} onChange={e => setNewCampaign(p => ({ ...p, campaign_goal: e.target.value }))} placeholder="Ej: Ofrecer Asisto AI a negocios locales. Mencionar los 7 días gratis." />
+                <textarea className="prompt-textarea editable" style={{ minHeight: '90px' }} value={newCampaign.campaign_goal} onChange={e => setNewCampaign(p => ({ ...p, campaign_goal: e.target.value }))} placeholder="Ej: Ofrecer Atento AI a negocios locales. Mencionar los 7 días gratis." />
               </div>
             ) : (
               <div>
                 <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Mensaje <span style={{ opacity: 0.6 }}>(variables: {'{{nombre}}'}, {'{{negocio}}'}, {'{{ciudad}}'})</span></label>
-                <textarea className="prompt-textarea editable" style={{ minHeight: '110px' }} value={newCampaign.message_template} onChange={e => setNewCampaign(p => ({ ...p, message_template: e.target.value }))} placeholder="Hola {{nombre}}! Te escribimos desde Asisto AI..." />
+                <textarea className="prompt-textarea editable" style={{ minHeight: '110px' }} value={newCampaign.message_template} onChange={e => setNewCampaign(p => ({ ...p, message_template: e.target.value }))} placeholder="Hola {{nombre}}! Te escribimos desde Atento AI..." />
               </div>
             )}
             <div>
@@ -1084,8 +1084,8 @@ function LoginScreen({ onLogin }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Credenciales inválidas o error de red.');
-      localStorage.setItem('asisto_token', data.token);
-      localStorage.setItem('asisto_user', JSON.stringify(data.user));
+      localStorage.setItem('atento_token', data.token);
+      localStorage.setItem('atento_user', JSON.stringify(data.user));
       setTimeout(() => onLogin(data.user), 500);
     } catch (err) {
       setError(err.message);
@@ -1098,7 +1098,7 @@ function LoginScreen({ onLogin }) {
       <div className="login-box">
         <div className="login-header">
           <div className="brand-logo">A</div>
-          <h2>Asisto AI</h2>
+          <h2>Atento AI</h2>
           <p>{isRegistering ? 'Crea tu Espacio de Trabajo' : 'Portal de Acceso Privado SaaS'}</p>
         </div>
         {error && <div className="login-error">{error}</div>}
@@ -1902,7 +1902,7 @@ function AdminTurnosPanel({ botId }) {
 
 function Dashboard() {
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('asisto_user');
+    const savedUser = localStorage.getItem('atento_user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
   const [bots, setBots] = useState([]);
@@ -1947,13 +1947,13 @@ function Dashboard() {
   const [metaPageSelect, setMetaPageSelect] = useState(null);
   const [metaConnecting, setMetaConnecting] = useState(false);
 
-  const [theme, setTheme] = useState(() => localStorage.getItem('asisto_theme') || 'dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('atento_theme') || 'dark');
   const [currentView, setCurrentView] = useState('bots');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('asisto_theme', theme);
+    localStorage.setItem('atento_theme', theme);
   }, [theme]);
 
   const fetchBots = () => {
@@ -2267,7 +2267,7 @@ function Dashboard() {
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">A</div>
-          <span>Asisto AI</span>
+          <span>Atento AI</span>
         </div>
 
         <nav className="sidebar-nav">
@@ -2307,7 +2307,7 @@ function Dashboard() {
             <span>{theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}</span>
           </button>
           <button
-            onClick={() => { localStorage.removeItem('asisto_user'); localStorage.removeItem('asisto_token'); setUser(null); }}
+            onClick={() => { localStorage.removeItem('atento_user'); localStorage.removeItem('atento_token'); setUser(null); }}
             style={{ display:'flex', alignItems:'center', gap:'0.6rem', width:'100%', background:'transparent', border:'1px solid var(--danger-border)', borderRadius:'8px', padding:'0.55rem 0.85rem', cursor:'pointer', color:'var(--danger)', fontSize:'0.82rem', fontWeight:500, transition:'all 0.15s' }}
           >
             <LogOut size={15} />
@@ -2788,7 +2788,7 @@ function Dashboard() {
                                   try {
                                     const res = await authFetch(`${API_URL}/api/oauth/meta/init`, { method: 'POST', body: JSON.stringify({ botId: bot.id, returnPath: '/oauth-callback' }) });
                                     const data = await res.json();
-                                    if (data.url) { const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2); window.open(data.url,'asisto_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`); }
+                                    if (data.url) { const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2); window.open(data.url,'atento_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`); }
                                     else alert(data.error || 'Error');
                                   } catch { alert('Error de conexión'); }
                                 }} style={{background:'transparent', border:'none', color:'var(--text-2)', cursor:'pointer', fontSize:'0.72rem', padding:'0', whiteSpace:'nowrap', textDecoration:'underline'}}>reconectar</button>
@@ -2803,7 +2803,7 @@ function Dashboard() {
                                 try {
                                   const res = await authFetch(`${API_URL}/api/oauth/meta/init`, { method: 'POST', body: JSON.stringify({ botId: bot.id, returnPath: '/oauth-callback' }) });
                                   const data = await res.json();
-                                  if (data.url) { const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2); window.open(data.url,'asisto_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`); }
+                                  if (data.url) { const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2); window.open(data.url,'atento_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`); }
                                   else alert(data.error || 'Error');
                                 } catch { alert('Error de conexión'); }
                               }} style={{display:'flex', alignItems:'center', gap:'0.5rem', background:'#1877f2', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.85rem', fontWeight:600}}>
@@ -2828,7 +2828,7 @@ function Dashboard() {
                                   try {
                                     const res = await authFetch(`${API_URL}/api/oauth/instagram/init`, { method: 'POST', body: JSON.stringify({ botId: bot.id, returnPath: '/oauth-callback' }) });
                                     const data = await res.json();
-                                    if (data.url) { const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2); window.open(data.url,'asisto_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`); }
+                                    if (data.url) { const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2); window.open(data.url,'atento_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`); }
                                     else alert(data.error || 'Error');
                                   } catch { alert('Error de conexión'); }
                                 }} style={{background:'transparent', border:'none', color:'var(--text-2)', cursor:'pointer', fontSize:'0.72rem', padding:'0', whiteSpace:'nowrap', textDecoration:'underline'}}>reconectar</button>
@@ -2900,7 +2900,7 @@ function Dashboard() {
                                   try {
                                     const res = await authFetch(`${API_URL}/api/oauth/instagram/init`, { method: 'POST', body: JSON.stringify({ botId: bot.id, returnPath: '/oauth-callback' }) });
                                     const data = await res.json();
-                                    if (data.url) { const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2); window.open(data.url,'asisto_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`); }
+                                    if (data.url) { const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2); window.open(data.url,'atento_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`); }
                                     else alert(data.error || 'Error');
                                   } catch { alert('Error de conexión'); }
                                 }} style={{display:'flex', alignItems:'center', gap:'0.5rem', background:'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.85rem', fontWeight:600}}>
@@ -2984,7 +2984,7 @@ function Dashboard() {
                 <div className="bot-card-expanded" style={{background:'var(--success-dim)', border:'1px solid var(--success-border)', textAlign:'center', padding:'1rem', borderTop:'1px solid var(--success-border)'}}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{margin:'0 auto 8px', display:'block'}}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                   <h4 style={{margin:'0 0 4px', color:'var(--success)', fontSize:'0.95rem'}}>¡IA Conectada a WhatsApp!</h4>
-                  <p style={{margin:'0 0 0.75rem', fontSize:'0.82rem', color:'var(--success)', opacity:0.85}}>Asisto ya controla las respuestas automáticas para este número.</p>
+                  <p style={{margin:'0 0 0.75rem', fontSize:'0.82rem', color:'var(--success)', opacity:0.85}}>Atento ya controla las respuestas automáticas para este número.</p>
                   <button onClick={() => handleLogout(bot.id)} style={{ background: 'transparent', border: '1px solid var(--danger-border)', borderRadius: '6px', color: 'var(--danger)', cursor: 'pointer', padding: '0.4rem 1rem', fontSize: '0.8rem', fontWeight: 500 }}>
                     ✕ Desvincular WhatsApp
                   </button>

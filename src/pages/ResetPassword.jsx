@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -46,7 +46,7 @@ export default function ResetPassword() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', fontWeight: 800, fontSize: '1.3rem' }}>
           <div className="brand-logo" style={{ width: '32px', height: '32px', fontSize: '1rem', margin: 0, boxShadow: 'none' }}>TJ</div>
-          Asisto AI
+          Atento AI
         </div>
 
         {done ? (

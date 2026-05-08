@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -36,7 +36,7 @@ export default function LoginAgency() {
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Error al ingresar.'); return; }
       if (data.user.role === 'admin' || data.user.role === 'manager') {
-        localStorage.setItem('asisto_token', data.token);
+        localStorage.setItem('atento_token', data.token);
       } else {
         localStorage.setItem('merchant_token', data.token);
         localStorage.setItem('merchant_bot_id', data.user.botId);
@@ -54,7 +54,7 @@ export default function LoginAgency() {
       <div style={{ background: C.cardBg, border: `1px solid ${C.border}`, borderRadius: '20px', padding: '2.5rem', width: '100%', maxWidth: '440px', boxShadow: '0 10px 25px rgba(0,0,0,0.05)' }}>
 
         <div onClick={() => nav('/premium')} style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '2rem', cursor: 'pointer' }}>
-          <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.5rem', fontWeight: 800, color: C.text }}>Asisto</span>
+          <span style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '1.5rem', fontWeight: 800, color: C.text }}>Atento</span>
           <span style={{ fontSize: '0.75rem', color: C.accent, fontWeight: 600, letterSpacing: '0.04em', background: '#eef2ff', padding: '3px 8px', borderRadius: '6px' }}>Agency</span>
         </div>
 

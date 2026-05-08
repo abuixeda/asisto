@@ -568,7 +568,7 @@ function ShopifyPanel() {
   const statusLabels = { confirmed: 'Confirmado', completed: 'Completado', cancelled: 'Cancelado' };
 
   return (
-    <Page title={bot?.name || 'Asisto AI'} subtitle="Asistente virtual con inteligencia artificial">
+    <Page title={bot?.name || 'Atento AI'} subtitle="Asistente virtual con inteligencia artificial">
       <Layout>
 
         {/* ── Banner estado ── */}

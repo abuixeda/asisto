@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "features": "Features",
     "howItWorks": "How it works",
@@ -8,10 +8,10 @@
     "start": "Start free"
   },
   "hero": {
-    "badge": "Asisto AI 2.0 · Multi-language · WhatsApp + Instagram",
+    "badge": "Atento AI 2.0 · Multi-language · WhatsApp + Instagram",
     "title": "Your business replies on its own.",
     "titleHighlight": "24/7. No errors. No salary.",
-    "subtitle": "Asisto AI handles your WhatsApp messages, knows your catalog in detail, and responds like a human — without you being there.",
+    "subtitle": "Atento AI handles your WhatsApp messages, knows your catalog in detail, and responds like a human — without you being there.",
     "hint": "Setup in 5 minutes. No technical skills needed.",
     "cta": "Start free",
     "ctaSecondary": "▶ See live demo",
@@ -24,7 +24,7 @@
   },
   "demo": {
     "online": "● online now",
-    "title": "Demo — Asisto AI",
+    "title": "Demo — Atento AI",
     "placeholder": "Type your question...",
     "greeting": "Hi! I'm your virtual assistant. Ask me about prices, availability, shipping, or anything else 😊",
     "responses": {
@@ -32,7 +32,7 @@
       "stock": "Yes, we have stock available 👌 Which size, color or model are you interested in?",
       "shipping": "We ship worldwide 🚚 Delivery takes 2-5 business days depending on your location.",
       "payment": "We accept credit/debit cards, PayPal and bank transfer 💳",
-      "hours": "Asisto replies automatically 24 hours a day, 7 days a week, including holidays 😄",
+      "hours": "Atento replies automatically 24 hours a day, 7 days a week, including holidays 😄",
       "returns": "We offer a 30-day guarantee. If the product arrives damaged, we'll replace it at no cost.",
       "default": "Hi! Feel free to ask me about prices, availability, shipping, payment options, or anything else 😊"
     }
@@ -50,10 +50,10 @@
   "features": {
     "title": "Everything you need,",
     "titleHighlight": "without the complexity",
-    "subtitle": "Asisto adapts to your business, not the other way around.",
+    "subtitle": "Atento adapts to your business, not the other way around.",
     "items": [
       { "icon": "💬", "title": "Replies like a human", "desc": "No menus, no buttons. It understands context, remembers the conversation and responds naturally every time." },
-      { "icon": "🕐", "title": "Available 24 hours", "desc": "Your competitor takes 2 hours to reply. Asisto does it in 3 seconds, at 3am on Sunday. Every unanswered message is a lost sale." },
+      { "icon": "🕐", "title": "Available 24 hours", "desc": "Your competitor takes 2 hours to reply. Atento does it in 3 seconds, at 3am on Sunday. Every unanswered message is a lost sale." },
       { "icon": "⚡", "title": "Knows your catalog live", "desc": "Connects to your store and knows in real-time what's in stock, at what price, and with what features. Never makes up a price." },
       { "icon": "🛡️", "title": "Learns your business rules", "desc": "You tell it how your store works, your sales conditions, your policies. It applies them in every conversation." },
       { "icon": "📈", "title": "Turns inquiries into sales", "desc": "It doesn't just inform — it guides customers toward purchase. Suggests products, calculates prices and closes the deal when the customer is ready." },
@@ -63,7 +63,7 @@
   "beforeAfter": {
     "title": "Before and after",
     "before": "Before",
-    "after": "With Asisto",
+    "after": "With Atento",
     "items": [
       { "bad": "You lose sales while you sleep", "good": "Replies in 3 seconds at 3am" },
       { "bad": "You quote prices you don't have", "good": "Always shows real stock info" },
@@ -86,11 +86,11 @@
     "title": "What our",
     "titleHighlight": "customers say",
     "items": [
-      { "name": "Michael R.", "biz": "Fashion Store UK", "text": "I was worried it would feel robotic, but Asisto understands context. My customers don't realize they're talking to AI. We tripled our response rate in the first month." },
+      { "name": "Michael R.", "biz": "Fashion Store UK", "text": "I was worried it would feel robotic, but Atento understands context. My customers don't realize they're talking to AI. We tripled our response rate in the first month." },
       { "name": "Sarah K.", "biz": "Supplements Shop", "text": "I used to lose sales because I couldn't reply at night. Now the bot handles 3am just as well as 3pm. The overnight sales alone paid for the subscription." },
       { "name": "James T.", "biz": "Electronics Berlin", "text": "What surprised me most is that it knows when something is in stock and when it isn't. It never promised a customer something we didn't have. That alone is worth the price." },
       { "name": "Emma L.", "biz": "Jewelry Online", "text": "My customers are demanding and I thought they'd notice it was a bot. Nothing. The tone I set is exactly our brand voice. Incredible results from day one." },
-      { "name": "Chris M.", "biz": "Hardware Wholesaler", "text": "I manage over 2,000 products and Asisto knows all of them. Price, availability, description. My sales team now focuses on closing the big orders." },
+      { "name": "Chris M.", "biz": "Hardware Wholesaler", "text": "I manage over 2,000 products and Atento knows all of them. Price, availability, description. My sales team now focuses on closing the big orders." },
       { "name": "Laura P.", "biz": "Cosmetics Brand", "text": "Within two weeks I'd already recovered what I paid. Customers message, the bot replies, I just confirm the order. I can't believe I didn't have this before." }
     ]
   },

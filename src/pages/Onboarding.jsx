@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -8,7 +8,7 @@ const SLIDES = [
   {
     icon: '🤖',
     color: '#7c3aed',
-    title: '¡Bienvenido a Asisto!',
+    title: '¡Bienvenido a Atento!',
     desc: 'Acabás de crear tu asistente virtual con inteligencia artificial. A partir de ahora va a atender a tus clientes automáticamente, las 24 horas, los 7 días de la semana.',
     cta: 'Empezar tour →',
   },
@@ -132,7 +132,7 @@ export default function Onboarding() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 800, fontSize: '1rem' }}>
           <div className="brand-logo" style={{ width: '28px', height: '28px', fontSize: '0.85rem', margin: 0, boxShadow: 'none' }}>TJ</div>
-          Asisto AI
+          Atento AI
         </div>
         <button onClick={() => nav('/mi-panel')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}>
           Saltar →

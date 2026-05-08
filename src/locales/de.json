@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "features": "Funktionen",
     "howItWorks": "So funktioniert es",
@@ -10,7 +10,7 @@
     "badge": "Automatisierter Support auf WhatsApp & Instagram",
     "title": "Ihr Unternehmen antwortet automatisch,",
     "titleHighlight": "auch während Sie schlafen",
-    "subtitle": "Asisto beantwortet Kundennachrichten auf WhatsApp und Instagram — rund um die Uhr, 7 Tage die Woche.",
+    "subtitle": "Atento beantwortet Kundennachrichten auf WhatsApp und Instagram — rund um die Uhr, 7 Tage die Woche.",
     "cta": "14 Tage kostenlos testen",
     "ctaSecondary": "Live-Demo ansehen",
     "stats": {
@@ -21,7 +21,7 @@
   },
   "demo": {
     "online": "● jetzt online",
-    "title": "Demo — Asisto AI",
+    "title": "Demo — Atento AI",
     "placeholder": "Ihre Frage eingeben...",
     "greeting": "Hallo! Ich bin Ihr virtueller Assistent. Fragen Sie mich nach Preisen, Verfügbarkeit, Versand oder allem anderen 😊",
     "responses": {
@@ -29,7 +29,7 @@
       "stock": "Ja, wir haben Lagerbestand 👌 Welche Größe, Farbe oder welches Modell interessiert Sie?",
       "shipping": "Wir liefern europaweit 🚚 Die Lieferzeit beträgt 2-5 Werktage.",
       "payment": "Wir akzeptieren Kreditkarte, PayPal und Banküberweisung 💳",
-      "hours": "Asisto antwortet automatisch 24 Stunden am Tag, 7 Tage die Woche, auch an Feiertagen 😄",
+      "hours": "Atento antwortet automatisch 24 Stunden am Tag, 7 Tage die Woche, auch an Feiertagen 😄",
       "returns": "Wir bieten 30 Tage Garantie. Bei beschädigter Ware tauschen wir kostenlos aus.",
       "default": "Hallo! Stellen Sie mir gerne Fragen zu Preisen, Verfügbarkeit, Versand, Zahlungsoptionen oder anderen Themen 😊"
     }
@@ -47,10 +47,10 @@
   "features": {
     "title": "Alles was Sie brauchen,",
     "titleHighlight": "ohne Komplexität",
-    "subtitle": "Asisto passt sich Ihrem Unternehmen an, nicht umgekehrt.",
+    "subtitle": "Atento passt sich Ihrem Unternehmen an, nicht umgekehrt.",
     "items": [
       { "icon": "💬", "title": "Antwortet wie ein Mensch", "desc": "Keine Menüs, keine Schaltflächen. Es versteht den Kontext, erinnert sich an das Gespräch und antwortet natürlich." },
-      { "icon": "🕐", "title": "24 Stunden verfügbar", "desc": "Ihr Mitbewerber braucht 2 Stunden zum Antworten. Asisto macht es in 3 Sekunden, um 3 Uhr morgens. Jede unbeantwortete Nachricht ist ein verlorener Verkauf." },
+      { "icon": "🕐", "title": "24 Stunden verfügbar", "desc": "Ihr Mitbewerber braucht 2 Stunden zum Antworten. Atento macht es in 3 Sekunden, um 3 Uhr morgens. Jede unbeantwortete Nachricht ist ein verlorener Verkauf." },
       { "icon": "⚡", "title": "Kennt Ihren Katalog live", "desc": "Verbindet sich mit Ihrem Shop und kennt in Echtzeit den Bestand, den Preis und die Eigenschaften. Erfindet nie einen Preis." },
       { "icon": "🛡️", "title": "Lernt Ihre Geschäftsregeln", "desc": "Sie erklären, wie Ihr Geschäft funktioniert, Ihre Verkaufsbedingungen, Ihre Richtlinien. Er wendet sie in jedem Gespräch an." },
       { "icon": "📈", "title": "Verwandelt Anfragen in Verkäufe", "desc": "Es informiert nicht nur — es führt Kunden zum Kauf. Schlägt Produkte vor, berechnet Preise und schließt das Geschäft ab." },
@@ -60,7 +60,7 @@
   "beforeAfter": {
     "title": "Vorher und nachher",
     "before": "Vorher",
-    "after": "Mit Asisto",
+    "after": "Mit Atento",
     "items": [
       { "bad": "Sie verlieren Verkäufe im Schlaf", "good": "Antwortet in 3 Sekunden um 3 Uhr" },
       { "bad": "Sie nennen Preise, die Sie nicht haben", "good": "Zeigt immer den echten Bestand" },
@@ -83,11 +83,11 @@
     "title": "Was unsere",
     "titleHighlight": "Kunden sagen",
     "items": [
-      { "name": "Markus R.", "biz": "Modeshop Berlin", "text": "Ich hatte Angst, dass es wie ein generischer Bot wirkt, aber Asisto versteht den Kontext. Meine Kunden wissen nicht, dass sie mit einer KI sprechen. Wir haben die Antwortquote im ersten Monat verdreifacht." },
+      { "name": "Markus R.", "biz": "Modeshop Berlin", "text": "Ich hatte Angst, dass es wie ein generischer Bot wirkt, aber Atento versteht den Kontext. Meine Kunden wissen nicht, dass sie mit einer KI sprechen. Wir haben die Antwortquote im ersten Monat verdreifacht." },
       { "name": "Sabine K.", "biz": "Supplement-Shop", "text": "Ich verlor früher Verkäufe, weil ich nachts nicht antworten konnte. Jetzt bedient der Bot um 3 Uhr genauso gut wie um 15 Uhr. Die nächtlichen Verkäufe allein haben das Abo bezahlt." },
       { "name": "Thomas M.", "biz": "Elektronik Hamburg", "text": "Was mich am meisten überraschte, ist, dass er weiß, was vorrätig ist und was nicht. Er hat einem Kunden nie etwas versprochen, das wir nicht hatten. Das allein ist den Preis wert." },
       { "name": "Julia F.", "biz": "Schmuck Online", "text": "Meine Kunden sind anspruchsvoll und ich dachte, sie würden merken, dass es ein Bot ist. Nichts. Der Ton, den ich eingestellt habe, ist genau unsere Markenstimme." },
-      { "name": "Stefan B.", "biz": "Werkzeughandel", "text": "Ich verwalte über 2.000 Produkte und Asisto kennt sie alle. Preis, Verfügbarkeit, Beschreibung. Mein Vertriebsteam konzentriert sich jetzt auf die großen Aufträge." },
+      { "name": "Stefan B.", "biz": "Werkzeughandel", "text": "Ich verwalte über 2.000 Produkte und Atento kennt sie alle. Preis, Verfügbarkeit, Beschreibung. Mein Vertriebsteam konzentriert sich jetzt auf die großen Aufträge." },
       { "name": "Lena P.", "biz": "Kosmetik München", "text": "Innerhalb von zwei Wochen hatte ich bereits zurückverdient, was ich bezahlt hatte. Kunden schreiben, der Bot antwortet, ich bestätige nur die Bestellung." }
     ]
   },
