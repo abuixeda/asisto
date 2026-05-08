@@ -100,26 +100,24 @@ function getWeekDays(offset) {
 }
 
 function getTimeSlotsForSpec(spec) {
-  if (!spec) return { slots: [], dayMap: {} };
-  const schedArr = Array.isArray(spec.schedule) ? spec.schedule : [];
+  if (!spec?.schedule?.length) return { slots: [], dayMap: {} };
+  let minMins = Infinity, maxMins = -Infinity;
   const dayMap = {};
-  let minH = 24, maxH = 0;
-  for (const sl of schedArr) {
-    if (!sl.active) continue;
-    const dow = sl.day_of_week;
-    if (!dayMap[dow]) dayMap[dow] = [];
-    dayMap[dow].push({ start: sl.start_time, end: sl.end_time });
-    const [sh] = sl.start_time.split(':').map(Number);
-    const [eh] = sl.end_time.split(':').map(Number);
-    if (sh < minH) minH = sh;
-    if (eh > maxH) maxH = eh;
-  }
-  if (maxH === 0 || minH === 24) return { slots: [], dayMap };
+  spec.schedule.forEach(s => {
+    if (!s.active) return;
+    const [sh, sm] = s.start_time.split(':').map(Number);
+    const [eh, em] = s.end_time.split(':').map(Number);
+    const start = sh * 60 + sm, end = eh * 60 + em;
+    minMins = Math.min(minMins, start);
+    maxMins = Math.max(maxMins, end);
+    if (!dayMap[s.day_of_week]) dayMap[s.day_of_week] = [];
+    dayMap[s.day_of_week].push({ start, end });
+  });
+  if (!isFinite(minMins)) return { slots: [], dayMap };
   const slots = [];
   const dur = spec.duration_minutes || 30;
-  for (let m = minH * 60; m < maxH * 60; m += dur) {
-    const h = Math.floor(m / 60), min = m % 60;
-    slots.push(`${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}`);
+  for (let cur = minMins; cur < maxMins; cur += dur) {
+    slots.push(`${String(Math.floor(cur / 60)).padStart(2, '0')}:${String(cur % 60).padStart(2, '0')}`);
   }
   return { slots, dayMap };
 }
