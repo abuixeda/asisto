@@ -1762,9 +1762,6 @@ export default function MerchantPanel() {
             <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => setActiveTab('config')}>⚙️ Configuración</div>
             <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => setActiveTab('campaigns')}>📣 Campañas</div>
             <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => setActiveTab('turnos')}>📅 Turnos</div>
-            {bot?.botType === 'shopify' && (
-              <div className={`sidebar-nav-item${activeTab === 'widget' ? ' active' : ''}`} onClick={() => setActiveTab('widget')}>🛒 Widget</div>
-            )}
           </nav>
           <div className="sidebar-footer">
             <div className="sidebar-user">
@@ -1786,7 +1783,6 @@ export default function MerchantPanel() {
           <div style={{ padding: '1.75rem 2rem' }}>
             {activeTab === 'campaigns' && <div id="tour-campaigns-area"><CampaignPanel botId={botId} token={token} api={API} /></div>}
             {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} /></div>}
-            {activeTab === 'widget' && <WidgetPanel botId={botId} token={token} api={API} />}
 
           {activeTab === 'config' && (<>
 
