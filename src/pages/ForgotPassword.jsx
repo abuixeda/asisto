@@ -1,7 +1,7 @@
-Ôªøimport { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API = import.meta.env.VITE_API_URL || 'https://asisto-backend-production.up.railway.app';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -13,7 +13,7 @@ export default function ForgotPassword() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    if (!email) { setError('Ingres√° tu email.'); return; }
+    if (!email) { setError('Ingres· tu email.'); return; }
     setLoading(true);
     try {
       await fetch(`${API}/api/auth/forgot-password`, {
@@ -42,10 +42,10 @@ export default function ForgotPassword() {
 
         {sent ? (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>üì¨</div>
-            <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.5rem' }}>Revis√° tu email</h2>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>??</div>
+            <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.5rem' }}>Revis· tu email</h2>
             <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 2rem' }}>
-              Si existe una cuenta con <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>, vas a recibir un enlace para restablecer tu contrase√±a en los pr√≥ximos minutos.
+              Si existe una cuenta con <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>, vas a recibir un enlace para restablecer tu contraseÒa en los prÛximos minutos.
             </p>
             <button onClick={() => nav('/login')} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.8rem 1.5rem', fontSize: '0.95rem' }}>
               Volver al login
@@ -53,9 +53,9 @@ export default function ForgotPassword() {
           </div>
         ) : (
           <>
-            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.6rem' }}>Olvid√© mi contrase√±a</h2>
+            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.6rem' }}>OlvidÈ mi contraseÒa</h2>
             <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem', lineHeight: 1.6 }}>
-              Ingres√° tu email y te mandamos un enlace para crear una nueva contrase√±a.
+              Ingres· tu email y te mandamos un enlace para crear una nueva contraseÒa.
             </p>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -65,12 +65,12 @@ export default function ForgotPassword() {
               </div>
               {error && <p style={{ color: '#f87171', margin: 0, fontSize: '0.9rem' }}>{error}</p>}
               <button type="submit" className="btn-solid-blue" disabled={loading} style={{ marginTop: '0.5rem', padding: '0.9rem', fontSize: '1rem' }}>
-                {loading ? 'Enviando...' : 'Enviar enlace ‚Üí'}
+                {loading ? 'Enviando...' : 'Enviar enlace ?'}
               </button>
             </form>
 
             <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              <a href="/login" style={{ color: 'var(--accent)', textDecoration: 'none' }}>‚Üê Volver al login</a>
+              <a href="/login" style={{ color: 'var(--accent)', textDecoration: 'none' }}>? Volver al login</a>
             </p>
           </>
         )}

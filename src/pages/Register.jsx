@@ -1,7 +1,7 @@
-Ôªøimport { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API = import.meta.env.VITE_API_URL || 'https://asisto-backend-production.up.railway.app';
 
 export default function Register() {
   const [step, setStep] = useState(1); // 1: datos, 2: plataforma, 3: shopify-domain
@@ -16,8 +16,8 @@ export default function Register() {
   async function handleRegister(e) {
     e.preventDefault();
     setError('');
-    if (!email || !password || !name) { setError('Complet√° todos los campos.'); return; }
-    if (password.length < 6) { setError('La contrase√±a debe tener al menos 6 caracteres.'); return; }
+    if (!email || !password || !name) { setError('Complet· todos los campos.'); return; }
+    if (password.length < 6) { setError('La contraseÒa debe tener al menos 6 caracteres.'); return; }
     setLoading(true);
     try {
       const res = await fetch(`${API}/api/merchant/register`, {
@@ -53,7 +53,7 @@ export default function Register() {
   }
 
   function handleShopifyInstall() {
-    if (!shopDomain.trim()) { setError('Ingres√° el dominio de tu tienda.'); return; }
+    if (!shopDomain.trim()) { setError('Ingres· el dominio de tu tienda.'); return; }
     let raw = shopDomain.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
     // handle admin.shopify.com/store/STORENAME format
     const adminMatch = raw.match(/admin\.shopify\.com\/store\/([^/?]+)/);
@@ -75,7 +75,7 @@ export default function Register() {
         {step === 1 && (
           <>
             <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem' }}>Crear cuenta</h2>
-            <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem 0' }}>Gratis. Sin tarjeta de cr√©dito.</p>
+            <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem 0' }}>Gratis. Sin tarjeta de crÈdito.</p>
 
             <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
@@ -95,39 +95,39 @@ export default function Register() {
                 />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Contrase√±a</label>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>ContraseÒa</label>
                 <input
                   type="password" value={password} onChange={e => setPassword(e.target.value)}
-                  placeholder="M√≠nimo 6 caracteres"
+                  placeholder="MÌnimo 6 caracteres"
                   style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', fontSize: '1rem', boxSizing: 'border-box' }}
                 />
               </div>
               {error && <p style={{ color: '#f87171', margin: 0, fontSize: '0.9rem' }}>{error}</p>}
               <button type="submit" className="btn-solid-blue" disabled={loading} style={{ marginTop: '0.5rem', padding: '0.9rem', fontSize: '1rem' }}>
-                {loading ? 'Creando cuenta...' : 'Continuar ‚Üí'}
+                {loading ? 'Creando cuenta...' : 'Continuar ?'}
               </button>
             </form>
 
             <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              ¬øYa ten√©s cuenta? <a href="/login" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Ingresar</a>
+              øYa tenÈs cuenta? <a href="/login" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Ingresar</a>
             </p>
           </>
         )}
 
         {step === 2 && (
           <>
-            <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>¬øD√≥nde est√° tu tienda?</h2>
-            <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem 0' }}>Eleg√≠ tu plataforma para conectar el cat√°logo autom√°ticamente.</p>
+            <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>øDÛnde est· tu tienda?</h2>
+            <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem 0' }}>ElegÌ tu plataforma para conectar el cat·logo autom·ticamente.</p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <button onClick={() => handlePlatform('shopify')} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.2rem 1.5rem', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '14px', cursor: 'pointer', color: 'var(--text-primary)', fontSize: '1rem', textAlign: 'left', transition: 'border-color 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = '#96bf48'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
               >
-                <span style={{ fontSize: '2rem' }}>üõçÔ∏è</span>
+                <span style={{ fontSize: '2rem' }}>???</span>
                 <div>
                   <div style={{ fontWeight: '700' }}>Shopify</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Cat√°logo sincronizado autom√°ticamente</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Cat·logo sincronizado autom·ticamente</div>
                 </div>
               </button>
 
@@ -135,10 +135,10 @@ export default function Register() {
                 onMouseEnter={e => e.currentTarget.style.borderColor = '#3b82f6'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
               >
-                <span style={{ fontSize: '2rem' }}>‚òÅÔ∏è</span>
+                <span style={{ fontSize: '2rem' }}>??</span>
                 <div>
                   <div style={{ fontWeight: '700' }}>Tiendanube</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Cat√°logo sincronizado autom√°ticamente</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Cat·logo sincronizado autom·ticamente</div>
                 </div>
               </button>
 
@@ -146,10 +146,10 @@ export default function Register() {
                 onMouseEnter={e => e.currentTarget.style.borderColor = '#8b5cf6'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
               >
-                <span style={{ fontSize: '2rem' }}>üåê</span>
+                <span style={{ fontSize: '2rem' }}>??</span>
                 <div>
                   <div style={{ fontWeight: '700' }}>Otra plataforma / Web propia</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Carg√° tu cat√°logo manualmente o con URL</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Carg· tu cat·logo manualmente o con URL</div>
                 </div>
               </button>
             </div>
@@ -159,10 +159,10 @@ export default function Register() {
         {step === 3 && (
           <>
             <button onClick={() => { setStep(2); setError(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.9rem', padding: 0, marginBottom: '1.5rem' }}>
-              ‚Üê Volver
+              ? Volver
             </button>
-            <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>¬øCu√°l es tu tienda Shopify?</h2>
-            <p style={{ color: 'var(--text-secondary)', margin: '0 0 1.5rem 0' }}>Ingres√° el dominio y te redirigimos a Shopify para autorizar la conexi√≥n.</p>
+            <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.5rem' }}>øCu·l es tu tienda Shopify?</h2>
+            <p style={{ color: 'var(--text-secondary)', margin: '0 0 1.5rem 0' }}>Ingres· el dominio y te redirigimos a Shopify para autorizar la conexiÛn.</p>
             <input
               type="text" value={shopDomain} onChange={e => { setShopDomain(e.target.value); setError(''); }}
               onKeyDown={e => e.key === 'Enter' && handleShopifyInstall()}
@@ -171,7 +171,7 @@ export default function Register() {
             />
             {error && <p style={{ color: '#f87171', fontSize: '0.9rem', margin: '0 0 0.75rem' }}>{error}</p>}
             <button onClick={handleShopifyInstall} className="btn-solid-blue" style={{ width: '100%', padding: '0.9rem', fontSize: '1rem' }}>
-              Conectar con Shopify ‚Üí
+              Conectar con Shopify ?
             </button>
           </>
         )}

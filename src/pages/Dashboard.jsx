@@ -4,7 +4,7 @@ import { Settings, Smartphone, Loader, BrainCircuit, MessageCircle, Users, Trend
 import { QRCodeSVG } from 'qrcode.react';
 import '../index.css';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'https://asisto-backend-production.up.railway.app';
 const socket = io(API_URL);
 
 function authFetch(url, options = {}) {

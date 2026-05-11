@@ -1,8 +1,8 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API = import.meta.env.VITE_API_URL || 'https://asisto-backend-production.up.railway.app';
 
 function authFetch(url, options = {}, token) {
   return fetch(url, {
@@ -11,7 +11,7 @@ function authFetch(url, options = {}, token) {
   });
 }
 
-// ─── CampaignPanel ────────────────────────────────────────────────────────────
+// --- CampaignPanel ------------------------------------------------------------
 function CampaignPanel({ botId, token, api }) {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,8 +44,8 @@ function CampaignPanel({ botId, token, api }) {
 
   async function createCampaign() {
     if (!newCampaign.name) { setCampaignMsg({ ok: false, text: 'El nombre es requerido.' }); return; }
-    if (newCampaign.use_ai && !newCampaign.campaign_goal) { setCampaignMsg({ ok: false, text: 'Describí el objetivo de la campaña para el modo IA.' }); return; }
-    if (!newCampaign.use_ai && !newCampaign.message_template) { setCampaignMsg({ ok: false, text: 'Escribí el mensaje a enviar.' }); return; }
+    if (newCampaign.use_ai && !newCampaign.campaign_goal) { setCampaignMsg({ ok: false, text: 'Describ� el objetivo de la campa�a para el modo IA.' }); return; }
+    if (!newCampaign.use_ai && !newCampaign.message_template) { setCampaignMsg({ ok: false, text: 'Escrib� el mensaje a enviar.' }); return; }
     setSaving(true); setCampaignMsg(null);
     try {
       const res = await authFetch(`${api}/api/bots/${botId}/campaigns`, {
@@ -59,12 +59,12 @@ function CampaignPanel({ botId, token, api }) {
         const d = await res.json();
         setCampaignMsg({ ok: false, text: d.error || 'Error al crear.' });
       }
-    } catch { setCampaignMsg({ ok: false, text: 'Error de conexión.' }); }
+    } catch { setCampaignMsg({ ok: false, text: 'Error de conexi�n.' }); }
     finally { setSaving(false); }
   }
 
   async function deleteCampaign(cid) {
-    if (!confirm('¿Eliminar esta campaña y todos sus leads?')) return;
+    if (!confirm('�Eliminar esta campa�a y todos sus leads?')) return;
     await authFetch(`${api}/api/bots/${botId}/campaigns/${cid}`, { method: 'DELETE' }, token);
     loadCampaigns();
   }
@@ -88,14 +88,14 @@ function CampaignPanel({ botId, token, api }) {
       }, token);
       const data = await res.json();
       if (res.ok) {
-        setLeadsMsg({ ok: true, text: `✅ ${data.imported} leads importados desde Google Sheets.` });
+        setLeadsMsg({ ok: true, text: `? ${data.imported} leads importados desde Google Sheets.` });
         setSheetsUrl('');
         const r2 = await authFetch(`${api}/api/bots/${botId}/campaigns/${leadsModal.id}/leads`, {}, token);
         const d2 = await r2.json();
         setLeads(Array.isArray(d2) ? d2 : []);
         loadCampaigns();
-      } else { setLeadsMsg({ ok: false, text: `❌ ${data.error}` }); }
-    } catch { setLeadsMsg({ ok: false, text: '❌ Error de conexión.' }); }
+      } else { setLeadsMsg({ ok: false, text: `? ${data.error}` }); }
+    } catch { setLeadsMsg({ ok: false, text: '? Error de conexi�n.' }); }
     finally { setImportingLeads(false); }
   }
 
@@ -127,16 +127,16 @@ function CampaignPanel({ botId, token, api }) {
       }, token);
       const data = await res.json();
       if (res.ok) {
-        setLeadsMsg({ ok: true, text: `✅ ${data.imported} leads importados.` });
+        setLeadsMsg({ ok: true, text: `? ${data.imported} leads importados.` });
         setLeadsText('');
         const r2 = await authFetch(`${api}/api/bots/${botId}/campaigns/${leadsModal.id}/leads`, {}, token);
         const d2 = await r2.json();
         setLeads(Array.isArray(d2) ? d2 : []);
         loadCampaigns();
       } else {
-        setLeadsMsg({ ok: false, text: `❌ ${data.error}` });
+        setLeadsMsg({ ok: false, text: `? ${data.error}` });
       }
-    } catch { setLeadsMsg({ ok: false, text: '❌ Error de conexión.' }); }
+    } catch { setLeadsMsg({ ok: false, text: '? Error de conexi�n.' }); }
     finally { setImportingLeads(false); }
   }
 
@@ -151,29 +151,29 @@ function CampaignPanel({ botId, token, api }) {
   const leadStatusBadge = {
     pending:   { color: '#64748b', label: 'Pendiente' },
     sent:      { color: '#3b82f6', label: 'Enviado' },
-    replied:   { color: '#10b981', label: 'Respondió' },
+    replied:   { color: '#10b981', label: 'Respondi�' },
     opted_out: { color: '#ef4444', label: 'Opt-out' },
   };
 
   return (
     <div>
-      {/* Modal nueva campaña */}
+      {/* Modal nueva campa�a */}
       {showNewModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.5rem', width: '100%', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Nueva Campaña</span>
-              <button onClick={() => { setShowNewModal(false); setCampaignMsg(null); }} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.3rem 0.7rem' }}>✕</button>
+              <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Nueva Campa�a</span>
+              <button onClick={() => { setShowNewModal(false); setCampaignMsg(null); }} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.3rem 0.7rem' }}>?</button>
             </div>
             <div>
-              <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Nombre de la campaña</label>
+              <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Nombre de la campa�a</label>
               <input className="modal-input" value={newCampaign.name} onChange={e => setNewCampaign(p => ({ ...p, name: e.target.value }))} placeholder="Ej: Promo Mayo 2025" style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
             </div>
             {/* Toggle modo IA */}
             <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: '10px', padding: '0.875rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.15rem' }}>✨ Mensaje generado por IA</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Gemini escribe un mensaje único y personalizado para cada negocio</div>
+                <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.15rem' }}>? Mensaje generado por IA</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Gemini escribe un mensaje �nico y personalizado para cada negocio</div>
               </div>
               <label style={{ position: 'relative', display: 'inline-block', width: '44px', height: '24px', flexShrink: 0 }}>
                 <input type="checkbox" checked={newCampaign.use_ai}
@@ -196,12 +196,12 @@ function CampaignPanel({ botId, token, api }) {
             {newCampaign.use_ai && (
               <div>
                 <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>
-                  Objetivo de la campaña <span style={{ opacity: 0.6 }}>(qué querés lograr con cada mensaje)</span>
+                  Objetivo de la campa�a <span style={{ opacity: 0.6 }}>(qu� quer�s lograr con cada mensaje)</span>
                 </label>
                 <textarea className="prompt-textarea editable" style={{ minHeight: '90px' }}
                   value={newCampaign.campaign_goal}
                   onChange={e => setNewCampaign(p => ({ ...p, campaign_goal: e.target.value }))}
-                  placeholder={'Ej: Ofrecer Atento AI a dueños de negocios locales para que automticen la atención de WhatsApp. Mencionar que tienen 7 días gratis y que configuramos todo nosotros.'} />
+                  placeholder={'Ej: Ofrecer Atento AI a due�os de negocios locales para que automticen la atenci�n de WhatsApp. Mencionar que tienen 7 d�as gratis y que configuramos todo nosotros.'} />
               </div>
             )}
 
@@ -228,7 +228,7 @@ function CampaignPanel({ botId, token, api }) {
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
               <button onClick={() => { setShowNewModal(false); setCampaignMsg(null); }} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.6rem 1rem' }}>Cancelar</button>
               <button onClick={createCampaign} disabled={saving} className="btn-solid-blue" style={{ margin: 0, width: 'auto', padding: '0.6rem 1.25rem' }}>
-                {saving ? 'Creando...' : 'Crear Campaña'}
+                {saving ? 'Creando...' : 'Crear Campa�a'}
               </button>
             </div>
           </div>
@@ -240,8 +240,8 @@ function CampaignPanel({ botId, token, api }) {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.5rem', width: '100%', maxWidth: '620px', maxHeight: '85vh', display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Leads — {leadsModal.name}</span>
-              <button onClick={() => setLeadsModal(null)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.3rem 0.7rem' }}>✕</button>
+              <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Leads � {leadsModal.name}</span>
+              <button onClick={() => setLeadsModal(null)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.3rem 0.7rem' }}>?</button>
             </div>
             <div>
               {/* Toggle manual / sheets */}
@@ -249,7 +249,7 @@ function CampaignPanel({ botId, token, api }) {
                 {['manual', 'sheets'].map(mode => (
                   <button key={mode} onClick={() => { setLeadsImportMode(mode); setLeadsMsg(null); }}
                     style={{ padding: '0.35rem 0.9rem', borderRadius: '20px', border: '1px solid var(--border)', fontSize: '0.82rem', cursor: 'pointer', fontWeight: leadsImportMode === mode ? 700 : 400, background: leadsImportMode === mode ? '#7c3aed' : 'rgba(255,255,255,0.05)', color: leadsImportMode === mode ? '#fff' : 'var(--text-secondary)', transition: '0.15s' }}>
-                    {mode === 'manual' ? '📋 Manual (CSV)' : '📊 Google Sheets'}
+                    {mode === 'manual' ? '?? Manual (CSV)' : '?? Google Sheets'}
                   </button>
                 ))}
               </div>
@@ -257,11 +257,11 @@ function CampaignPanel({ botId, token, api }) {
               {leadsImportMode === 'manual' && (
                 <>
                   <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>
-                    Formato: <code style={{ background: 'rgba(255,255,255,0.08)', padding: '0 4px', borderRadius: '4px' }}>teléfono,nombre,negocio,ciudad,url</code> — uno por línea
+                    Formato: <code style={{ background: 'rgba(255,255,255,0.08)', padding: '0 4px', borderRadius: '4px' }}>tel�fono,nombre,negocio,ciudad,url</code> � uno por l�nea
                   </label>
                   <textarea className="prompt-textarea editable" style={{ minHeight: '90px' }}
                     value={leadsText} onChange={e => setLeadsText(e.target.value)}
-                    placeholder={'5491112345678,Juan,Panadería,CABA,https://maps.app.goo.gl/xyz\n5491198765432,María,Ferretería,Córdoba,'} />
+                    placeholder={'5491112345678,Juan,Panader�a,CABA,https://maps.app.goo.gl/xyz\n5491198765432,Mar�a,Ferreter�a,C�rdoba,'} />
                   <button onClick={importLeads} disabled={importingLeads || !leadsText.trim()} className="btn-solid-blue"
                     style={{ margin: '0.5rem 0 0', width: 'auto', padding: '0.5rem 1rem', opacity: (importingLeads || !leadsText.trim()) ? 0.6 : 1 }}>
                     {importingLeads ? 'Importando...' : 'Importar'}
@@ -272,16 +272,16 @@ function CampaignPanel({ botId, token, api }) {
               {leadsImportMode === 'sheets' && (
                 <>
                   <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>
-                    Link de Google Sheets <span style={{ opacity: 0.6 }}>(debe ser público — "cualquiera con el link puede ver")</span>
+                    Link de Google Sheets <span style={{ opacity: 0.6 }}>(debe ser p�blico � "cualquiera con el link puede ver")</span>
                   </label>
                   <input className="modal-input" value={sheetsUrl} onChange={e => setSheetsUrl(e.target.value)}
                     placeholder="https://docs.google.com/spreadsheets/d/..." style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
                   <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                    Columnas recomendadas: <strong>teléfono, nombre, negocio, ciudad, url</strong> (con o sin encabezados). La columna <strong>url</strong> puede ser el sitio web o link de Google Maps del negocio — la IA lo analizará antes de escribir el mensaje.
+                    Columnas recomendadas: <strong>tel�fono, nombre, negocio, ciudad, url</strong> (con o sin encabezados). La columna <strong>url</strong> puede ser el sitio web o link de Google Maps del negocio � la IA lo analizar� antes de escribir el mensaje.
                   </p>
                   <button onClick={importFromSheets} disabled={importingLeads || !sheetsUrl.trim()} className="btn-solid-blue"
                     style={{ margin: '0.5rem 0 0', width: 'auto', padding: '0.5rem 1rem', opacity: (importingLeads || !sheetsUrl.trim()) ? 0.6 : 1 }}>
-                    {importingLeads ? 'Importando...' : '📊 Importar desde Sheets'}
+                    {importingLeads ? 'Importando...' : '?? Importar desde Sheets'}
                   </button>
                 </>
               )}
@@ -290,7 +290,7 @@ function CampaignPanel({ botId, token, api }) {
             </div>
             {leads.length > 0 && (
               <div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{leads.length} leads en esta campaña</div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{leads.length} leads en esta campa�a</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '280px', overflowY: 'auto' }}>
                   {leads.map(lead => (
                     <div key={lead.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.5rem 0.75rem' }}>
@@ -299,28 +299,28 @@ function CampaignPanel({ botId, token, api }) {
                       </span>
                       <span style={{ flex: 1, fontSize: '0.82rem', color: 'var(--text-primary)' }}>
                         {lead.name || lead.phone.replace('@c.us', '')}
-                        {lead.city && <span style={{ color: 'var(--text-secondary)', marginLeft: '0.4rem' }}>— {lead.city}</span>}
+                        {lead.city && <span style={{ color: 'var(--text-secondary)', marginLeft: '0.4rem' }}>� {lead.city}</span>}
                       </span>
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{lead.phone.replace('@c.us', '')}</span>
-                      <button onClick={() => deleteLead(lead.id)} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '0.85rem', padding: '0 4px' }}>🗑</button>
+                      <button onClick={() => deleteLead(lead.id)} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '0.85rem', padding: '0 4px' }}>??</button>
                     </div>
                   ))}
                 </div>
               </div>
             )}
-            {leads.length === 0 && <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>Sin leads todavía. Importá contactos arriba.</p>}
+            {leads.length === 0 && <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>Sin leads todav�a. Import� contactos arriba.</p>}
           </div>
         </div>
       )}
 
-      {/* Header campaña */}
+      {/* Header campa�a */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
         <div>
-          <h3 style={{ margin: '0 0 0.2rem', fontSize: '1.1rem', fontWeight: 700 }}>Campañas de mensajería saliente</h3>
-          <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>Enviá mensajes masivos personalizados a tus contactos de forma automática.</p>
+          <h3 style={{ margin: '0 0 0.2rem', fontSize: '1.1rem', fontWeight: 700 }}>Campa�as de mensajer�a saliente</h3>
+          <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>Envi� mensajes masivos personalizados a tus contactos de forma autom�tica.</p>
         </div>
         <button onClick={() => { setShowNewModal(true); setCampaignMsg(null); }} className="btn-solid-blue" style={{ margin: 0, width: 'auto', padding: '0.6rem 1rem', fontSize: '0.875rem' }}>
-          + Nueva campaña
+          + Nueva campa�a
         </button>
       </div>
 
@@ -328,8 +328,8 @@ function CampaignPanel({ botId, token, api }) {
 
       {!loading && campaigns.length === 0 && (
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--border)', borderRadius: '12px', padding: '2rem', textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📣</div>
-          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>No tenés campañas todavía. Creá una para empezar a enviar mensajes masivos.</p>
+          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>??</div>
+          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>No ten�s campa�as todav�a. Cre� una para empezar a enviar mensajes masivos.</p>
         </div>
       )}
 
@@ -345,35 +345,35 @@ function CampaignPanel({ botId, token, api }) {
                   </span>
                   {c.use_ai ? (
                     <span style={{ background: 'rgba(124,58,237,0.2)', color: '#a78bfa', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '20px', border: '1px solid rgba(124,58,237,0.4)' }}>
-                      ✨ IA
+                      ? IA
                     </span>
                   ) : null}
                 </div>
                 <div style={{ display: 'flex', gap: '1rem', fontSize: '0.78rem', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
-                  <span>⏳ {c.stats?.pending || 0} pendientes</span>
-                  <span style={{ color: '#3b82f6' }}>📤 {c.stats?.sent || 0} enviados</span>
-                  <span style={{ color: '#10b981' }}>💬 {c.stats?.replied || 0} respondieron</span>
-                  {(c.stats?.opted_out || 0) > 0 && <span style={{ color: '#f87171' }}>🚫 {c.stats.opted_out} opt-out</span>}
+                  <span>? {c.stats?.pending || 0} pendientes</span>
+                  <span style={{ color: '#3b82f6' }}>?? {c.stats?.sent || 0} enviados</span>
+                  <span style={{ color: '#10b981' }}>?? {c.stats?.replied || 0} respondieron</span>
+                  {(c.stats?.opted_out || 0) > 0 && <span style={{ color: '#f87171' }}>?? {c.stats.opted_out} opt-out</span>}
                   <span style={{ opacity: 0.5 }}>delay: {c.delay_seconds}s</span>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <button onClick={() => openLeadsModal(c)} style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}>
-                  👥 Leads
+                  ?? Leads
                 </button>
                 {c.status === 'draft' || c.status === 'paused' ? (
                   <button onClick={() => startCampaign(c.id)} style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.4)', borderRadius: '8px', color: '#10b981', cursor: 'pointer', padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}>
-                    ▶ Iniciar
+                    ? Iniciar
                   </button>
                 ) : null}
                 {c.status === 'running' ? (
                   <button onClick={() => pauseCampaign(c.id)} style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '8px', color: '#f59e0b', cursor: 'pointer', padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}>
-                    ⏸ Pausar
+                    ? Pausar
                   </button>
                 ) : null}
                 {['draft', 'paused', 'completed'].includes(c.status) ? (
                   <button onClick={() => deleteCampaign(c.id)} style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#f87171', cursor: 'pointer', padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}>
-                    🗑
+                    ??
                   </button>
                 ) : null}
               </div>
@@ -384,10 +384,10 @@ function CampaignPanel({ botId, token, api }) {
     </div>
   );
 }
-// ─── BotPreviewChat ───────────────────────────────────────────────────────────
+// --- BotPreviewChat -----------------------------------------------------------
 function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClose }) {
   const [messages, setMessages] = useState([
-    { role: 'model', text: '¡Hola! Soy el asistente virtual. ¿En qué te puedo ayudar? 😊' }
+    { role: 'model', text: '�Hola! Soy el asistente virtual. �En qu� te puedo ayudar? ??' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -414,7 +414,7 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
       const d = await res.json();
       setMessages(prev => [...prev, { role: 'model', text: d.reply || d.error || 'Sin respuesta.' }]);
     } catch {
-      setMessages(prev => [...prev, { role: 'model', text: '❌ Error al conectar con el bot.' }]);
+      setMessages(prev => [...prev, { role: 'model', text: '? Error al conectar con el bot.' }]);
     } finally {
       setLoading(false);
     }
@@ -443,13 +443,13 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
 
         {/* WA Header */}
         <div style={{ background: '#1f2c34', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#aebac1', cursor: 'pointer', fontSize: '1.1rem', padding: 0, lineHeight: 1 }}>←</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#aebac1', cursor: 'pointer', fontSize: '1.1rem', padding: 0, lineHeight: 1 }}>?</button>
           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: '0.9rem', flexShrink: 0 }}>
             {(botName || 'B').charAt(0).toUpperCase()}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ color: '#e9edef', fontWeight: 600, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{botName || 'Mi Asistente'}</div>
-            <div style={{ color: '#aebac1', fontSize: '0.7rem' }}>en línea</div>
+            <div style={{ color: '#aebac1', fontSize: '0.7rem' }}>en l�nea</div>
           </div>
           <div style={{ fontSize: '0.6rem', color: '#aebac1', background: '#2a3942', padding: '2px 7px', borderRadius: '8px', fontWeight: 600 }}>PREVIEW</div>
         </div>
@@ -472,7 +472,7 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
               }}>
                 {m.text}
                 <div style={{ fontSize: '0.6rem', color: '#aebac1', textAlign: 'right', marginTop: '2px' }}>
-                  {now} {m.role === 'user' && '✓✓'}
+                  {now} {m.role === 'user' && '??'}
                 </div>
               </div>
             </div>
@@ -480,7 +480,7 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
           {loading && (
             <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '6px' }}>
               <div style={{ background: '#202c33', borderRadius: '12px 12px 12px 2px', padding: '8px 14px', color: '#aebac1', fontSize: '0.82rem' }}>
-                <span style={{ animation: 'pulse 1s infinite' }}>● ● ●</span>
+                <span style={{ animation: 'pulse 1s infinite' }}>? ? ?</span>
               </div>
             </div>
           )}
@@ -493,7 +493,7 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-            placeholder="Escribí un mensaje..."
+            placeholder="Escrib� un mensaje..."
             style={{
               flex: 1, background: '#2a3942', border: 'none', borderRadius: '20px',
               padding: '8px 14px', color: '#e9edef', fontSize: '0.82rem', outline: 'none',
@@ -504,7 +504,7 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
             background: loading || !input.trim() ? '#2a3942' : '#00a884',
             color: '#fff', cursor: loading || !input.trim() ? 'default' : 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0,
-          }}>➤</button>
+          }}>?</button>
         </div>
 
         {/* Home bar */}
@@ -516,7 +516,7 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
   );
 }
 
-// ─── TourOverlay ─────────────────────────────────────────────────────────────
+// --- TourOverlay -------------------------------------------------------------
 function TourOverlay({ steps, onFinish, setActiveTab }) {
   const [step, setStep] = useState(0);
   const [rect, setRect] = useState(null);
@@ -597,9 +597,9 @@ function TourOverlay({ steps, onFinish, setActiveTab }) {
           </div>
           <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
             <button onClick={finish} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '0.78rem', padding: '0.35rem 0.5rem' }}>Saltar</button>
-            {step > 0 && <button onClick={e => { e.stopPropagation(); goPrev(); }} style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#94a3b8', cursor: 'pointer', fontSize: '0.82rem', padding: '0.35rem 0.7rem' }}>← Atrás</button>}
+            {step > 0 && <button onClick={e => { e.stopPropagation(); goPrev(); }} style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#94a3b8', cursor: 'pointer', fontSize: '0.82rem', padding: '0.35rem 0.7rem' }}>? Atr�s</button>}
             <button onClick={e => { e.stopPropagation(); goNext(); }} style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: '8px', color: '#fff', cursor: 'pointer', fontSize: '0.82rem', padding: '0.35rem 0.85rem', fontWeight: 600 }}>
-              {isLast ? '¡Listo! ✓' : 'Siguiente →'}
+              {isLast ? '�Listo! ?' : 'Siguiente ?'}
             </button>
           </div>
         </div>
@@ -608,9 +608,9 @@ function TourOverlay({ steps, onFinish, setActiveTab }) {
   );
 }
 
-// ─── TurnosPanel ─────────────────────────────────────────────────────────────
-const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-const DAYS_SHORT = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+// --- TurnosPanel -------------------------------------------------------------
+const DAYS = ['Lunes','Martes','Mi�rcoles','Jueves','Viernes','S�bado','Domingo'];
+const DAYS_SHORT = ['Lun','Mar','Mi�','Jue','Vie','S�b','Dom'];
 const COLORS = ['#7c3aed','#3b82f6','#10b981','#f59e0b','#ef4444','#ec4899','#06b6d4'];
 
 function getWeekDays(offset) {
@@ -721,13 +721,13 @@ function TurnosPanel({ botId, token, api }) {
   }
 
   async function deleteSpec(sid) {
-    if (!confirm('¿Eliminar este servicio y todos sus turnos?')) return;
+    if (!confirm('�Eliminar este servicio y todos sus turnos?')) return;
     await authFetch(`${api}/api/bots/${botId}/specialties/${sid}`, { method:'DELETE' }, token);
     loadSpecs(); loadAppointments();
   }
 
   async function deleteAppt(aid) {
-    if (!confirm('¿Eliminar este turno definitivamente? Esta acción no se puede deshacer.')) return;
+    if (!confirm('�Eliminar este turno definitivamente? Esta acci�n no se puede deshacer.')) return;
     await authFetch(`${api}/api/bots/${botId}/appointments/${aid}`, { method:'DELETE' }, token);
     setApptDetail(null); loadAppointments();
   }
@@ -745,9 +745,9 @@ function TurnosPanel({ botId, token, api }) {
       await authFetch(`${api}/api/bots/${botId}/specialties/${sid}/schedule`, {
         method:'PUT', body: JSON.stringify({ slots })
       }, token);
-      setScheduleMsg({ ok:true, text:'✅ Horarios guardados.' });
+      setScheduleMsg({ ok:true, text:'? Horarios guardados.' });
       loadSpecs();
-    } catch { setScheduleMsg({ ok:false, text:'❌ Error al guardar.' }); }
+    } catch { setScheduleMsg({ ok:false, text:'? Error al guardar.' }); }
     finally { setSavingSchedule(false); }
   }
 
@@ -794,7 +794,7 @@ function TurnosPanel({ botId, token, api }) {
 
   async function createAppointment() {
     if (!newAppt.specialty_id || !newAppt.client_phone || !newAppt.date || !newAppt.time) {
-      setApptMsg({ ok:false, text:'Completá todos los campos obligatorios.' }); return;
+      setApptMsg({ ok:false, text:'Complet� todos los campos obligatorios.' }); return;
     }
     setSaving(true); setApptMsg(null);
     try {
@@ -825,7 +825,7 @@ function TurnosPanel({ botId, token, api }) {
           <div style={{ background:'var(--card-bg)', border:'1px solid var(--border)', borderRadius:'16px', padding:'1.5rem', width:'100%', maxWidth:'420px', display:'flex', flexDirection:'column', gap:'1rem' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <span style={{ fontWeight:700, fontSize:'1rem' }}>Editar servicio</span>
-              <button onClick={() => setEditingSpec(null)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.3rem 0.7rem' }}>✕</button>
+              <button onClick={() => setEditingSpec(null)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.3rem 0.7rem' }}>?</button>
             </div>
             <div>
               <label style={labelStyle}>Nombre *</label>
@@ -833,11 +833,11 @@ function TurnosPanel({ botId, token, api }) {
             </div>
             <div style={{ display:'flex', gap:'1rem' }}>
               <div style={{ flex:1 }}>
-                <label style={labelStyle}>Duración del turno (min)</label>
+                <label style={labelStyle}>Duraci�n del turno (min)</label>
                 <input style={inputStyle} type="number" min="5" max="480" value={editingSpec.duration_minutes} onChange={e => setEditingSpec(p=>({...p,duration_minutes:Number(e.target.value)}))} />
               </div>
               <div style={{ flex:1 }}>
-                <label style={labelStyle}>Lugares simultáneos</label>
+                <label style={labelStyle}>Lugares simult�neos</label>
                 <input style={inputStyle} type="number" min="1" max="100" value={editingSpec.capacity} onChange={e => setEditingSpec(p=>({...p,capacity:Number(e.target.value)}))} />
               </div>
               <div>
@@ -852,7 +852,7 @@ function TurnosPanel({ botId, token, api }) {
             </div>
             <div style={{ background:'rgba(124,58,237,0.08)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'10px', padding:'0.75rem 1rem', display:'flex', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
               <div>
-                <div style={{ fontWeight:600, fontSize:'0.875rem' }}>🔔 Recordatorio automático</div>
+                <div style={{ fontWeight:600, fontSize:'0.875rem' }}>?? Recordatorio autom�tico</div>
                 <div style={{ fontSize:'0.75rem', color:'var(--text-secondary)' }}>Avisa al cliente por WhatsApp antes del turno</div>
               </div>
               <label style={{ position:'relative', display:'inline-block', width:'44px', height:'24px', flexShrink:0 }}>
@@ -878,7 +878,7 @@ function TurnosPanel({ botId, token, api }) {
                       <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)' }}>h antes</span>
                       {editingSpec.reminder_hours.length > 1 && (
                         <button onClick={() => setEditingSpec(p => ({ ...p, reminder_hours: p.reminder_hours.filter((_, j) => j !== i) }))}
-                          style={{ background:'none', border:'none', color:'var(--text-secondary)', cursor:'pointer', fontSize:'1rem', padding:'0 2px', lineHeight:1, opacity:0.5 }}>×</button>
+                          style={{ background:'none', border:'none', color:'var(--text-secondary)', cursor:'pointer', fontSize:'1rem', padding:'0 2px', lineHeight:1, opacity:0.5 }}>�</button>
                       )}
                     </div>
                   ))}
@@ -900,19 +900,19 @@ function TurnosPanel({ botId, token, api }) {
           <div style={{ background:'var(--card-bg)', border:'1px solid var(--border)', borderRadius:'16px', padding:'1.5rem', width:'100%', maxWidth:'420px', display:'flex', flexDirection:'column', gap:'1rem' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <span style={{ fontWeight:700, fontSize:'1rem' }}>Nuevo servicio</span>
-              <button onClick={() => setShowNewSpec(false)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.3rem 0.7rem' }}>✕</button>
+              <button onClick={() => setShowNewSpec(false)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.3rem 0.7rem' }}>?</button>
             </div>
             <div>
               <label style={labelStyle}>Nombre *</label>
-              <input style={inputStyle} value={newSpec.name} onChange={e => setNewSpec(p=>({...p,name:e.target.value}))} placeholder="Ej: Corte de cabello, Consulta médica, Asesoría..." />
+              <input style={inputStyle} value={newSpec.name} onChange={e => setNewSpec(p=>({...p,name:e.target.value}))} placeholder="Ej: Corte de cabello, Consulta m�dica, Asesor�a..." />
             </div>
             <div style={{ display:'flex', gap:'1rem' }}>
               <div style={{ flex:1 }}>
-                <label style={labelStyle}>Duración del turno (min)</label>
+                <label style={labelStyle}>Duraci�n del turno (min)</label>
                 <input style={{...inputStyle}} type="number" min="5" max="480" value={newSpec.duration_minutes} onChange={e => setNewSpec(p=>({...p,duration_minutes:Number(e.target.value)}))} />
               </div>
               <div style={{ flex:1 }}>
-                <label style={labelStyle}>Lugares simultáneos</label>
+                <label style={labelStyle}>Lugares simult�neos</label>
                 <input style={{...inputStyle}} type="number" min="1" max="100" value={newSpec.capacity} onChange={e => setNewSpec(p=>({...p,capacity:Number(e.target.value)}))} />
               </div>
               <div>
@@ -927,7 +927,7 @@ function TurnosPanel({ botId, token, api }) {
             </div>
             <div style={{ background:'rgba(124,58,237,0.08)', border:'1px solid rgba(124,58,237,0.2)', borderRadius:'10px', padding:'0.75rem 1rem', display:'flex', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
               <div>
-                <div style={{ fontWeight:600, fontSize:'0.875rem' }}>🔔 Recordatorio automático</div>
+                <div style={{ fontWeight:600, fontSize:'0.875rem' }}>?? Recordatorio autom�tico</div>
                 <div style={{ fontSize:'0.75rem', color:'var(--text-secondary)' }}>Avisa al cliente por WhatsApp antes del turno</div>
               </div>
               <label style={{ position:'relative', display:'inline-block', width:'44px', height:'24px', flexShrink:0 }}>
@@ -953,7 +953,7 @@ function TurnosPanel({ botId, token, api }) {
                       <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)' }}>h antes</span>
                       {newSpec.reminder_hours.length > 1 && (
                         <button onClick={() => setNewSpec(p => ({ ...p, reminder_hours: p.reminder_hours.filter((_, j) => j !== i) }))}
-                          style={{ background:'none', border:'none', color:'var(--text-secondary)', cursor:'pointer', fontSize:'1rem', padding:'0 2px', lineHeight:1, opacity:0.5 }}>×</button>
+                          style={{ background:'none', border:'none', color:'var(--text-secondary)', cursor:'pointer', fontSize:'1rem', padding:'0 2px', lineHeight:1, opacity:0.5 }}>�</button>
                       )}
                     </div>
                   ))}
@@ -976,12 +976,12 @@ function TurnosPanel({ botId, token, api }) {
           <div style={{ background:'var(--card-bg)', border:'1px solid var(--border)', borderRadius:'16px', padding:'1.5rem', width:'100%', maxWidth:'460px', display:'flex', flexDirection:'column', gap:'1rem' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <span style={{ fontWeight:700, fontSize:'1rem' }}>Nuevo turno manual</span>
-              <button onClick={() => { setShowNewAppt(false); setApptMsg(null); }} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.3rem 0.7rem' }}>✕</button>
+              <button onClick={() => { setShowNewAppt(false); setApptMsg(null); }} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.3rem 0.7rem' }}>?</button>
             </div>
             <div>
               <label style={labelStyle}>Servicio *</label>
               <select style={inputStyle} value={newAppt.specialty_id} onChange={e => setNewAppt(p=>({...p,specialty_id:e.target.value,time:''}))}>
-                <option value="">— Seleccioná —</option>
+                <option value="">� Seleccion� �</option>
                 {specs.map(s => <option key={s.id} value={s.id}>{s.name} ({s.duration_minutes}min)</option>)}
               </select>
             </div>
@@ -994,7 +994,7 @@ function TurnosPanel({ botId, token, api }) {
                 <label style={labelStyle}>Horario *</label>
                 {availableSlots.length > 0 ? (
                   <select style={inputStyle} value={newAppt.time} onChange={e => setNewAppt(p=>({...p,time:e.target.value}))}>
-                    <option value="">— Seleccioná —</option>
+                    <option value="">� Seleccion� �</option>
                     {availableSlots.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 ) : (
@@ -1003,16 +1003,16 @@ function TurnosPanel({ botId, token, api }) {
               </div>
             </div>
             <div>
-              <label style={labelStyle}>Teléfono WhatsApp * <span style={{ opacity:0.6 }}>(con código de país, ej: 5491123456789)</span></label>
+              <label style={labelStyle}>Tel�fono WhatsApp * <span style={{ opacity:0.6 }}>(con c�digo de pa�s, ej: 5491123456789)</span></label>
               <input style={inputStyle} value={newAppt.client_phone} onChange={e => setNewAppt(p=>({...p,client_phone:e.target.value}))} placeholder="5491123456789" />
             </div>
             <div>
               <label style={labelStyle}>Nombre del cliente</label>
-              <input style={inputStyle} value={newAppt.client_name} onChange={e => setNewAppt(p=>({...p,client_name:e.target.value}))} placeholder="Ej: María González" />
+              <input style={inputStyle} value={newAppt.client_name} onChange={e => setNewAppt(p=>({...p,client_name:e.target.value}))} placeholder="Ej: Mar�a Gonz�lez" />
             </div>
             <div>
               <label style={labelStyle}>Notas</label>
-              <input style={inputStyle} value={newAppt.notes} onChange={e => setNewAppt(p=>({...p,notes:e.target.value}))} placeholder="Ej: Primera vez, trae documentación, requiere confirmación..." />
+              <input style={inputStyle} value={newAppt.notes} onChange={e => setNewAppt(p=>({...p,notes:e.target.value}))} placeholder="Ej: Primera vez, trae documentaci�n, requiere confirmaci�n..." />
             </div>
             {apptMsg && <p style={{ margin:0, fontSize:'0.875rem', color:apptMsg.ok?'#10b981':'#f87171' }}>{apptMsg.text}</p>}
             <div style={{ display:'flex', gap:'0.75rem', justifyContent:'flex-end' }}>
@@ -1038,18 +1038,18 @@ function TurnosPanel({ botId, token, api }) {
                 {spec && <div style={{ width:'10px', height:'10px', borderRadius:'50%', background:spec.color, flexShrink:0 }} />}
                 <div style={{ flex:1 }}>
                   <div style={{ fontWeight:700, fontSize:'1rem' }}>{apptDetail.client_name || 'Sin nombre'}</div>
-                  <div style={{ fontSize:'0.75rem', color:'var(--text-secondary)' }}>{spec?.name} · {apptDetail.date} {apptDetail.time}</div>
+                  <div style={{ fontSize:'0.75rem', color:'var(--text-secondary)' }}>{spec?.name} � {apptDetail.date} {apptDetail.time}</div>
                 </div>
                 <span style={{ fontSize:'0.72rem', fontWeight:700, padding:'3px 10px', borderRadius:'20px', background:`${statusColors[apptDetail.status]}20`, color:statusColors[apptDetail.status], border:`1px solid ${statusColors[apptDetail.status]}50` }}>
                   {statusLabels[apptDetail.status]}
                 </span>
-                <button onClick={() => setApptDetail(null)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.3rem 0.6rem', flexShrink:0 }}>✕</button>
+                <button onClick={() => setApptDetail(null)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.3rem 0.6rem', flexShrink:0 }}>?</button>
               </div>
               {/* Info */}
               <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem' }}>
                 {apptDetail.client_phone && (
                   <div style={{ display:'flex', alignItems:'center', gap:'0.6rem', padding:'0.6rem 0.85rem', background:'rgba(255,255,255,0.04)', borderRadius:'8px', border:'1px solid var(--border)' }}>
-                    <span style={{ fontSize:'1rem' }}>📱</span>
+                    <span style={{ fontSize:'1rem' }}>??</span>
                     <span style={{ fontSize:'0.875rem', flex:1 }}>{apptDetail.client_phone}</span>
                     <a href={`https://wa.me/${apptDetail.client_phone.replace(/\D/g,'')}`} target="_blank" rel="noreferrer"
                       style={{ fontSize:'0.72rem', background:'rgba(37,211,102,0.15)', border:'1px solid rgba(37,211,102,0.3)', borderRadius:'6px', color:'#25d366', padding:'2px 8px', textDecoration:'none', fontWeight:600 }}>
@@ -1059,12 +1059,12 @@ function TurnosPanel({ botId, token, api }) {
                 )}
                 {apptDetail.notes && (
                   <div style={{ display:'flex', gap:'0.6rem', padding:'0.6rem 0.85rem', background:'rgba(255,255,255,0.04)', borderRadius:'8px', border:'1px solid var(--border)' }}>
-                    <span style={{ fontSize:'1rem', flexShrink:0 }}>📝</span>
+                    <span style={{ fontSize:'1rem', flexShrink:0 }}>??</span>
                     <span style={{ fontSize:'0.875rem', color:'var(--text-secondary)', lineHeight:1.4 }}>{apptDetail.notes}</span>
                   </div>
                 )}
                 {!apptDetail.client_phone && !apptDetail.notes && (
-                  <p style={{ margin:0, fontSize:'0.8rem', color:'var(--text-secondary)', textAlign:'center' }}>Sin información adicional</p>
+                  <p style={{ margin:0, fontSize:'0.8rem', color:'var(--text-secondary)', textAlign:'center' }}>Sin informaci�n adicional</p>
                 )}
               </div>
               {/* Acciones */}
@@ -1072,23 +1072,23 @@ function TurnosPanel({ botId, token, api }) {
                 <div style={{ display:'flex', gap:'0.6rem' }}>
                   <button onClick={() => { updateApptStatus(apptDetail.id,'completed'); setApptDetail(p => ({...p, status:'completed'})); }}
                     style={{ flex:1, background:'rgba(59,130,246,0.15)', border:'1px solid rgba(59,130,246,0.4)', borderRadius:'8px', color:'#60a5fa', cursor:'pointer', padding:'0.55rem', fontWeight:600, fontSize:'0.85rem' }}>
-                    ✓ Completado
+                    ? Completado
                   </button>
                   <button onClick={() => { updateApptStatus(apptDetail.id,'cancelled'); setApptDetail(p => ({...p, status:'cancelled'})); }}
                     style={{ flex:1, background:'rgba(239,68,68,0.12)', border:'1px solid rgba(239,68,68,0.35)', borderRadius:'8px', color:'#f87171', cursor:'pointer', padding:'0.55rem', fontWeight:600, fontSize:'0.85rem' }}>
-                    ✕ Cancelar
+                    ? Cancelar
                   </button>
                 </div>
               )}
               {apptDetail.status === 'cancelled' && (
                 <button onClick={() => { updateApptStatus(apptDetail.id,'confirmed'); setApptDetail(p => ({...p, status:'confirmed'})); }}
                   style={{ width:'100%', background:'rgba(16,185,129,0.15)', border:'1px solid rgba(16,185,129,0.35)', borderRadius:'8px', color:'#34d399', cursor:'pointer', padding:'0.55rem', fontWeight:600, fontSize:'0.85rem' }}>
-                  ↩ Restaurar turno
+                  ? Restaurar turno
                 </button>
               )}
               <button onClick={() => deleteAppt(apptDetail.id)}
                 style={{ width:'100%', marginTop:'0.5rem', background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'8px', color:'#f87171', cursor:'pointer', padding:'0.45rem', fontWeight:600, fontSize:'0.8rem' }}>
-                🗑 Eliminar turno
+                ?? Eliminar turno
               </button>
             </div>
           </div>
@@ -1098,7 +1098,7 @@ function TurnosPanel({ botId, token, api }) {
       {/* Header y tabs de vista */}
       <div style={{ display:'flex', alignItems:'center', gap:'1rem', marginBottom:'1.25rem', flexWrap:'wrap' }}>
         <div style={{ display:'flex', gap:'0.4rem' }}>
-          {[{id:'agenda',label:'📅 Agenda'},{id:'especialidades',label:'📋 Servicios'}].map(t => (
+          {[{id:'agenda',label:'?? Agenda'},{id:'especialidades',label:'?? Servicios'}].map(t => (
             <button key={t.id} onClick={() => setView(t.id)}
               style={{ padding:'0.4rem 0.9rem', borderRadius:'20px', border:'1px solid var(--border)', background:view===t.id?'linear-gradient(135deg,#7c3aed,#3b82f6)':'rgba(255,255,255,0.05)', color:view===t.id?'#fff':'var(--text-secondary)', cursor:'pointer', fontSize:'0.85rem', fontWeight:view===t.id?700:400, transition:'0.15s' }}>
               {t.label}
@@ -1110,7 +1110,7 @@ function TurnosPanel({ botId, token, api }) {
         </button>
       </div>
 
-      {/* ── Vista: Horario tipo planilla ── */}
+      {/* -- Vista: Horario tipo planilla -- */}
       {view === 'agenda' && (() => {
         const weekDays = getWeekDays(weekOffset);
         const todayStr = new Date().toISOString().slice(0,10);
@@ -1133,7 +1133,7 @@ function TurnosPanel({ botId, token, api }) {
             {/* Cards de servicios */}
             {specs.length === 0 ? (
               <div style={{ background:'rgba(255,255,255,0.02)', border:'1px dashed var(--border)', borderRadius:'12px', padding:'2rem', textAlign:'center', color:'var(--text-secondary)', fontSize:'0.85rem', marginBottom:'1rem' }}>
-                No hay servicios configurados. Creá uno en <strong>📋 Servicios</strong>.
+                No hay servicios configurados. Cre� uno en <strong>?? Servicios</strong>.
               </div>
             ) : (
               <div style={{ display:'flex', gap:'0.4rem', flexWrap:'wrap', marginBottom:'1rem' }}>
@@ -1146,7 +1146,7 @@ function TurnosPanel({ botId, token, api }) {
                       <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:spec.color, flexShrink:0 }} />
                       <span style={{ fontWeight:600, fontSize:'0.82rem', color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)', whiteSpace:'nowrap' }}>{spec.name}</span>
                       {confirmed > 0 && <span style={{ fontSize:'0.7rem', fontWeight:700, background:spec.color, color:'#fff', borderRadius:'10px', padding:'0 5px', lineHeight:'1.4' }}>{confirmed}</span>}
-                      <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)', marginLeft:'1px' }}>{isActive ? '▲' : '▼'}</span>
+                      <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)', marginLeft:'1px' }}>{isActive ? '?' : '?'}</span>
                     </div>
                   );
                 })}
@@ -1160,7 +1160,7 @@ function TurnosPanel({ botId, token, api }) {
                 {/* Nav semana */}
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0.75rem 1rem', borderBottom:'1px solid var(--border)', background:'rgba(255,255,255,0.02)' }}>
                   <button onClick={() => setWeekOffset(w => w-1)}
-                    style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.25rem 0.6rem', fontSize:'1rem' }}>‹</button>
+                    style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.25rem 0.6rem', fontSize:'1rem' }}>�</button>
                   <div style={{ display:'flex', alignItems:'center', gap:'0.75rem' }}>
                     <div style={{ width:'10px', height:'10px', borderRadius:'50%', background:activeSpec.color }} />
                     <span style={{ fontWeight:700, fontSize:'0.9rem' }}>{activeSpec.name}</span>
@@ -1171,7 +1171,7 @@ function TurnosPanel({ botId, token, api }) {
                   <div style={{ display:'flex', gap:'0.4rem' }}>
                     {weekOffset !== 0 && <button onClick={() => setWeekOffset(0)} style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.25rem 0.55rem', fontSize:'0.72rem' }}>Hoy</button>}
                     <button onClick={() => setWeekOffset(w => w+1)}
-                      style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.25rem 0.6rem', fontSize:'1rem' }}>›</button>
+                      style={{ background:'none', border:'1px solid var(--border)', borderRadius:'8px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.25rem 0.6rem', fontSize:'1rem' }}>�</button>
                   </div>
                 </div>
 
@@ -1226,16 +1226,16 @@ function TurnosPanel({ botId, token, api }) {
                                     borderRadius:'6px', padding:'0.25rem 0.4rem', cursor:'pointer', minHeight:'36px',
                                   }}>
                                     <div style={{ fontSize:'0.7rem', fontWeight:700, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', color: appt.status==='cancelled'?'#f87171':appt.status==='completed'?'#60a5fa':'var(--text-primary)' }}>
-                                      {appt.client_name || '—'}
+                                      {appt.client_name || '�'}
                                     </div>
                                     {appt.client_phone && (
                                       <div style={{ fontSize:'0.62rem', color:'var(--text-secondary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginTop:'1px' }}>
-                                        📱 {appt.client_phone}
+                                        ?? {appt.client_phone}
                                       </div>
                                     )}
                                     {appt.notes && (
                                       <div style={{ fontSize:'0.62rem', color:'var(--text-secondary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', marginTop:'1px', opacity:0.8 }}>
-                                        📝 {appt.notes}
+                                        ?? {appt.notes}
                                       </div>
                                     )}
                                   </div>
@@ -1265,7 +1265,7 @@ function TurnosPanel({ botId, token, api }) {
                       <div style={{ width:'10px', height:'10px', borderRadius:'2px', background:l.color }} />{l.label}
                     </div>
                   ))}
-                  <div style={{ marginLeft:'auto', fontSize:'0.72rem', color:'var(--text-secondary)' }}>Hacé clic en un casillero vacío para crear un turno</div>
+                  <div style={{ marginLeft:'auto', fontSize:'0.72rem', color:'var(--text-secondary)' }}>Hac� clic en un casillero vac�o para crear un turno</div>
                 </div>
               </div>
             )}
@@ -1273,13 +1273,13 @@ function TurnosPanel({ botId, token, api }) {
         );
       })()}
 
-      {/* ── Vista: Servicios + Horarios ── */}
+      {/* -- Vista: Servicios + Horarios -- */}
       {view === 'especialidades' && (
         <>
           {specs.length === 0 && (
             <div style={{ background:'rgba(255,255,255,0.02)', border:'1px dashed var(--border)', borderRadius:'12px', padding:'2.5rem', textAlign:'center' }}>
-              <div style={{ fontSize:'2rem', marginBottom:'0.5rem' }}>📋</div>
-              <p style={{ color:'var(--text-secondary)', margin:0 }}>Todavía no configuraste ningún servicio. Creá uno arriba para que el asistente pueda gestionar turnos automáticamente.</p>
+              <div style={{ fontSize:'2rem', marginBottom:'0.5rem' }}>??</div>
+              <p style={{ color:'var(--text-secondary)', margin:0 }}>Todav�a no configuraste ning�n servicio. Cre� uno arriba para que el asistente pueda gestionar turnos autom�ticamente.</p>
             </div>
           )}
           <div style={{ display:'flex', flexDirection:'column', gap:'1.25rem' }}>
@@ -1290,11 +1290,11 @@ function TurnosPanel({ botId, token, api }) {
                   <div style={{ width:'12px', height:'12px', borderRadius:'50%', background:spec.color, flexShrink:0 }} />
                   <span style={{ fontWeight:700, flex:1 }}>{spec.name}</span>
                   <span style={{ fontSize:'0.78rem', color:'var(--text-secondary)', background:'rgba(255,255,255,0.06)', border:'1px solid var(--border)', borderRadius:'20px', padding:'2px 8px' }}>
-                    {spec.duration_minutes} min / turno{spec.capacity > 1 ? ` · ${spec.capacity} lugares` : ''}
+                    {spec.duration_minutes} min / turno{spec.capacity > 1 ? ` � ${spec.capacity} lugares` : ''}
                   </span>
                   {spec.reminder_enabled ? (
                     <span style={{ fontSize:'0.72rem', color:'#10b981', background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'20px', padding:'2px 8px' }}>
-                      🔔 {(Array.isArray(spec.reminder_hours) ? spec.reminder_hours : [spec.reminder_hours]).join('h / ')}h antes
+                      ?? {(Array.isArray(spec.reminder_hours) ? spec.reminder_hours : [spec.reminder_hours]).join('h / ')}h antes
                     </span>
                   ) : (
                     <span style={{ fontSize:'0.72rem', color:'var(--text-secondary)', opacity:0.5 }}>Sin recordatorio</span>
@@ -1321,7 +1321,7 @@ function TurnosPanel({ botId, token, api }) {
 
                       return (
                         <div key={i} style={{ display:'flex', gap:'0.6rem', alignItems:'flex-start' }}>
-                          {/* Checkbox + nombre día */}
+                          {/* Checkbox + nombre d�a */}
                           <label style={{ display:'flex', alignItems:'center', gap:'0.4rem', cursor:'pointer', minWidth:'105px', paddingTop:'0.35rem' }}>
                             <input type="checkbox" checked={!!day.active} onChange={e => toggleDay(spec.id, i, e.target.checked)}
                               style={{ accentColor:spec.color, width:'15px', height:'15px', flexShrink:0 }} />
@@ -1336,23 +1336,23 @@ function TurnosPanel({ botId, token, api }) {
                                 <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)' }}>a</span>
                                 {timeInput(!day.active, win.end_time, e => updateWindow(spec.id, i, wi, 'end_time', e.target.value))}
 
-                                {/* Botón + (solo en primer turno si hay 1 ventana) */}
+                                {/* Bot�n + (solo en primer turno si hay 1 ventana) */}
                                 {day.active && wi === 0 && day.windows.length === 1 && (
                                   <button onClick={() => addWindow(spec.id, i)}
                                     title="Agregar horario cortado"
                                     style={{ background:'rgba(255,255,255,0.07)', border:'1px solid var(--border)', borderRadius:'6px', color:'var(--text-secondary)', cursor:'pointer', padding:'0.25rem 0.55rem', fontSize:'0.8rem', fontWeight:700, lineHeight:1 }}>+</button>
                                 )}
 
-                                {/* Botón − (solo en la segunda ventana) */}
+                                {/* Bot�n - (solo en la segunda ventana) */}
                                 {day.active && wi > 0 && (
                                   <button onClick={() => removeWindow(spec.id, i, wi)}
                                     title="Quitar este horario"
-                                    style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'6px', color:'#f87171', cursor:'pointer', padding:'0.25rem 0.55rem', fontSize:'0.8rem', fontWeight:700, lineHeight:1 }}>−</button>
+                                    style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.3)', borderRadius:'6px', color:'#f87171', cursor:'pointer', padding:'0.25rem 0.55rem', fontSize:'0.8rem', fontWeight:700, lineHeight:1 }}>-</button>
                                 )}
 
-                                {/* Contador de turnos (solo en última ventana) */}
+                                {/* Contador de turnos (solo en �ltima ventana) */}
                                 {day.active && wi === day.windows.length - 1 && totalSlots > 0 && (
-                                  <span style={{ fontSize:'0.71rem', color:'var(--text-secondary)', opacity:0.7 }}>{totalSlots} turnos/día</span>
+                                  <span style={{ fontSize:'0.71rem', color:'var(--text-secondary)', opacity:0.7 }}>{totalSlots} turnos/d�a</span>
                                 )}
                               </div>
                             ))}
@@ -1378,7 +1378,7 @@ function TurnosPanel({ botId, token, api }) {
   );
 }
 
-// ─── WidgetPanel ──────────────────────────────────────────────────────────────
+// --- WidgetPanel --------------------------------------------------------------
 function WidgetPanel({ botId, token, api }) {
   const [cfg, setCfg] = useState({ enabled: false, phone: '', welcomeMessage: '', buttonText: '' });
   const [loading, setLoading] = useState(true);
@@ -1398,9 +1398,9 @@ function WidgetPanel({ botId, token, api }) {
     try {
       const r = await authFetch(`${api}/api/bots/${botId}/widget-config`, { method: 'POST', body: JSON.stringify(cfg) }, token);
       const d = await r.json();
-      if (d.ok) setMsg({ ok: true, text: 'Configuración guardada.' });
+      if (d.ok) setMsg({ ok: true, text: 'Configuraci�n guardada.' });
       else setMsg({ ok: false, text: d.error || 'Error al guardar.' });
-    } catch { setMsg({ ok: false, text: 'Error de conexión.' }); }
+    } catch { setMsg({ ok: false, text: 'Error de conexi�n.' }); }
     finally { setSaving(false); }
   }
 
@@ -1413,14 +1413,14 @@ function WidgetPanel({ botId, token, api }) {
     <div style={{ padding: '0.5rem 0' }}>
       <h2 style={{ fontSize: '1.2rem', fontWeight: 700, margin: '0 0 0.4rem' }}>Widget de WhatsApp</h2>
       <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: '0 0 1.75rem' }}>
-        Aparece como botón flotante en tu tienda Shopify. Tus clientes hacen clic y te escriben directo por WhatsApp.
+        Aparece como bot�n flotante en tu tienda Shopify. Tus clientes hacen clic y te escriben directo por WhatsApp.
       </p>
 
       {/* Enable toggle */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem 1.25rem', marginBottom: '1.25rem' }}>
         <div>
           <div style={{ fontWeight: 600, marginBottom: '0.2rem' }}>Activar widget en la tienda</div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Muestra el botón de WhatsApp en todas las páginas de tu tienda</div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Muestra el bot�n de WhatsApp en todas las p�ginas de tu tienda</div>
         </div>
         <label style={{ position: 'relative', display: 'inline-block', width: '48px', height: '26px', flexShrink: 0 }}>
           <input type="checkbox" checked={cfg.enabled} onChange={e => setCfg(c => ({ ...c, enabled: e.target.checked }))} style={{ opacity: 0, width: 0, height: 0 }} />
@@ -1432,9 +1432,9 @@ function WidgetPanel({ botId, token, api }) {
 
       <div style={{ display: 'grid', gap: '1rem', marginBottom: '1.5rem' }}>
         <div>
-          <label style={labelStyle}>Número de WhatsApp <span style={{ color: '#ef4444' }}>*</span></label>
+          <label style={labelStyle}>N�mero de WhatsApp <span style={{ color: '#ef4444' }}>*</span></label>
           <input style={inputStyle} placeholder="5491123456789 (sin + ni espacios)" value={cfg.phone} onChange={e => setCfg(c => ({ ...c, phone: e.target.value }))} />
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem' }}>Código de país + número. Ej: 5491123456789 para Argentina</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.3rem' }}>C�digo de pa�s + n�mero. Ej: 5491123456789 para Argentina</div>
         </div>
         <div>
           <label style={labelStyle}>Mensaje de bienvenida</label>
@@ -1443,20 +1443,20 @@ function WidgetPanel({ botId, token, api }) {
         </div>
         <div>
           <label style={labelStyle}>Texto del tooltip</label>
-          <input style={inputStyle} placeholder="Chateá con nosotros" value={cfg.buttonText} onChange={e => setCfg(c => ({ ...c, buttonText: e.target.value }))} />
+          <input style={inputStyle} placeholder="Chate� con nosotros" value={cfg.buttonText} onChange={e => setCfg(c => ({ ...c, buttonText: e.target.value }))} />
         </div>
       </div>
 
       {/* Preview */}
       <div style={{ background: 'var(--input-bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Vista previa del botón</div>
+        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>Vista previa del bot�n</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: cfg.enabled ? '#25d366' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: cfg.enabled ? '0 4px 20px rgba(37,211,102,0.4)' : 'none', flexShrink: 0, transition: 'all 0.2s' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
           </div>
           <div>
-            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{cfg.buttonText || 'Chateá con nosotros'}</div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{cfg.enabled ? '✅ Visible en tu tienda' : '⛔ Desactivado'}</div>
+            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{cfg.buttonText || 'Chate� con nosotros'}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{cfg.enabled ? '? Visible en tu tienda' : '? Desactivado'}</div>
           </div>
         </div>
       </div>
@@ -1468,13 +1468,13 @@ function WidgetPanel({ botId, token, api }) {
       )}
 
       <button onClick={save} disabled={saving} style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: '10px', color: '#fff', cursor: saving ? 'wait' : 'pointer', padding: '0.75rem 2rem', fontWeight: 700, fontSize: '0.95rem', opacity: saving ? 0.7 : 1 }}>
-        {saving ? 'Guardando...' : 'Guardar configuración'}
+        {saving ? 'Guardando...' : 'Guardar configuraci�n'}
       </button>
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------------------
 
 export default function MerchantPanel() {
   const nav = useNavigate();
@@ -1523,13 +1523,13 @@ export default function MerchantPanel() {
     // Handle OAuth callback params
     const params = new URLSearchParams(window.location.search);
     if (params.get('meta_ok')) {
-      const pageName = params.get('page_name') || 'tu página';
-      setMetaMsg({ ok: true, text: `✅ ¡Conectado con ${pageName}! Instagram y Facebook ya están activos.` });
+      const pageName = params.get('page_name') || 'tu p�gina';
+      setMetaMsg({ ok: true, text: `? �Conectado con ${pageName}! Instagram y Facebook ya est�n activos.` });
       window.history.replaceState({}, '', '/mi-panel');
     } else if (params.get('meta_error')) {
       const err = params.get('meta_error');
-      const msgs = { acceso_denegado: 'Cancelaste el acceso.', sesion_expirada: 'La sesión expiró, intentá de nuevo.', sin_paginas: 'No se encontraron páginas de Facebook en tu cuenta.', error_interno: 'Error interno, contactá soporte.' };
-      setMetaMsg({ ok: false, text: `❌ ${msgs[err] || err}` });
+      const msgs = { acceso_denegado: 'Cancelaste el acceso.', sesion_expirada: 'La sesi�n expir�, intent� de nuevo.', sin_paginas: 'No se encontraron p�ginas de Facebook en tu cuenta.', error_interno: 'Error interno, contact� soporte.' };
+      setMetaMsg({ ok: false, text: `? ${msgs[err] || err}` });
       window.history.replaceState({}, '', '/mi-panel');
     }
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
@@ -1560,9 +1560,9 @@ export default function MerchantPanel() {
   }
 
   async function changePassword() {
-    if (!pwForm.current || !pwForm.next || !pwForm.confirm) { setPwMsg({ ok: false, text: 'Completá todos los campos.' }); return; }
-    if (pwForm.next !== pwForm.confirm) { setPwMsg({ ok: false, text: 'Las contraseñas nuevas no coinciden.' }); return; }
-    if (pwForm.next.length < 6) { setPwMsg({ ok: false, text: 'Mínimo 6 caracteres.' }); return; }
+    if (!pwForm.current || !pwForm.next || !pwForm.confirm) { setPwMsg({ ok: false, text: 'Complet� todos los campos.' }); return; }
+    if (pwForm.next !== pwForm.confirm) { setPwMsg({ ok: false, text: 'Las contrase�as nuevas no coinciden.' }); return; }
+    if (pwForm.next.length < 6) { setPwMsg({ ok: false, text: 'M�nimo 6 caracteres.' }); return; }
     setPwSaving(true); setPwMsg(null);
     try {
       const res = await authFetch(`${API}/api/merchant/password`, {
@@ -1571,10 +1571,10 @@ export default function MerchantPanel() {
       }, token);
       const data = await res.json();
       if (res.ok) {
-        setPwMsg({ ok: true, text: 'Contraseña actualizada.' });
+        setPwMsg({ ok: true, text: 'Contrase�a actualizada.' });
         setPwForm({ current: '', next: '', confirm: '' });
       } else {
-        setPwMsg({ ok: false, text: data.error || 'Error al cambiar la contraseña.' });
+        setPwMsg({ ok: false, text: data.error || 'Error al cambiar la contrase�a.' });
       }
     } catch {
       setPwMsg({ ok: false, text: 'Error al conectar con el servidor.' });
@@ -1612,10 +1612,10 @@ export default function MerchantPanel() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        setMetaMsg({ ok: false, text: `❌ ${data.error || 'Error al iniciar conexión.'}` });
+        setMetaMsg({ ok: false, text: `? ${data.error || 'Error al iniciar conexi�n.'}` });
       }
     } catch {
-      setMetaMsg({ ok: false, text: '❌ Error de conexión con el servidor.' });
+      setMetaMsg({ ok: false, text: '? Error de conexi�n con el servidor.' });
     }
   }
 
@@ -1628,12 +1628,12 @@ export default function MerchantPanel() {
       }, token);
       const data = await res.json();
       if (res.ok) {
-        setTelegramMsg({ ok: true, text: '✅ ' + data.message });
+        setTelegramMsg({ ok: true, text: '? ' + data.message });
       } else {
-        setTelegramMsg({ ok: false, text: `❌ ${data.error || 'Error al conectar.'}` });
+        setTelegramMsg({ ok: false, text: `? ${data.error || 'Error al conectar.'}` });
       }
     } catch {
-      setTelegramMsg({ ok: false, text: '❌ Error de conexión.' });
+      setTelegramMsg({ ok: false, text: '? Error de conexi�n.' });
     } finally {
       setTelegramSaving(false);
       setTimeout(() => setTelegramMsg(null), 4000);
@@ -1658,12 +1658,12 @@ export default function MerchantPanel() {
       }, token);
       const data = await res.json();
       if (res.ok) {
-        setImportMsg({ ok: true, text: `✅ ${data.count} productos importados.`, preview: data.preview });
+        setImportMsg({ ok: true, text: `? ${data.count} productos importados.`, preview: data.preview });
       } else {
-        setImportMsg({ ok: false, text: `❌ ${data.error}` });
+        setImportMsg({ ok: false, text: `? ${data.error}` });
       }
     } catch {
-      setImportMsg({ ok: false, text: '❌ Error al conectar con el servidor.' });
+      setImportMsg({ ok: false, text: '? Error al conectar con el servidor.' });
     } finally {
       setImporting(false);
     }
@@ -1678,7 +1678,7 @@ export default function MerchantPanel() {
   }
 
   async function unlinkWhatsApp() {
-    if (!confirm('¿Cerrar sesión de WhatsApp? Deberás escanear el QR nuevamente para reconectar.')) return;
+    if (!confirm('�Cerrar sesi�n de WhatsApp? Deber�s escanear el QR nuevamente para reconectar.')) return;
     setUnlinking(true);
     await authFetch(`${API}/api/bots/${botId}/logout`, { method: 'POST' }, token);
     setBot(b => ({ ...b, status: 'OFF' }));
@@ -1718,14 +1718,14 @@ export default function MerchantPanel() {
 
   const expandedValue = expandedField === 'prompt' ? prompt : knowledgeBase;
   const expandedSetter = expandedField === 'prompt' ? setPrompt : setKnowledgeBase;
-  const expandedTitle = expandedField === 'prompt' ? '🧠 Comportamiento Psicológico' : '🔗 Base de Conocimientos';
+  const expandedTitle = expandedField === 'prompt' ? '?? Comportamiento Psicol�gico' : '?? Base de Conocimientos';
 
   const TOUR_STEPS = [
-    { id: 'tour-tabs',           tab: 'config',    title: '🧭 Las 3 secciones del panel',  desc: 'Todo el panel se organiza en 3 pestañas. Cada una tiene una función distinta. El tour te va a mostrar para qué sirve cada una.' },
-    { id: 'tour-config-area',    tab: 'config',    title: '⚙️ Configuración del asistente',       desc: 'Acá definís cómo habla tu asistente: su nombre, su personalidad y las instrucciones de cómo debe responder. También cargás la base de conocimiento con info de tu negocio, catálogo, horarios y FAQ.' },
-    { id: 'tour-status',         tab: 'config',    title: '📱 Conectar y activar el asistente',   desc: 'Con este botón iniciás o pausás tu asistente. Cuando está activo, va a responder automáticamente todos los mensajes de tus clientes en WhatsApp.' },
-    { id: 'tour-campaigns-area', tab: 'campaigns', title: '📣 Campañas de mensajería',      desc: 'Desde acá podés enviar mensajes masivos a una lista de clientes. Cargás los contactos (manual, CSV o Google Sheets) y el asistente manda el mensaje automáticamente.' },
-    { id: 'tour-turnos-area',    tab: 'turnos',    title: '📅 Gestión de turnos',           desc: 'Si tu negocio da turnos (médico, peluquería, estética, etc.), acá configurás los servicios, horarios y capacidad. El asistente los reserva solo y manda recordatorios.' },
+    { id: 'tour-tabs',           tab: 'config',    title: '?? Las 3 secciones del panel',  desc: 'Todo el panel se organiza en 3 pesta�as. Cada una tiene una funci�n distinta. El tour te va a mostrar para qu� sirve cada una.' },
+    { id: 'tour-config-area',    tab: 'config',    title: '?? Configuraci�n del asistente',       desc: 'Ac� defin�s c�mo habla tu asistente: su nombre, su personalidad y las instrucciones de c�mo debe responder. Tambi�n carg�s la base de conocimiento con info de tu negocio, cat�logo, horarios y FAQ.' },
+    { id: 'tour-status',         tab: 'config',    title: '?? Conectar y activar el asistente',   desc: 'Con este bot�n inici�s o paus�s tu asistente. Cuando est� activo, va a responder autom�ticamente todos los mensajes de tus clientes en WhatsApp.' },
+    { id: 'tour-campaigns-area', tab: 'campaigns', title: '?? Campa�as de mensajer�a',      desc: 'Desde ac� pod�s enviar mensajes masivos a una lista de clientes. Carg�s los contactos (manual, CSV o Google Sheets) y el asistente manda el mensaje autom�ticamente.' },
+    { id: 'tour-turnos-area',    tab: 'turnos',    title: '?? Gesti�n de turnos',           desc: 'Si tu negocio da turnos (m�dico, peluquer�a, est�tica, etc.), ac� configur�s los servicios, horarios y capacidad. El asistente los reserva solo y manda recordatorios.' },
   ];
 
   return (
@@ -1739,7 +1739,7 @@ export default function MerchantPanel() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
             <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-primary)' }}>{expandedTitle}</span>
             <button onClick={() => setExpandedField(null)} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.4rem 0.9rem', fontSize: '0.9rem' }}>
-              Cerrar ✕
+              Cerrar ?
             </button>
           </div>
           <textarea
@@ -1751,7 +1751,7 @@ export default function MerchantPanel() {
         </div>
       )}
       <div className="app-shell">
-        {/* ── Sidebar ── */}
+        {/* -- Sidebar -- */}
         <aside className="sidebar">
           <div className="sidebar-logo">
             <div className="sidebar-logo-icon">TJ</div>
@@ -1759,9 +1759,9 @@ export default function MerchantPanel() {
           </div>
           <nav className="sidebar-nav" id="tour-tabs">
             <span className="sidebar-nav-section">Principal</span>
-            <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => setActiveTab('config')}>⚙️ Configuración</div>
-            <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => setActiveTab('campaigns')}>📣 Campañas</div>
-            <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => setActiveTab('turnos')}>📅 Turnos</div>
+            <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => setActiveTab('config')}>?? Configuraci�n</div>
+            <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => setActiveTab('campaigns')}>?? Campa�as</div>
+            <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => setActiveTab('turnos')}>?? Turnos</div>
           </nav>
           <div className="sidebar-footer">
             <div className="sidebar-user">
@@ -1772,13 +1772,13 @@ export default function MerchantPanel() {
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', paddingTop: '0.2rem' }}>
-              <a href="/olvide-contrasena" style={{ fontSize: '0.75rem', color: 'var(--text-3)', textDecoration: 'none', padding: '0.2rem 0.1rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>🔑 Olvidé mi contraseña</a>
-              <button onClick={logout} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.75rem', textAlign: 'left', padding: '0.2rem 0.1rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>→ Cerrar sesión</button>
+              <a href="/olvide-contrasena" style={{ fontSize: '0.75rem', color: 'var(--text-3)', textDecoration: 'none', padding: '0.2rem 0.1rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>?? Olvid� mi contrase�a</a>
+              <button onClick={logout} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.75rem', textAlign: 'left', padding: '0.2rem 0.1rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>? Cerrar sesi�n</button>
             </div>
           </div>
         </aside>
 
-        {/* ── Main ── */}
+        {/* -- Main -- */}
         <main className="main-content" style={{ overflow: 'auto' }}>
           <div style={{ padding: '1.75rem 2rem' }}>
             {activeTab === 'campaigns' && <div id="tour-campaigns-area"><CampaignPanel botId={botId} token={token} api={API} /></div>}
@@ -1792,11 +1792,11 @@ export default function MerchantPanel() {
               <h1 style={{ margin: '0 0 0.3rem', fontSize: '1.8rem', fontWeight: 800 }}>
                 Asistente Manager <span style={{ background: '#3b82f6', color: '#fff', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '6px', verticalAlign: 'middle', marginLeft: '0.4rem' }}>PRO</span>
               </h1>
-              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Panel de Auto-Gestión Inteligente</p>
+              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Panel de Auto-Gesti�n Inteligente</p>
             </div>
             <div id="tour-status" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
               <button onClick={() => setShowPreview(p => !p)} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #00a884', background: showPreview ? '#00a884' : 'transparent', color: showPreview ? '#fff' : '#00a884', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                📱 {showPreview ? 'Cerrar preview' : 'Probar asistente'}
+                ?? {showPreview ? 'Cerrar preview' : 'Probar asistente'}
               </button>
               {isOn ? (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -1818,7 +1818,7 @@ export default function MerchantPanel() {
           {/* Card resumen del bot */}
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>🤖</div>
+              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>??</div>
               <div>
                 <div style={{ fontWeight: 700 }}>{bot.name}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.15rem' }}>
@@ -1831,9 +1831,9 @@ export default function MerchantPanel() {
             </div>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               {[
-                { emoji: '💬', value: (metrics.messagesSent || 0).toLocaleString(), label: 'mensajes respondidos' },
-                { emoji: '👥', value: (metrics.customersHelped || 0).toLocaleString(), label: 'chats atendidos' },
-                { emoji: '🎯', value: (metrics.weeklySales || 0).toLocaleString(), label: 'conversiones' },
+                { emoji: '??', value: (metrics.messagesSent || 0).toLocaleString(), label: 'mensajes respondidos' },
+                { emoji: '??', value: (metrics.customersHelped || 0).toLocaleString(), label: 'chats atendidos' },
+                { emoji: '??', value: (metrics.weeklySales || 0).toLocaleString(), label: 'conversiones' },
               ].map((m, i) => (
                 <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.4rem 0.75rem', fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                   <span>{m.emoji}</span>
@@ -1853,46 +1853,46 @@ export default function MerchantPanel() {
                     <QRCodeSVG value={qrData} size={180} />
                   </div>
                   <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0, textAlign: 'center' }}>
-                    Abrí WhatsApp → Dispositivos vinculados → Escanear código QR
+                    Abr� WhatsApp ? Dispositivos vinculados ? Escanear c�digo QR
                   </p>
                 </>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', padding: '0.75rem' }}>
-                  <span style={{ fontSize: '1.4rem' }}>⏳</span>
-                  <span style={{ fontSize: '0.9rem' }}>Generando código QR...</span>
+                  <span style={{ fontSize: '1.4rem' }}>?</span>
+                  <span style={{ fontSize: '0.9rem' }}>Generando c�digo QR...</span>
                 </div>
               )}
             </div>
           )}
           {isOn && (
             <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <span>✅</span>
-              <p style={{ margin: 0, color: '#10b981', fontSize: '0.875rem' }}>WhatsApp conectado. El asistente ya responde automáticamente.</p>
+              <span>?</span>
+              <p style={{ margin: 0, color: '#10b981', fontSize: '0.875rem' }}>WhatsApp conectado. El asistente ya responde autom�ticamente.</p>
             </div>
           )}
 
-          {/* ── Comportamiento ── */}
+          {/* -- Comportamiento -- */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>🧠</span>
-            <h3 style={{ flex: 1 }}>Comportamiento Psicológico de la IA</h3>
-            <button onClick={() => setExpandedField('prompt')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}>⛶ Expandir</button>
+            <span style={{ fontSize: '1.1rem' }}>??</span>
+            <h3 style={{ flex: 1 }}>Comportamiento Psicol�gico de la IA</h3>
+            <button onClick={() => setExpandedField('prompt')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}>? Expandir</button>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.6rem' }}>
-            Definí la personalidad de tu asistente: cómo saluda, qué tono usa, si trata de "vos" o "usted", si es formal o relajado. Cuanto más detallado, mejor va a representar a tu negocio.
+            Defin� la personalidad de tu asistente: c�mo saluda, qu� tono usa, si trata de "vos" o "usted", si es formal o relajado. Cuanto m�s detallado, mejor va a representar a tu negocio.
           </p>
           <textarea
             className="prompt-textarea editable"
             value={prompt} onChange={e => setPrompt(e.target.value)}
-            placeholder="Describí cómo debe hablar y comportarse el asistente con tus clientes..."
+            placeholder="Describ� c�mo debe hablar y comportarse el asistente con tus clientes..."
           />
 
-          {/* ── Catálogo Google Sheets ── */}
+          {/* -- Cat�logo Google Sheets -- */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>⚙️</span>
-            <h3>Conexión Catálogo Activo (Google Sheets)</h3>
+            <span style={{ fontSize: '1.1rem' }}>??</span>
+            <h3>Conexi�n Cat�logo Activo (Google Sheets)</h3>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.6rem' }}>
-            Pegá el link de tu Google Sheets. La hoja debe ser pública ("cualquiera con el link puede ver").
+            Peg� el link de tu Google Sheets. La hoja debe ser p�blica ("cualquiera con el link puede ver").
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
             <input
@@ -1923,29 +1923,29 @@ export default function MerchantPanel() {
             </div>
           )}
 
-          {/* ── Base de Conocimientos ── */}
+          {/* -- Base de Conocimientos -- */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem', color: '#10b981' }}>🔗</span>
+            <span style={{ fontSize: '1.1rem', color: '#10b981' }}>??</span>
             <h3 style={{ flex: 1 }}>Base de Conocimientos</h3>
-            <button onClick={() => setExpandedField('kb')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}>⛶ Expandir</button>
+            <button onClick={() => setExpandedField('kb')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}>? Expandir</button>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem' }}>
-            Todo lo que tu asistente necesita saber para responder correctamente: métodos de pago, zonas de envío, garantías, condiciones especiales. Organizá la info por secciones usando corchetes como <strong>[ENVIO]</strong>, <strong>[PAGOS]</strong>, <strong>[GARANTIA]</strong> para que la IA sepa dónde buscar cada dato.
+            Todo lo que tu asistente necesita saber para responder correctamente: m�todos de pago, zonas de env�o, garant�as, condiciones especiales. Organiz� la info por secciones usando corchetes como <strong>[ENVIO]</strong>, <strong>[PAGOS]</strong>, <strong>[GARANTIA]</strong> para que la IA sepa d�nde buscar cada dato.
           </p>
           <textarea
             className="prompt-textarea editable"
             style={{ minHeight: '120px', borderColor: 'rgba(16,185,129,0.3)' }}
             value={knowledgeBase} onChange={e => setKnowledgeBase(e.target.value)}
-            placeholder={`Organizá la info por secciones para que la IA solo lea lo relevante en cada pregunta:\n\n[ENVIO]\nEnvíos en 24-48hs. Costo fijo $2.000 a todo el país.\n\n[PAGOS]\nEfectivo, transferencia (10% OFF) o tarjeta hasta 6 cuotas.\n\n[UBICACION]\nAv. Corrientes 1234, CABA. Lun-Sáb 9 a 20hs.\n\n[GARANTIA]\n30 días para cambios sin cargo.`}
+            placeholder={`Organiz� la info por secciones para que la IA solo lea lo relevante en cada pregunta:\n\n[ENVIO]\nEnv�os en 24-48hs. Costo fijo $2.000 a todo el pa�s.\n\n[PAGOS]\nEfectivo, transferencia (10% OFF) o tarjeta hasta 6 cuotas.\n\n[UBICACION]\nAv. Corrientes 1234, CABA. Lun-S�b 9 a 20hs.\n\n[GARANTIA]\n30 d�as para cambios sin cargo.`}
           />
 
-          {/* ── Tiempo de respuesta ── */}
+          {/* -- Tiempo de respuesta -- */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>⏱️</span>
+            <span style={{ fontSize: '1.1rem' }}>??</span>
             <h3>Tiempo de espera antes de responder</h3>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem' }}>
-            Si el cliente manda varios mensajes seguidos, el asistente espera este tiempo antes de responder — así agrupa todos los mensajes y contesta una sola vez.
+            Si el cliente manda varios mensajes seguidos, el asistente espera este tiempo antes de responder � as� agrupa todos los mensajes y contesta una sola vez.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
             <input
@@ -1959,23 +1959,23 @@ export default function MerchantPanel() {
             </span>
           </div>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem' }}>
-            Recomendado: 2.5s — Mínimo: 0.5s — Máximo: 60s
+            Recomendado: 2.5s � M�nimo: 0.5s � M�ximo: 60s
           </p>
 
-          {/* ── Horario de Atención ── */}
+          {/* -- Horario de Atenci�n -- */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>🕐</span>
-            <h3>Horario de Atención (Anti-Nocturno)</h3>
+            <span style={{ fontSize: '1.1rem' }}>??</span>
+            <h3>Horario de Atenci�n (Anti-Nocturno)</h3>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem' }}>
-            Activá esta opción para que el asistente solo responda dentro de tu horario comercial. Fuera de ese horario, enviará automáticamente el mensaje que escribas abajo.
+            Activ� esta opci�n para que el asistente solo responda dentro de tu horario comercial. Fuera de ese horario, enviar� autom�ticamente el mensaje que escribas abajo.
           </p>
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
             <label className="ios-toggle">
               <input type="checkbox" checked={hours.active} onChange={e => setHours(h => ({ ...h, active: e.target.checked }))} />
               <span className="slider"></span>
             </label>
-            <span>Activar Límite de Horario</span>
+            <span>Activar L�mite de Horario</span>
           </div>
           {hours.active && (
             <div style={{ background: 'rgba(59,130,246,0.05)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(59,130,246,0.2)', marginBottom: '0.5rem' }}>
@@ -1989,26 +1989,26 @@ export default function MerchantPanel() {
                   <input className="modal-input" type="time" value={hours.end} onChange={e => setHours(h => ({ ...h, end: e.target.value }))} style={{ padding: '0.5rem', width: 'auto' }} />
                 </div>
               </div>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.2rem' }}>Mensaje Automático (Si lo dejás vacío, no contestará fuera de horario)</label>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.2rem' }}>Mensaje Autom�tico (Si lo dej�s vac�o, no contestar� fuera de horario)</label>
               <textarea className="prompt-textarea editable" style={{ minHeight: '60px' }}
-                placeholder="Ej: Hola! Nuestro local está cerrado ahora, pero mañana a primera hora te asisto."
+                placeholder="Ej: Hola! Nuestro local est� cerrado ahora, pero ma�ana a primera hora te asisto."
                 value={hours.autoReplyMsg} onChange={e => setHours(h => ({ ...h, autoReplyMsg: e.target.value }))} />
             </div>
           )}
 
-          {/* ── Integración Meta (Instagram + Facebook) ── */}
+          {/* -- Integraci�n Meta (Instagram + Facebook) -- */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem', color: '#e1306c' }}>📸</span>
-            <h3 style={{ color: '#e1306c' }}>Integración Instagram & Facebook</h3>
+            <span style={{ fontSize: '1.1rem', color: '#e1306c' }}>??</span>
+            <h3 style={{ color: '#e1306c' }}>Integraci�n Instagram & Facebook</h3>
           </div>
           {metrics.hasSocialFeature ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
               {(metaPageId || metaIgId) ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '10px', padding: '0.75rem 1rem' }}>
-                  <span style={{ fontSize: '1.2rem' }}>✅</span>
+                  <span style={{ fontSize: '1.2rem' }}>?</span>
                   <div style={{ flex: 1 }}>
                     <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', color: '#10b981' }}>Cuenta conectada</p>
-                    {metaPageId && <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Página: {metaPageId} {metaIgId && `· IG: ${metaIgId}`}</p>}
+                    {metaPageId && <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-secondary)' }}>P�gina: {metaPageId} {metaIgId && `� IG: ${metaIgId}`}</p>}
                   </div>
                   <button onClick={connectMeta} style={{ background: 'transparent', border: '1px solid #4b5563', borderRadius: '8px', color: '#9ca3af', cursor: 'pointer', padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}>
                     Reconectar
@@ -2016,7 +2016,7 @@ export default function MerchantPanel() {
                 </div>
               ) : (
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
-                  Conectá tu cuenta de Facebook para que la IA responda mensajes de Instagram y Facebook automáticamente.
+                  Conect� tu cuenta de Facebook para que la IA responda mensajes de Instagram y Facebook autom�ticamente.
                 </p>
               )}
               {metaMsg && <p style={{ margin: 0, fontSize: '0.875rem', color: metaMsg.ok ? '#10b981' : '#f87171' }}>{metaMsg.text}</p>}
@@ -2028,30 +2028,30 @@ export default function MerchantPanel() {
             </div>
           ) : (
             <div style={{ background: 'linear-gradient(135deg, rgba(225,48,108,0.06), rgba(24,119,242,0.06))', border: '1px solid rgba(225,48,108,0.18)', borderRadius: '14px', padding: '1.25rem 1.5rem', display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
-              <span style={{ fontSize: '1.8rem', flexShrink: 0, lineHeight: 1, marginTop: '0.1rem' }}>🔒</span>
+              <span style={{ fontSize: '1.8rem', flexShrink: 0, lineHeight: 1, marginTop: '0.1rem' }}>??</span>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                   <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Instagram & Facebook DMs</span>
                   <span style={{ background: 'linear-gradient(135deg,#e1306c,#1877f2)', color: '#fff', fontSize: '0.63rem', fontWeight: 700, padding: '2px 9px', borderRadius: 20, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>PREMIUM</span>
                 </div>
                 <p style={{ margin: '0 0 0.85rem', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                  Tu asistente puede responder mensajes de Instagram y Facebook Messenger con el mismo conocimiento y personalidad que en WhatsApp. Contactá con soporte para activarlo en tu plan.
+                  Tu asistente puede responder mensajes de Instagram y Facebook Messenger con el mismo conocimiento y personalidad que en WhatsApp. Contact� con soporte para activarlo en tu plan.
                 </p>
                 <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(225,48,108,0.1)', border: '1px solid rgba(225,48,108,0.25)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', color: '#e1306c', fontWeight: 600 }}>📸 Instagram DMs</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(225,48,108,0.1)', border: '1px solid rgba(225,48,108,0.25)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', color: '#e1306c', fontWeight: 600 }}>?? Instagram DMs</span>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(24,119,242,0.1)', border: '1px solid rgba(24,119,242,0.25)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', color: '#1877f2', fontWeight: 600 }}>f Facebook Messenger</span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* ── Integración Telegram ── */}
+          {/* -- Integraci�n Telegram -- */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem', color: '#38bdf8' }}>✈️</span>
-            <h3 style={{ color: '#38bdf8' }}>Integración Telegram Bot</h3>
+            <span style={{ fontSize: '1.1rem', color: '#38bdf8' }}>??</span>
+            <h3 style={{ color: '#38bdf8' }}>Integraci�n Telegram Bot</h3>
           </div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 1rem' }}>
-            Respondé a tus clientes por Telegram. Creá un bot con @BotFather y pegá el Token aquí. (Dejar vacío para desconectar)
+            Respond� a tus clientes por Telegram. Cre� un bot con @BotFather y peg� el Token aqu�. (Dejar vac�o para desconectar)
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
             <div>
@@ -2064,59 +2064,59 @@ export default function MerchantPanel() {
             </button>
           </div>
 
-          {/* ── Celular del Dueño ── */}
+          {/* -- Celular del Due�o -- */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>🔒</span>
+            <span style={{ fontSize: '1.1rem' }}>??</span>
             <h3 style={{ color: '#8b5cf6' }}>Seguridad: Celular de Administrador</h3>
           </div>
           {metrics.adminNumber ? (
             <div style={{ background: 'rgba(16,185,129,0.1)', padding: '10px 15px', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.3)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: '#10b981' }}>✔</span>
+              <span style={{ color: '#10b981' }}>?</span>
               <div>
-                <p style={{ margin: 0, color: '#10b981', fontWeight: 'bold', fontSize: '0.9rem' }}>Número de Contacto Seguro Vinculado</p>
+                <p style={{ margin: 0, color: '#10b981', fontWeight: 'bold', fontSize: '0.9rem' }}>N�mero de Contacto Seguro Vinculado</p>
                 <p style={{ margin: 0, fontSize: '0.82rem', color: '#10b981', opacity: 0.9 }}>+{metrics.adminNumber.replace('@c.us', '')}</p>
               </div>
             </div>
           ) : (
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem' }}>
-              Vinculá tu número para que el asistente te reconozca como dueño y puedas darle instrucciones, lanzar difusiones y cambiar reglas directamente desde WhatsApp.
+              Vincul� tu n�mero para que el asistente te reconozca como due�o y puedas darle instrucciones, lanzar difusiones y cambiar reglas directamente desde WhatsApp.
             </p>
           )}
           <div style={{ display: 'flex', gap: '10px' }}>
             <select className="modal-input" defaultValue="549"
               style={{ width: '90px', padding: '0.5rem', background: '#252b36', color: 'white', border: '1px solid var(--border)', marginBottom: 0 }}>
-              <option value="549">🇦🇷 +54</option>
-              <option value="52">🇲🇽 +52</option>
-              <option value="56">🇨🇱 +56</option>
-              <option value="57">🇨🇴 +57</option>
-              <option value="51">🇵🇪 +51</option>
-              <option value="1">🇺🇸 +1</option>
+              <option value="549">???? +54</option>
+              <option value="52">???? +52</option>
+              <option value="56">???? +56</option>
+              <option value="57">???? +57</option>
+              <option value="51">???? +51</option>
+              <option value="1">???? +1</option>
             </select>
             <input className="modal-input" type="tel" value={adminNumber} onChange={e => setAdminNumber(e.target.value)}
               placeholder="Ej: 1156687137" style={{ flex: 1, marginBottom: 0, background: 'var(--bg-card)' }} />
           </div>
           <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)', opacity: 0.7 }}>
-            Sin código de país ni el 15. Ej: <strong>1156781234</strong>
+            Sin c�digo de pa�s ni el 15. Ej: <strong>1156781234</strong>
           </p>
 
-          {/* ── Guardar ── */}
+          {/* -- Guardar -- */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            {saveMsg === 'ok' && <span style={{ color: '#10b981', fontSize: '0.875rem' }}>✅ Cambios guardados.</span>}
-            {saveMsg === 'err' && <span style={{ color: '#f87171', fontSize: '0.875rem' }}>❌ Error al guardar.</span>}
+            {saveMsg === 'ok' && <span style={{ color: '#10b981', fontSize: '0.875rem' }}>? Cambios guardados.</span>}
+            {saveMsg === 'err' && <span style={{ color: '#f87171', fontSize: '0.875rem' }}>? Error al guardar.</span>}
             <button onClick={save} disabled={saving} className="btn-solid-blue" style={{ margin: 0, width: 'auto', padding: '0.6rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              💾 {saving ? 'Guardando...' : 'Actualizar Cerebro'}
+              ?? {saving ? 'Guardando...' : 'Actualizar Cerebro'}
             </button>
           </div>
 
-          {/* ── Cambiar contraseña — colapsable ── */}
+          {/* -- Cambiar contrase�a � colapsable -- */}
           <div style={{ marginTop: '1.25rem', borderTop: '1px solid var(--border)', paddingTop: '0.75rem' }}>
             <button onClick={() => setPwOpen(o => !o)}
               style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.82rem', padding: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', opacity: 0.7 }}>
-              🔑 Cambiar contraseña {pwOpen ? '▲' : '▼'}
+              ?? Cambiar contrase�a {pwOpen ? '?' : '?'}
             </button>
             {pwOpen && (
               <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', maxWidth: '380px' }}>
-                {[{ label: 'Contraseña actual', key: 'current' }, { label: 'Nueva contraseña', key: 'next' }, { label: 'Repetir nueva contraseña', key: 'confirm' }].map(({ label, key }) => (
+                {[{ label: 'Contrase�a actual', key: 'current' }, { label: 'Nueva contrase�a', key: 'next' }, { label: 'Repetir nueva contrase�a', key: 'confirm' }].map(({ label, key }) => (
                   <div key={key}>
                     <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>{label}</label>
                     <input className="modal-input" type="password" value={pwForm[key]}
@@ -2127,7 +2127,7 @@ export default function MerchantPanel() {
                 {pwMsg && <p style={{ margin: 0, fontSize: '0.875rem', color: pwMsg.ok ? '#10b981' : '#f87171' }}>{pwMsg.text}</p>}
                 <button onClick={changePassword} disabled={pwSaving} className="btn-solid-blue"
                   style={{ margin: 0, width: 'auto', padding: '0.6rem 1rem', alignSelf: 'flex-start' }}>
-                  {pwSaving ? 'Guardando...' : 'Cambiar contraseña'}
+                  {pwSaving ? 'Guardando...' : 'Cambiar contrase�a'}
                 </button>
               </div>
             )}

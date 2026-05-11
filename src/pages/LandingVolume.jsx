@@ -208,7 +208,7 @@ function DemoChat() {
     setLoading(true);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const API_URL = import.meta.env.VITE_API_URL || 'https://asisto-backend-production.up.railway.app';
       const res = await fetch(`${API_URL}/api/demo/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

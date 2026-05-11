@@ -1,7 +1,7 @@
-ï»¿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API = import.meta.env.VITE_API_URL || 'https://asisto-backend-production.up.railway.app';
 
 export default function ResetPassword() {
   const [params] = useSearchParams();
@@ -16,10 +16,10 @@ export default function ResetPassword() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    if (!password || !confirm) { setError('CompletÃ¡ los dos campos.'); return; }
-    if (password.length < 6) { setError('La contraseÃ±a debe tener al menos 6 caracteres.'); return; }
-    if (password !== confirm) { setError('Las contraseÃ±as no coinciden.'); return; }
-    if (!token) { setError('Enlace invÃ¡lido. SolicitÃ¡ uno nuevo.'); return; }
+    if (!password || !confirm) { setError('Completá los dos campos.'); return; }
+    if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres.'); return; }
+    if (password !== confirm) { setError('Las contraseñas no coinciden.'); return; }
+    if (!token) { setError('Enlace inválido. Solicitá uno nuevo.'); return; }
 
     setLoading(true);
     try {
@@ -51,40 +51,40 @@ export default function ResetPassword() {
 
         {done ? (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>âœ…</div>
-            <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.5rem' }}>Â¡ContraseÃ±a actualizada!</h2>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>?</div>
+            <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.5rem' }}>¡Contraseña actualizada!</h2>
             <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem', lineHeight: 1.6 }}>
-              Ya podÃ©s ingresar con tu nueva contraseÃ±a.
+              Ya podés ingresar con tu nueva contraseña.
             </p>
             <button onClick={() => nav('/login')} className="btn-solid-blue" style={{ padding: '0.9rem 2rem', fontSize: '1rem' }}>
-              Ir al login â†’
+              Ir al login ?
             </button>
           </div>
         ) : (
           <>
-            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.6rem' }}>Nueva contraseÃ±a</h2>
+            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.6rem' }}>Nueva contraseña</h2>
             <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem', lineHeight: 1.6 }}>
-              ElegÃ­ una contraseÃ±a segura para tu cuenta.
+              Elegí una contraseña segura para tu cuenta.
             </p>
 
             {!token && (
               <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid #ef4444', borderRadius: '10px', padding: '0.75rem 1rem', marginBottom: '1rem', color: '#f87171', fontSize: '0.9rem' }}>
-                Enlace invÃ¡lido. <a href="/olvide-contrasena" style={{ color: '#f87171' }}>SolicitÃ¡ uno nuevo</a>.
+                Enlace inválido. <a href="/olvide-contrasena" style={{ color: '#f87171' }}>Solicitá uno nuevo</a>.
               </div>
             )}
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Nueva contraseÃ±a</label>
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="MÃ­nimo 6 caracteres" autoFocus style={inputStyle} />
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Nueva contraseña</label>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" autoFocus style={inputStyle} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Repetir contraseÃ±a</label>
-                <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="RepetÃ­ la contraseÃ±a" style={inputStyle} />
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Repetir contraseña</label>
+                <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="Repetí la contraseña" style={inputStyle} />
               </div>
               {error && <p style={{ color: '#f87171', margin: 0, fontSize: '0.9rem' }}>{error}</p>}
               <button type="submit" className="btn-solid-blue" disabled={loading || !token} style={{ marginTop: '0.5rem', padding: '0.9rem', fontSize: '1rem' }}>
-                {loading ? 'Guardando...' : 'Guardar contraseÃ±a â†’'}
+                {loading ? 'Guardando...' : 'Guardar contraseña ?'}
               </button>
             </form>
           </>

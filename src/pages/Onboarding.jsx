@@ -1,50 +1,50 @@
-ï»¿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API = import.meta.env.VITE_API_URL || 'https://asisto-backend-production.up.railway.app';
 
 const SLIDES = [
   {
-    icon: 'ğŸ¤–',
+    icon: '??',
     color: '#7c3aed',
-    title: 'Â¡Bienvenido a Atento!',
-    desc: 'AcabÃ¡s de crear tu asistente virtual con inteligencia artificial. A partir de ahora va a atender a tus clientes automÃ¡ticamente, las 24 horas, los 7 dÃ­as de la semana.',
-    cta: 'Empezar tour â†’',
+    title: '¡Bienvenido a Atento!',
+    desc: 'Acabás de crear tu asistente virtual con inteligencia artificial. A partir de ahora va a atender a tus clientes automáticamente, las 24 horas, los 7 días de la semana.',
+    cta: 'Empezar tour ?',
   },
   {
-    icon: 'ğŸ’¬',
+    icon: '??',
     color: '#3b82f6',
     title: 'Responde por vos',
     desc: 'Tus clientes te escriben por WhatsApp o Instagram y el bot les responde al instante. Consultas de precio, disponibilidad, horarios... todo sin que vos tengas que estar presente.',
-    cta: 'Siguiente â†’',
+    cta: 'Siguiente ?',
   },
   {
-    icon: 'ğŸ§ ',
+    icon: '??',
     color: '#8b5cf6',
     title: 'Conoce tu negocio',
-    desc: 'El bot aprende sobre tu negocio: catÃ¡logo, precios, polÃ­ticas, preguntas frecuentes. Vos lo entrenÃ¡s desde el panel y Ã©l responde como si fuera un empleado que conoce todo.',
-    cta: 'Siguiente â†’',
+    desc: 'El bot aprende sobre tu negocio: catálogo, precios, políticas, preguntas frecuentes. Vos lo entrenás desde el panel y él responde como si fuera un empleado que conoce todo.',
+    cta: 'Siguiente ?',
   },
   {
-    icon: 'ğŸ“…',
+    icon: '??',
     color: '#10b981',
     title: 'Toma turnos solo',
-    desc: 'Si dÃ¡s turnos (mÃ©dico, peluquerÃ­a, estÃ©tica, etc.), el bot puede reservarlos automÃ¡ticamente segÃºn tu disponibilidad, recordarle al cliente y avisarte cuando hay una reserva nueva.',
-    cta: 'Siguiente â†’',
+    desc: 'Si dás turnos (médico, peluquería, estética, etc.), el bot puede reservarlos automáticamente según tu disponibilidad, recordarle al cliente y avisarte cuando hay una reserva nueva.',
+    cta: 'Siguiente ?',
   },
   {
-    icon: 'ğŸ“Š',
+    icon: '??',
     color: '#f59e0b',
     title: 'Tu panel de control',
-    desc: 'Desde el panel podÃ©s ver todas las conversaciones, revisar mÃ©tricas, lanzar campaÃ±as de mensajes masivos y ajustar la configuraciÃ³n del bot cuando quieras.',
-    cta: 'Siguiente â†’',
+    desc: 'Desde el panel podés ver todas las conversaciones, revisar métricas, lanzar campañas de mensajes masivos y ajustar la configuración del bot cuando quieras.',
+    cta: 'Siguiente ?',
   },
   {
-    icon: 'ğŸ“±',
+    icon: '??',
     color: '#06b6d4',
-    title: 'ConectÃ¡ tu WhatsApp',
-    desc: 'El Ãºltimo paso: escaneÃ¡ el cÃ³digo QR con tu celular para activar el bot en tu nÃºmero de WhatsApp. Solo tarda unos segundos.',
+    title: 'Conectá tu WhatsApp',
+    desc: 'El último paso: escaneá el código QR con tu celular para activar el bot en tu número de WhatsApp. Solo tarda unos segundos.',
     cta: null, // handled separately (QR step)
   },
 ];
@@ -135,16 +135,16 @@ export default function Onboarding() {
           Atento AI
         </div>
         <button onClick={() => nav('/mi-panel')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}>
-          Saltar â†’
+          Saltar ?
         </button>
       </div>
 
-      {/* ContraseÃ±a temporal */}
+      {/* Contraseña temporal */}
       {tempPwd && (
         <div style={{ margin: '0 2rem', background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-          <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>ğŸ”</span>
+          <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>??</span>
           <div>
-            <div style={{ fontWeight: 700, color: '#10b981', marginBottom: '0.25rem' }}>GuardÃ¡ tu contraseÃ±a â€” solo se muestra esta vez</div>
+            <div style={{ fontWeight: 700, color: '#10b981', marginBottom: '0.25rem' }}>Guardá tu contraseña — solo se muestra esta vez</div>
             <div style={{ fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: '2px', color: '#fff', userSelect: 'all' }}>{tempPwd}</div>
           </div>
         </div>
@@ -153,7 +153,7 @@ export default function Onboarding() {
       {/* Slide principal */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', transition: 'opacity 0.2s', opacity: animating ? 0 : 1 }}>
 
-        {/* Ãcono */}
+        {/* Ícono */}
         <div style={{
           width: '110px', height: '110px', borderRadius: '32px',
           background: `linear-gradient(135deg, ${s.color}33, ${s.color}11)`,
@@ -176,15 +176,15 @@ export default function Onboarding() {
           </p>
         </div>
 
-        {/* QR (Ãºltimo slide) */}
+        {/* QR (último slide) */}
         {isLastSlide && (
           <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
             {botStatus === 'ON' ? (
               <div>
-                <div style={{ fontSize: '3.5rem', marginBottom: '0.75rem' }}>âœ…</div>
-                <p style={{ color: '#10b981', fontWeight: 700, fontSize: '1.1rem', margin: '0 0 1.5rem' }}>Â¡WhatsApp conectado!</p>
+                <div style={{ fontSize: '3.5rem', marginBottom: '0.75rem' }}>?</div>
+                <p style={{ color: '#10b981', fontWeight: 700, fontSize: '1.1rem', margin: '0 0 1.5rem' }}>¡WhatsApp conectado!</p>
                 <button onClick={() => nav('/mi-panel')} style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: '12px', color: '#fff', cursor: 'pointer', padding: '1rem 2.5rem', fontSize: '1.05rem', fontWeight: 700 }}>
-                  Ir a mi panel â†’
+                  Ir a mi panel ?
                 </button>
               </div>
             ) : qrData ? (
@@ -196,14 +196,14 @@ export default function Onboarding() {
               </div>
             ) : (
               <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>â³</div>
-                <p style={{ margin: 0 }}>Generando cÃ³digo QR...</p>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>?</div>
+                <p style={{ margin: 0 }}>Generando código QR...</p>
               </div>
             )}
           </div>
         )}
 
-        {/* CTA button (slides que no son el Ãºltimo o el Ãºltimo sin QR listo) */}
+        {/* CTA button (slides que no son el último o el último sin QR listo) */}
         {!isLastSlide && (
           <button onClick={next} style={{
             background: `linear-gradient(135deg, ${s.color}, ${s.color}bb)`,
@@ -217,10 +217,10 @@ export default function Onboarding() {
           </button>
         )}
 
-        {/* BotÃ³n ir al panel sin conectar (Ãºltimo slide) */}
+        {/* Botón ir al panel sin conectar (último slide) */}
         {isLastSlide && botStatus !== 'ON' && (
           <button onClick={() => nav('/mi-panel')} style={{ marginTop: '1.25rem', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem', textDecoration: 'underline' }}>
-            Conectar WhatsApp despuÃ©s
+            Conectar WhatsApp después
           </button>
         )}
       </div>
