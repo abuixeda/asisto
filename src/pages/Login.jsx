@@ -13,7 +13,7 @@ export default function Login() {
   async function handleLogin(e) {
     e.preventDefault();
     setError('');
-    if (!email || !password) { setError('Completá todos los campos.'); return; }
+    if (!email || !password) { setError('Complet todos los campos.'); return; }
     setLoading(true);
     try {
       const res = await fetch(`${API}/api/login`, {
@@ -49,7 +49,7 @@ export default function Login() {
         </div>
 
         <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem' }}>Ingresar</h2>
-        <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem 0' }}>Accedé a tu panel de control.</p>
+        <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem 0' }}>Acced a tu panel de control.</p>
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
@@ -62,12 +62,12 @@ export default function Login() {
           </div>
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Contraseña</label>
-              <a href="/olvide-contrasena" style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none' }}>¿Olvidaste tu contraseña?</a>
+              <label style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Contrasea</label>
+              <a href="/olvide-contrasena" style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none' }}>Olvidaste tu contrasea?</a>
             </div>
             <input
               type="password" value={password} onChange={e => setPassword(e.target.value)}
-              placeholder="Tu contraseña"
+              placeholder="Tu contrasea"
               style={{ width: '100%', padding: '0.8rem 1rem', borderRadius: '10px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', fontSize: '1rem', boxSizing: 'border-box' }}
             />
           </div>
@@ -78,7 +78,7 @@ export default function Login() {
         </form>
 
         <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          ¿No tenés cuenta? <a href="/registro" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Crear cuenta</a>
+          No tens cuenta? <a href="/registro" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Crear cuenta</a>
         </p>
       </div>
     </div>

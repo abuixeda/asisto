@@ -8,8 +8,8 @@ const SLIDES = [
   {
     icon: '??',
     color: '#7c3aed',
-    title: '¡Bienvenido a Atento!',
-    desc: 'Acabás de crear tu asistente virtual con inteligencia artificial. A partir de ahora va a atender a tus clientes automáticamente, las 24 horas, los 7 días de la semana.',
+    title: 'Bienvenido a Atento!',
+    desc: 'Acabs de crear tu asistente virtual con inteligencia artificial. A partir de ahora va a atender a tus clientes automticamente, las 24 horas, los 7 das de la semana.',
     cta: 'Empezar tour ?',
   },
   {
@@ -23,28 +23,28 @@ const SLIDES = [
     icon: '??',
     color: '#8b5cf6',
     title: 'Conoce tu negocio',
-    desc: 'El bot aprende sobre tu negocio: catálogo, precios, políticas, preguntas frecuentes. Vos lo entrenás desde el panel y él responde como si fuera un empleado que conoce todo.',
+    desc: 'El bot aprende sobre tu negocio: catlogo, precios, polticas, preguntas frecuentes. Vos lo entrens desde el panel y l responde como si fuera un empleado que conoce todo.',
     cta: 'Siguiente ?',
   },
   {
     icon: '??',
     color: '#10b981',
     title: 'Toma turnos solo',
-    desc: 'Si dás turnos (médico, peluquería, estética, etc.), el bot puede reservarlos automáticamente según tu disponibilidad, recordarle al cliente y avisarte cuando hay una reserva nueva.',
+    desc: 'Si ds turnos (mdico, peluquera, esttica, etc.), el bot puede reservarlos automticamente segn tu disponibilidad, recordarle al cliente y avisarte cuando hay una reserva nueva.',
     cta: 'Siguiente ?',
   },
   {
     icon: '??',
     color: '#f59e0b',
     title: 'Tu panel de control',
-    desc: 'Desde el panel podés ver todas las conversaciones, revisar métricas, lanzar campañas de mensajes masivos y ajustar la configuración del bot cuando quieras.',
+    desc: 'Desde el panel pods ver todas las conversaciones, revisar mtricas, lanzar campaas de mensajes masivos y ajustar la configuracin del bot cuando quieras.',
     cta: 'Siguiente ?',
   },
   {
     icon: '??',
     color: '#06b6d4',
-    title: 'Conectá tu WhatsApp',
-    desc: 'El último paso: escaneá el código QR con tu celular para activar el bot en tu número de WhatsApp. Solo tarda unos segundos.',
+    title: 'Conect tu WhatsApp',
+    desc: 'El ltimo paso: escane el cdigo QR con tu celular para activar el bot en tu nmero de WhatsApp. Solo tarda unos segundos.',
     cta: null, // handled separately (QR step)
   },
 ];
@@ -139,12 +139,12 @@ export default function Onboarding() {
         </button>
       </div>
 
-      {/* Contraseña temporal */}
+      {/* Contrasea temporal */}
       {tempPwd && (
         <div style={{ margin: '0 2rem', background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
           <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>??</span>
           <div>
-            <div style={{ fontWeight: 700, color: '#10b981', marginBottom: '0.25rem' }}>Guardá tu contraseña — solo se muestra esta vez</div>
+            <div style={{ fontWeight: 700, color: '#10b981', marginBottom: '0.25rem' }}>Guard tu contrasea  solo se muestra esta vez</div>
             <div style={{ fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: '2px', color: '#fff', userSelect: 'all' }}>{tempPwd}</div>
           </div>
         </div>
@@ -153,7 +153,7 @@ export default function Onboarding() {
       {/* Slide principal */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', transition: 'opacity 0.2s', opacity: animating ? 0 : 1 }}>
 
-        {/* Ícono */}
+        {/* cono */}
         <div style={{
           width: '110px', height: '110px', borderRadius: '32px',
           background: `linear-gradient(135deg, ${s.color}33, ${s.color}11)`,
@@ -176,13 +176,13 @@ export default function Onboarding() {
           </p>
         </div>
 
-        {/* QR (último slide) */}
+        {/* QR (ltimo slide) */}
         {isLastSlide && (
           <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
             {botStatus === 'ON' ? (
               <div>
                 <div style={{ fontSize: '3.5rem', marginBottom: '0.75rem' }}>?</div>
-                <p style={{ color: '#10b981', fontWeight: 700, fontSize: '1.1rem', margin: '0 0 1.5rem' }}>¡WhatsApp conectado!</p>
+                <p style={{ color: '#10b981', fontWeight: 700, fontSize: '1.1rem', margin: '0 0 1.5rem' }}>WhatsApp conectado!</p>
                 <button onClick={() => nav('/mi-panel')} style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: '12px', color: '#fff', cursor: 'pointer', padding: '1rem 2.5rem', fontSize: '1.05rem', fontWeight: 700 }}>
                   Ir a mi panel ?
                 </button>
@@ -197,13 +197,13 @@ export default function Onboarding() {
             ) : (
               <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
                 <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>?</div>
-                <p style={{ margin: 0 }}>Generando código QR...</p>
+                <p style={{ margin: 0 }}>Generando cdigo QR...</p>
               </div>
             )}
           </div>
         )}
 
-        {/* CTA button (slides que no son el último o el último sin QR listo) */}
+        {/* CTA button (slides que no son el ltimo o el ltimo sin QR listo) */}
         {!isLastSlide && (
           <button onClick={next} style={{
             background: `linear-gradient(135deg, ${s.color}, ${s.color}bb)`,
@@ -217,10 +217,10 @@ export default function Onboarding() {
           </button>
         )}
 
-        {/* Botón ir al panel sin conectar (último slide) */}
+        {/* Botn ir al panel sin conectar (ltimo slide) */}
         {isLastSlide && botStatus !== 'ON' && (
           <button onClick={() => nav('/mi-panel')} style={{ marginTop: '1.25rem', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem', textDecoration: 'underline' }}>
-            Conectar WhatsApp después
+            Conectar WhatsApp despus
           </button>
         )}
       </div>

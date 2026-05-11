@@ -16,10 +16,10 @@ export default function ResetPassword() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    if (!password || !confirm) { setError('Completá los dos campos.'); return; }
-    if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres.'); return; }
-    if (password !== confirm) { setError('Las contraseñas no coinciden.'); return; }
-    if (!token) { setError('Enlace inválido. Solicitá uno nuevo.'); return; }
+    if (!password || !confirm) { setError('Complet los dos campos.'); return; }
+    if (password.length < 6) { setError('La contrasea debe tener al menos 6 caracteres.'); return; }
+    if (password !== confirm) { setError('Las contraseas no coinciden.'); return; }
+    if (!token) { setError('Enlace invlido. Solicit uno nuevo.'); return; }
 
     setLoading(true);
     try {
@@ -52,9 +52,9 @@ export default function ResetPassword() {
         {done ? (
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>?</div>
-            <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.5rem' }}>¡Contraseña actualizada!</h2>
+            <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.5rem' }}>Contrasea actualizada!</h2>
             <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem', lineHeight: 1.6 }}>
-              Ya podés ingresar con tu nueva contraseña.
+              Ya pods ingresar con tu nueva contrasea.
             </p>
             <button onClick={() => nav('/login')} className="btn-solid-blue" style={{ padding: '0.9rem 2rem', fontSize: '1rem' }}>
               Ir al login ?
@@ -62,29 +62,29 @@ export default function ResetPassword() {
           </div>
         ) : (
           <>
-            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.6rem' }}>Nueva contraseña</h2>
+            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.6rem' }}>Nueva contrasea</h2>
             <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem', lineHeight: 1.6 }}>
-              Elegí una contraseña segura para tu cuenta.
+              Eleg una contrasea segura para tu cuenta.
             </p>
 
             {!token && (
               <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid #ef4444', borderRadius: '10px', padding: '0.75rem 1rem', marginBottom: '1rem', color: '#f87171', fontSize: '0.9rem' }}>
-                Enlace inválido. <a href="/olvide-contrasena" style={{ color: '#f87171' }}>Solicitá uno nuevo</a>.
+                Enlace invlido. <a href="/olvide-contrasena" style={{ color: '#f87171' }}>Solicit uno nuevo</a>.
               </div>
             )}
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Nueva contraseña</label>
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" autoFocus style={inputStyle} />
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Nueva contrasea</label>
+                <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Mnimo 6 caracteres" autoFocus style={inputStyle} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Repetir contraseña</label>
-                <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="Repetí la contraseña" style={inputStyle} />
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Repetir contrasea</label>
+                <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="Repet la contrasea" style={inputStyle} />
               </div>
               {error && <p style={{ color: '#f87171', margin: 0, fontSize: '0.9rem' }}>{error}</p>}
               <button type="submit" className="btn-solid-blue" disabled={loading || !token} style={{ marginTop: '0.5rem', padding: '0.9rem', fontSize: '1rem' }}>
-                {loading ? 'Guardando...' : 'Guardar contraseña ?'}
+                {loading ? 'Guardando...' : 'Guardar contrasea ?'}
               </button>
             </form>
           </>

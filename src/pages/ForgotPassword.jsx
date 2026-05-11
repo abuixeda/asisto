@@ -13,7 +13,7 @@ export default function ForgotPassword() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
-    if (!email) { setError('Ingresá tu email.'); return; }
+    if (!email) { setError('Ingres tu email.'); return; }
     setLoading(true);
     try {
       await fetch(`${API}/api/auth/forgot-password`, {
@@ -43,9 +43,9 @@ export default function ForgotPassword() {
         {sent ? (
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>??</div>
-            <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.5rem' }}>Revisá tu email</h2>
+            <h2 style={{ margin: '0 0 0.75rem', fontSize: '1.5rem' }}>Revis tu email</h2>
             <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 2rem' }}>
-              Si existe una cuenta con <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>, vas a recibir un enlace para restablecer tu contraseña en los próximos minutos.
+              Si existe una cuenta con <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>, vas a recibir un enlace para restablecer tu contrasea en los prximos minutos.
             </p>
             <button onClick={() => nav('/login')} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.8rem 1.5rem', fontSize: '0.95rem' }}>
               Volver al login
@@ -53,9 +53,9 @@ export default function ForgotPassword() {
           </div>
         ) : (
           <>
-            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.6rem' }}>Olvidé mi contraseña</h2>
+            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.6rem' }}>Olvid mi contrasea</h2>
             <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem', lineHeight: 1.6 }}>
-              Ingresá tu email y te mandamos un enlace para crear una nueva contraseña.
+              Ingres tu email y te mandamos un enlace para crear una nueva contrasea.
             </p>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
