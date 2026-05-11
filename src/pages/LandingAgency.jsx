@@ -25,8 +25,6 @@ const WA_NUMBER = '5491100000000'; // reemplazar por número real
 
 const STEPS_ICONS = [<Phone size={20} />, <Settings size={20} />, <CheckCircle size={20} />, <BarChart2 size={20} />];
 
-const WA_NUMBER = '5491100000000'; // reemplazar por número real
-
 /* ─── Hooks ───────────────────────────────────────────── */
 function useInView(threshold = 0.12) {
   const ref = useRef(null);
