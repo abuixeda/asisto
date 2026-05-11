@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API = import.meta.env.VITE_API_URL || 'https://asisto-backend-production.up.railway.app';
+const API = 'https://asisto-backend-production.up.railway.app';
 
 export default function Login() {
   const [email, setEmail] = useState('');

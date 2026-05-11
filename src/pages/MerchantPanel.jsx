@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 
-const API = import.meta.env.VITE_API_URL || 'https://asisto-backend-production.up.railway.app';
+const API = 'https://asisto-backend-production.up.railway.app';
 
 function authFetch(url, options = {}, token) {
   return fetch(url, {

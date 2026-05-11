@@ -9,7 +9,7 @@ import {
 import polarisCssUrl from '@shopify/polaris/build/esm/styles.css?url';
 import translations from '@shopify/polaris/locales/es.json';
 
-const API = import.meta.env.VITE_API_URL || 'https://asisto-backend-production.up.railway.app';
+const API = 'https://asisto-backend-production.up.railway.app';
 
 // --- Preview Chat (simulación WhatsApp) ---------------------------------------
 function PreviewChat({ botName, onSend }) {

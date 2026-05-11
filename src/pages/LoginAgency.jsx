@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
-const API = import.meta.env.VITE_API_URL || 'https://asisto-backend-production.up.railway.app';
+const API = 'https://asisto-backend-production.up.railway.app';
 
 /* ─── Paleta Agency ─── */
 const C = {
