@@ -1,4 +1,4 @@
-﻿{
+{
   "nav": {
     "features": "Funktionen",
     "howItWorks": "So funktioniert es",
@@ -17,44 +17,97 @@
       "responses": "automatische Antworten",
       "uptime": "verfügbar",
       "satisfaction": "Kundenzufriedenheit"
-    }
+    },
+    "urgency": "Einführungsangebot: Nur noch 14 Plätze mit eingefrorenem Preis."
   },
   "demo": {
-    "online": "● jetzt online",
+    "online": "● online jetzt",
     "title": "Demo — Atento AI",
-    "placeholder": "Ihre Frage eingeben...",
-    "greeting": "Hallo! Ich bin Ihr virtueller Assistent. Fragen Sie mich nach Preisen, Verfügbarkeit, Versand oder allem anderen 😊",
+    "placeholder": "Schreib deine Anfrage...",
+    "greeting": "Hallo! Ich bin Atento, der virtuelle Assistent von Atento AI. Frag mich, wie ich funktioniere, nach den Preisen oder wie du mich kostenlos ausprobieren kannst 🚀",
     "responses": {
-      "price": "Hallo! Die Preise variieren je nach Modell. Unsere Bestseller beginnen ab 29,99 €. Soll ich Ihnen mehr über ein bestimmtes Produkt erzählen?",
-      "stock": "Ja, wir haben Lagerbestand 👌 Welche Größe, Farbe oder welches Modell interessiert Sie?",
-      "shipping": "Wir liefern europaweit 🚚 Die Lieferzeit beträgt 2-5 Werktage.",
-      "payment": "Wir akzeptieren Kreditkarte, PayPal und Banküberweisung 💳",
-      "hours": "Atento antwortet automatisch 24 Stunden am Tag, 7 Tage die Woche, auch an Feiertagen 😄",
-      "returns": "Wir bieten 30 Tage Garantie. Bei beschädigter Ware tauschen wir kostenlos aus.",
-      "default": "Hallo! Stellen Sie mir gerne Fragen zu Preisen, Verfügbarkeit, Versand, Zahlungsoptionen oder anderen Themen 😊"
+      "price": "Wir haben 3 Pakete: Starter (59 $/Monat), Growth (99 $/Monat) und Scale (179 $/Monat). Alle beinhalten 7 Tage kostenlose Testversion! Möchtest du wissen, was jedes einzelne beinhaltet?",
+      "how": "Ich verbinde mich mit deinem WhatsApp und antworte automatisch auf deine Kundenanfragen – rund um die Uhr. Ich lerne von deinem Geschäft, um so zu antworten, als wärst du es. 😎",
+      "features": "Ich kann Fragen beantworten, Kataloge in Echtzeit lesen, Termine vereinbaren und sogar Verkäufe abschließen, während du schläfst.",
+      "setup": "Es ist super einfach: Du erstellst das Konto, scannst einen QR-Code mit deinem WhatsApp und fertig, ich bin in 5 Minuten einsatzbereit! ⏱️",
+      "free": "Ja, wir haben eine kostenlose 7-tägige Testversion. Du kannst ausprobieren, wie ich auf deine Kunden antworte, ganz unverbindlich. Möchtest du den Link, um loszulegen?",
+      "human": "Wenn eine Anfrage zu komplex ist, markiere ich sie im Panel, damit ein Mensch antworten kann. Ich lasse den Kunden niemals im Stich!",
+      "default": "Hallo! Ich bin Atento AI. Du kannst mich nach unseren Paketen, wie der Bot funktioniert, oder nach der 7-tägigen kostenlosen Testversion fragen. 😊"
+    },
+    "errors": {
+      "network": "Oh, ich hatte ein kleines Verbindungsproblem 😅",
+      "brain": "Ups, ich konnte keine Verbindung zum Gehirn herstellen. Versuch es nochmal."
     }
   },
   "brands": [
-    { "icon": "👕", "name": "Modeshop Berlin" },
-    { "icon": "📱", "name": "Elektronik Hamburg" },
-    { "icon": "💎", "name": "Schmuck Online" },
-    { "icon": "🔧", "name": "Werkzeughandel" },
-    { "icon": "💄", "name": "Kosmetik München" },
-    { "icon": "💪", "name": "Supplements Shop" },
-    { "icon": "🛋️", "name": "Möbelhaus" },
-    { "icon": "📚", "name": "Online-Buchhandlung" }
+    {
+      "icon": "👕",
+      "name": "Modeshop Berlin"
+    },
+    {
+      "icon": "📱",
+      "name": "Elektronik Hamburg"
+    },
+    {
+      "icon": "💎",
+      "name": "Schmuck Online"
+    },
+    {
+      "icon": "🔧",
+      "name": "Werkzeughandel"
+    },
+    {
+      "icon": "💄",
+      "name": "Kosmetik München"
+    },
+    {
+      "icon": "💪",
+      "name": "Supplements Shop"
+    },
+    {
+      "icon": "🛋️",
+      "name": "Möbelhaus"
+    },
+    {
+      "icon": "📚",
+      "name": "Online-Buchhandlung"
+    }
   ],
   "features": {
     "title": "Alles was Sie brauchen,",
     "titleHighlight": "ohne Komplexität",
     "subtitle": "Atento passt sich Ihrem Unternehmen an, nicht umgekehrt.",
     "items": [
-      { "icon": "💬", "title": "Antwortet wie ein Mensch", "desc": "Keine Menüs, keine Schaltflächen. Es versteht den Kontext, erinnert sich an das Gespräch und antwortet natürlich." },
-      { "icon": "🕐", "title": "24 Stunden verfügbar", "desc": "Ihr Mitbewerber braucht 2 Stunden zum Antworten. Atento macht es in 3 Sekunden, um 3 Uhr morgens. Jede unbeantwortete Nachricht ist ein verlorener Verkauf." },
-      { "icon": "⚡", "title": "Kennt Ihren Katalog live", "desc": "Verbindet sich mit Ihrem Shop und kennt in Echtzeit den Bestand, den Preis und die Eigenschaften. Erfindet nie einen Preis." },
-      { "icon": "🛡️", "title": "Lernt Ihre Geschäftsregeln", "desc": "Sie erklären, wie Ihr Geschäft funktioniert, Ihre Verkaufsbedingungen, Ihre Richtlinien. Er wendet sie in jedem Gespräch an." },
-      { "icon": "📈", "title": "Verwandelt Anfragen in Verkäufe", "desc": "Es informiert nicht nur — es führt Kunden zum Kauf. Schlägt Produkte vor, berechnet Preise und schließt das Geschäft ab." },
-      { "icon": "🎛️", "title": "Volle Kontrolle über Ihr Panel", "desc": "Ändern Sie das Bot-Verhalten, aktualisieren Sie den Katalog und überprüfen Sie Metriken in einem einfachen Dashboard." }
+      {
+        "icon": "💬",
+        "title": "Antwortet wie ein Mensch",
+        "desc": "Keine Menüs, keine Schaltflächen. Es versteht den Kontext, erinnert sich an das Gespräch und antwortet natürlich."
+      },
+      {
+        "icon": "🕐",
+        "title": "24 Stunden verfügbar",
+        "desc": "Ihr Mitbewerber braucht 2 Stunden zum Antworten. Atento macht es in 3 Sekunden, um 3 Uhr morgens. Jede unbeantwortete Nachricht ist ein verlorener Verkauf."
+      },
+      {
+        "icon": "⚡",
+        "title": "Kennt Ihren Katalog live",
+        "desc": "Verbindet sich mit Ihrem Shop und kennt in Echtzeit den Bestand, den Preis und die Eigenschaften. Erfindet nie einen Preis."
+      },
+      {
+        "icon": "🛡️",
+        "title": "Lernt Ihre Geschäftsregeln",
+        "desc": "Sie erklären, wie Ihr Geschäft funktioniert, Ihre Verkaufsbedingungen, Ihre Richtlinien. Er wendet sie in jedem Gespräch an."
+      },
+      {
+        "icon": "📈",
+        "title": "Verwandelt Anfragen in Verkäufe",
+        "desc": "Es informiert nicht nur — es führt Kunden zum Kauf. Schlägt Produkte vor, berechnet Preise und schließt das Geschäft ab."
+      },
+      {
+        "icon": "🎛️",
+        "title": "Volle Kontrolle über Ihr Panel",
+        "desc": "Ändern Sie das Bot-Verhalten, aktualisieren Sie den Katalog und überprüfen Sie Metriken in einem einfachen Dashboard."
+      }
     ]
   },
   "beforeAfter": {
@@ -62,54 +115,169 @@
     "before": "Vorher",
     "after": "Mit Atento",
     "items": [
-      { "bad": "Sie verlieren Verkäufe im Schlaf", "good": "Antwortet in 3 Sekunden um 3 Uhr" },
-      { "bad": "Sie nennen Preise, die Sie nicht haben", "good": "Zeigt immer den echten Bestand" },
-      { "bad": "Stunden zum Antworten auf Nachrichten", "good": "Sofortige Antwort, immer" },
-      { "bad": "Jede Anfrage unterbricht Sie", "good": "Nur die sehen, die Sie brauchen" },
-      { "bad": "Fixkosten auch ohne Verkäufe", "good": "Fixkosten, keine Überraschungen" }
+      {
+        "bad": "Sie verlieren Verkäufe im Schlaf",
+        "good": "Antwortet in 3 Sekunden um 3 Uhr"
+      },
+      {
+        "bad": "Sie nennen Preise, die Sie nicht haben",
+        "good": "Zeigt immer den echten Bestand"
+      },
+      {
+        "bad": "Stunden zum Antworten auf Nachrichten",
+        "good": "Sofortige Antwort, immer"
+      },
+      {
+        "bad": "Jede Anfrage unterbricht Sie",
+        "good": "Nur die sehen, die Sie brauchen"
+      },
+      {
+        "bad": "Fixkosten auch ohne Verkäufe",
+        "good": "Fixkosten, keine Überraschungen"
+      }
     ]
   },
   "howItWorks": {
     "title": "Drei Schritte und",
     "titleHighlight": "Sie sind live",
     "steps": [
-      { "n": "1", "title": "Konto erstellen", "desc": "In weniger als 60 Sekunden mit Ihrer E-Mail registrieren.", "icon": "👤" },
-      { "n": "2", "title": "Bot konfigurieren", "desc": "Sagen Sie ihm, wie er sprechen soll: Ton, Name, Sprache, was er sagen darf und was nicht.", "icon": "🧠" },
-      { "n": "3", "title": "Katalog verbinden", "desc": "Shop-Link oder Google Sheets einfügen und der Bot lernt ihn automatisch.", "icon": "⚡" },
-      { "n": "4", "title": "WhatsApp QR scannen", "desc": "Verknüpfen Sie Ihre Nummer und fertig. Der Bot beginnt in Sekunden zu antworten.", "icon": "📱" }
+      {
+        "n": "1",
+        "title": "Konto erstellen",
+        "desc": "In weniger als 60 Sekunden mit Ihrer E-Mail registrieren.",
+        "icon": "👤"
+      },
+      {
+        "n": "2",
+        "title": "Bot konfigurieren",
+        "desc": "Sagen Sie ihm, wie er sprechen soll: Ton, Name, Sprache, was er sagen darf und was nicht.",
+        "icon": "🧠"
+      },
+      {
+        "n": "3",
+        "title": "Katalog verbinden",
+        "desc": "Shop-Link oder Google Sheets einfügen und der Bot lernt ihn automatisch.",
+        "icon": "⚡"
+      },
+      {
+        "n": "4",
+        "title": "WhatsApp QR scannen",
+        "desc": "Verknüpfen Sie Ihre Nummer und fertig. Der Bot beginnt in Sekunden zu antworten.",
+        "icon": "📱"
+      }
     ]
   },
   "reviews": {
     "title": "Was unsere",
     "titleHighlight": "Kunden sagen",
     "items": [
-      { "name": "Markus R.", "biz": "Modeshop Berlin", "text": "Ich hatte Angst, dass es wie ein generischer Bot wirkt, aber Atento versteht den Kontext. Meine Kunden wissen nicht, dass sie mit einer KI sprechen. Wir haben die Antwortquote im ersten Monat verdreifacht." },
-      { "name": "Sabine K.", "biz": "Supplement-Shop", "text": "Ich verlor früher Verkäufe, weil ich nachts nicht antworten konnte. Jetzt bedient der Bot um 3 Uhr genauso gut wie um 15 Uhr. Die nächtlichen Verkäufe allein haben das Abo bezahlt." },
-      { "name": "Thomas M.", "biz": "Elektronik Hamburg", "text": "Was mich am meisten überraschte, ist, dass er weiß, was vorrätig ist und was nicht. Er hat einem Kunden nie etwas versprochen, das wir nicht hatten. Das allein ist den Preis wert." },
-      { "name": "Julia F.", "biz": "Schmuck Online", "text": "Meine Kunden sind anspruchsvoll und ich dachte, sie würden merken, dass es ein Bot ist. Nichts. Der Ton, den ich eingestellt habe, ist genau unsere Markenstimme." },
-      { "name": "Stefan B.", "biz": "Werkzeughandel", "text": "Ich verwalte über 2.000 Produkte und Atento kennt sie alle. Preis, Verfügbarkeit, Beschreibung. Mein Vertriebsteam konzentriert sich jetzt auf die großen Aufträge." },
-      { "name": "Lena P.", "biz": "Kosmetik München", "text": "Innerhalb von zwei Wochen hatte ich bereits zurückverdient, was ich bezahlt hatte. Kunden schreiben, der Bot antwortet, ich bestätige nur die Bestellung." }
+      {
+        "name": "Markus R.",
+        "biz": "Modeshop Berlin",
+        "text": "Ich hatte Angst, dass es wie ein generischer Bot wirkt, aber Atento versteht den Kontext. Meine Kunden wissen nicht, dass sie mit einer KI sprechen. Wir haben die Antwortquote im ersten Monat verdreifacht."
+      },
+      {
+        "name": "Sabine K.",
+        "biz": "Supplement-Shop",
+        "text": "Ich verlor früher Verkäufe, weil ich nachts nicht antworten konnte. Jetzt bedient der Bot um 3 Uhr genauso gut wie um 15 Uhr. Die nächtlichen Verkäufe allein haben das Abo bezahlt."
+      },
+      {
+        "name": "Thomas M.",
+        "biz": "Elektronik Hamburg",
+        "text": "Was mich am meisten überraschte, ist, dass er weiß, was vorrätig ist und was nicht. Er hat einem Kunden nie etwas versprochen, das wir nicht hatten. Das allein ist den Preis wert."
+      },
+      {
+        "name": "Julia F.",
+        "biz": "Schmuck Online",
+        "text": "Meine Kunden sind anspruchsvoll und ich dachte, sie würden merken, dass es ein Bot ist. Nichts. Der Ton, den ich eingestellt habe, ist genau unsere Markenstimme."
+      },
+      {
+        "name": "Stefan B.",
+        "biz": "Werkzeughandel",
+        "text": "Ich verwalte über 2.000 Produkte und Atento kennt sie alle. Preis, Verfügbarkeit, Beschreibung. Mein Vertriebsteam konzentriert sich jetzt auf die großen Aufträge."
+      },
+      {
+        "name": "Lena P.",
+        "biz": "Kosmetik München",
+        "text": "Innerhalb von zwei Wochen hatte ich bereits zurückverdient, was ich bezahlt hatte. Kunden schreiben, der Bot antwortet, ich bestätige nur die Bestellung."
+      }
     ]
   },
   "pricing": {
     "title": "Einfache Pläne,",
-    "titleHighlight": "keine Überraschungen",
+    "titleHighlight": "ohne Überraschungen",
     "monthly": "Monat",
-    "popular": "Beliebteste",
+    "popular": "Am häufigsten gewählt",
+    "trialInfo": "Alle Pläne beinhalten 7 Tage kostenlose Testversion.",
+    "agencyPrompt": "Mehrere Unternehmen? Erkundigen Sie sich nach dem Agency-Plan →",
     "plans": [
-      { "name": "Starter", "price": 29, "desc": "Für Unternehmen, die mit der Automatisierung beginnen", "features": ["1 WhatsApp-Nummer", "Bis zu 500 Nachrichten/Monat", "Synchronisierter Katalog", "Kontrollpanel", "E-Mail-Support"], "cta": "Kostenlos starten" },
-      { "name": "Pro", "price": 59, "desc": "Der beliebteste für wachsende Unternehmen", "features": ["Alles aus Starter", "Bis zu 2.000 Nachrichten/Monat", "Prioritätssupport", "Außerhalb der Geschäftszeiten", "Erweiterte Wissensdatenbank"], "cta": "Kostenlos starten" },
-      { "name": "Business", "price": 99, "desc": "Für Unternehmen mit hohem Nachrichtenvolumen", "features": ["Alles aus Pro", "Unbegrenzte Nachrichten", "Instagram DMs", "Direkter WhatsApp-Support", "Mehrsprachig"], "cta": "Kostenlos starten" }
+      {
+        "name": "Starter",
+        "price": 59,
+        "oldPrice": 99,
+        "desc": "Einführungspreis. Auf Lebenszeit eingefroren.",
+        "features": [
+          "1 WhatsApp-Nummer",
+          "Bis zu 500 Nachrichten/Monat",
+          "Synchronisierter Katalog",
+          "Bedienfeld",
+          "Support per E-Mail"
+        ],
+        "cta": "Kostenlos starten"
+      },
+      {
+        "name": "Growth",
+        "price": 99,
+        "oldPrice": 150,
+        "desc": "Einführungspreis. Auf Lebenszeit eingefroren.",
+        "features": [
+          "Alles von Starter",
+          "Bis zu 2.000 Nachrichten/Monat",
+          "Prioritäts-Support",
+          "Anti-Nacht-Zeitplan",
+          "Erweiterte Wissensdatenbank"
+        ],
+        "cta": "Kostenlos starten"
+      },
+      {
+        "name": "Scale",
+        "price": 179,
+        "oldPrice": 220,
+        "desc": "Einführungspreis. Auf Lebenszeit eingefroren.",
+        "features": [
+          "Alles von Growth",
+          "Unbegrenzte Nachrichten",
+          "Instagram DMs",
+          "Direkter WhatsApp-Support",
+          "Mehrsprachig"
+        ],
+        "cta": "Kostenlos starten"
+      }
     ]
   },
   "faq": {
     "title": "Häufig gestellte Fragen",
     "items": [
-      { "q": "Kann ich jederzeit kündigen?", "a": "Ja, ohne Vertrag oder Strafe. Kündigen Sie jederzeit über Ihr Dashboard." },
-      { "q": "Was passiert, wenn ich das Nachrichtenlimit überschreite?", "a": "Wir benachrichtigen Sie, bevor Sie das Limit erreichen. Sie können upgraden oder auf den nächsten Monat warten." },
-      { "q": "Funktioniert es mit jeder WhatsApp-Nummer?", "a": "Funktioniert mit WhatsApp Business und persönlichen Nummern. Sie müssen Ihre aktuelle Nummer nicht ändern." },
-      { "q": "Kann ich den Plan wechseln?", "a": "Ja, jederzeit über Ihr Dashboard. Die Änderung tritt sofort in Kraft." },
-      { "q": "Wie schnell kann ich loslegen?", "a": "In weniger als 10 Minuten. Die geführte Einrichtung führt Sie Schritt für Schritt, bis der Bot live ist." }
+      {
+        "q": "Kann ich jederzeit kündigen?",
+        "a": "Ja, ohne Vertrag oder Strafe. Kündigen Sie jederzeit über Ihr Dashboard."
+      },
+      {
+        "q": "Was passiert, wenn ich das Nachrichtenlimit überschreite?",
+        "a": "Wir benachrichtigen Sie, bevor Sie das Limit erreichen. Sie können upgraden oder auf den nächsten Monat warten."
+      },
+      {
+        "q": "Funktioniert es mit jeder WhatsApp-Nummer?",
+        "a": "Funktioniert mit WhatsApp Business und persönlichen Nummern. Sie müssen Ihre aktuelle Nummer nicht ändern."
+      },
+      {
+        "q": "Kann ich den Plan wechseln?",
+        "a": "Ja, jederzeit über Ihr Dashboard. Die Änderung tritt sofort in Kraft."
+      },
+      {
+        "q": "Wie schnell kann ich loslegen?",
+        "a": "In weniger als 10 Minuten. Die geführte Einrichtung führt Sie Schritt für Schritt, bis der Bot live ist."
+      }
     ]
   },
   "cta": {
@@ -120,7 +288,12 @@
     "trust": "Keine Kreditkarte erforderlich · Jederzeit kündigen · 14 Tage kostenlos"
   },
   "footer": {
-    "rights": "Alle Rechte vorbehalten."
+    "tagline": "Der Mitarbeiter, der nie versagt. 24/7 verfügbar, kennt Ihr Geschäft im Detail und antwortet wie ein Mensch.",
+    "product": "PRODUKT",
+    "legal": "RECHTLICHES",
+    "privacy": "Datenschutzrichtlinie",
+    "terms": "Nutzungsbedingungen",
+    "contact": "Kontakt"
   },
   "login": {
     "title": "Anmelden",
@@ -174,5 +347,37 @@
   },
   "langSwitcher": {
     "language": "Sprache"
+  },
+  "platform": {
+    "label": "PLATTFORM",
+    "title": "Entwickelt für",
+    "titleHighlight": "echte Ergebnisse",
+    "speed": "Antwortgeschwindigkeit",
+    "speedDesc": "Während die manuelle Betreuung durchschnittlich 2 Stunden Wartezeit hat, antwortet Atento in weniger als 3 Sekunden – 7 Tage die Woche, unabhängig von der Uhrzeit.",
+    "conversionLabel": "Konversionsrate (Anfragen → Verkäufe)",
+    "chartWithBot": "Mit Atento",
+    "chartManual": "Manuelle Betreuung",
+    "chartBasic": "Basis-Chatbot",
+    "chartNone": "Keine Betreuung",
+    "metrics": {
+      "time": "< 3",
+      "timeUnit": "sek",
+      "timeLabel": "Antwort",
+      "uptime": "24/7",
+      "uptimeLabel": "verfügbar",
+      "errors": "0",
+      "errorsLabel": "Ermüdungsfehler"
+    }
+  },
+  "dashboard": {
+    "label": "BEDIENFELD",
+    "title": "Ihr Geschäft in Echtzeit",
+    "desc": "Metriken, Gespräche und Bot-Verhalten von einem einfachen und übersichtlichen Panel aus."
+  },
+  "liveDemo": {
+    "label": "Live-Demo",
+    "title": "Probieren Sie es jetzt aus, ohne sich anzumelden",
+    "desc": "Schreiben Sie ihm, als wären Sie ein Kunde. Sehen Sie, wie er antwortet.",
+    "tryIt": "Gefallen? Kostenlos starten"
   }
 }

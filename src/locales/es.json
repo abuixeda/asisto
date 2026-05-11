@@ -1,4 +1,4 @@
-﻿{
+{
   "nav": {
     "features": "Funciones",
     "howItWorks": "Cómo funciona",
@@ -12,10 +12,11 @@
     "title": "Tu negocio responde solo.",
     "titleHighlight": "24hs. Sin errores. Sin sueldo.",
     "subtitle": "Atento AI atiende las consultas de WhatsApp de tu negocio, conoce tu catálogo al detalle y responde como un humano — sin que vos estés presente.",
-    "hint": "Configuración en 5 minutos. Sin conocimientos técnicos.",
+    "hint": "Instalación en 5 minutos. No requiere conocimientos técnicos.",
     "cta": "Empezar gratis",
     "ctaSecondary": "▶ Ver demo en vivo",
     "noCc": "Sin tarjeta de crédito · 7 días gratis",
+    "urgency": "OFERTA LANZAMIENTO: Solo quedan 14 cupos con el precio congelado.",
     "stats": {
       "responses": "Consultas respondidas",
       "uptime": "Tiempo de respuesta",
@@ -26,15 +27,19 @@
     "online": "● en línea ahora",
     "title": "Demo — Atento AI",
     "placeholder": "Escribí tu consulta...",
-    "greeting": "¡Hola! Soy el asistente virtual. Preguntame sobre precios, stock, envíos o lo que necesites 😊",
+    "greeting": "¡Hola! Soy Atento, el asistente virtual de Atento AI. Preguntame cómo funciono, los precios o cómo podés probarme gratis 🚀",
     "responses": {
-      "price": "¡Hola! El precio varía según el modelo. Los más vendidos arrancan desde $29.990. ¿Querés que te cuente más sobre alguno en particular?",
-      "stock": "Sí, tenemos stock disponible 👌 ¿En qué talle, color o modelo te interesa?",
-      "shipping": "Enviamos a todo el país 🚚 El envío demora 24-48hs hábiles por Correo Argentino o Andreani.",
-      "payment": "Aceptamos transferencia bancaria, Mercado Pago y tarjeta de crédito en cuotas 💳",
-      "hours": "Atento responde automáticamente las 24 horas, los 7 días de la semana, feriados incluidos 😄",
-      "returns": "Tenemos 30 días de garantía. Si el producto llega en mal estado, el cambio es sin costo.",
-      "default": "¡Hola! Podés preguntarme sobre precios, stock, envíos, formas de pago o cualquier duda 😊"
+      "price": "Tenemos 3 planes: Starter ($59/mes), Growth ($99/mes) y Scale ($179/mes). ¡Todos incluyen 7 días de prueba gratis! ¿Te gustaría saber qué incluye cada uno?",
+      "how": "Me conecto a tu WhatsApp y respondo automáticamente a tus clientes las 24 horas. Aprendo de tu negocio para responder como si fueras vos. 😎",
+      "features": "Puedo contestar dudas, leer catálogos en tiempo real, agendar citas y hasta cerrar ventas mientras vos dormís.",
+      "setup": "Es súper fácil: te creás la cuenta, escaneás un código QR con tu WhatsApp y listo, ¡ya estoy funcionando en 5 minutos! ⏱️",
+      "free": "Sí, tenemos una prueba gratuita de 7 días. Podés probar cómo respondo a tus clientes sin compromiso. ¿Querés el link para empezar?",
+      "human": "Si una consulta es muy compleja, te la dejo marcada en el panel para que un humano la responda. ¡Nunca dejo al cliente colgado!",
+      "default": "¡Hola! Soy Atento AI. Podés preguntarme sobre nuestros planes, cómo funciona el bot o sobre la prueba gratuita de 7 días. 😊"
+    },
+    "errors": {
+      "network": "Uy, tuve un problemita de conexión 😅",
+      "brain": "Ups, no me pude conectar al cerebro. Intentá de nuevo."
     }
   },
   "brands": [
@@ -73,8 +78,10 @@
     ]
   },
   "howItWorks": {
+    "label": "CÓMO FUNCIONA",
     "title": "Tres pasos y",
     "titleHighlight": "ya estás funcionando",
+    "desc": "Sin instalar nada. Sin programar nada.",
     "steps": [
       { "n": "1", "title": "Creás tu cuenta", "desc": "Registrate con tu email en menos de 60 segundos.", "icon": "👤" },
       { "n": "2", "title": "Configurás el bot", "desc": "Le decís cómo tiene que hablar: tono, nombre, idioma, qué puede y qué no puede decir.", "icon": "🧠" },
@@ -99,10 +106,12 @@
     "titleHighlight": "sin sorpresas",
     "monthly": "mes",
     "popular": "Más elegido",
+    "trialInfo": "Todos los planes incluyen 7 días de prueba gratis.",
+    "agencyPrompt": "¿Múltiples negocios? Consultá el plan Agency →",
     "plans": [
-      { "name": "Starter", "price": 49, "desc": "Para negocios que empiezan a automatizar", "features": ["1 número WhatsApp", "Hasta 500 mensajes/mes", "Catálogo sincronizado", "Panel de control", "Soporte por email"], "cta": "Empezar gratis" },
-      { "name": "Pro", "price": 89, "desc": "El más elegido por negocios en crecimiento", "features": ["Todo lo de Starter", "Hasta 2.000 mensajes/mes", "Soporte prioritario", "Horario anti-nocturno", "Base de conocimientos avanzada"], "cta": "Empezar gratis" },
-      { "name": "Business", "price": 149, "desc": "Para negocios con alto volumen de consultas", "features": ["Todo lo de Pro", "Mensajes ilimitados", "Instagram DMs", "Soporte directo WhatsApp", "Multi-idioma"], "cta": "Empezar gratis" }
+      { "name": "Starter", "price": 59, "oldPrice": 99, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["1 número WhatsApp", "Hasta 500 mensajes/mes", "Catálogo sincronizado", "Panel de control", "Soporte por email"], "cta": "Empezar gratis" },
+      { "name": "Growth", "price": 99, "oldPrice": 150, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["Todo lo de Starter", "Hasta 2.000 mensajes/mes", "Soporte prioritario", "Horario anti-nocturno", "Base de conocimientos avanzada"], "cta": "Empezar gratis" },
+      { "name": "Scale", "price": 179, "oldPrice": 220, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["Todo lo de Growth", "Mensajes ilimitados", "Instagram DMs", "Soporte directo WhatsApp", "Multi-idioma"], "cta": "Empezar gratis" }
     ]
   },
   "faq": {
@@ -120,7 +129,7 @@
     "titleHighlight": "esperando respuesta.",
     "subtitle": "Empezá hoy. En 5 minutos tu bot está activo.",
     "button": "Crear mi cuenta gratis",
-    "trust": "Sin tarjeta de crédito · 7 días gratis · Cancelás cuando quieras"
+    "trust": "7 días gratis · Requiere tarjeta para verificar · Cancelás cuando quieras"
   },
   "footer": {
     "rights": "Todos los derechos reservados."
@@ -142,7 +151,7 @@
   },
   "register": {
     "title": "Crear cuenta",
-    "subtitle": "Empezá tu prueba gratuita de 14 días.",
+    "subtitle": "Empezá tu prueba gratuita de 7 días (Requiere tarjeta).",
     "businessName": "Nombre del negocio",
     "email": "Email",
     "password": "Contraseña",
@@ -177,5 +186,60 @@
   },
   "langSwitcher": {
     "language": "Idioma"
+  },
+  "platform": {
+    "label": "PLATAFORMA",
+    "title": "Diseñado para",
+    "titleHighlight": "resultados reales",
+    "speed": "Velocidad de respuesta",
+    "speedDesc": "Mientras la atención manual promedia 2 horas de espera, Atento responde en menos de 3 segundos — los 7 días de la semana, sin importar el horario.",
+    "conversionLabel": "Tasa de conversión (consultas → ventas)",
+    "chartWithBot": "Con Atento",
+    "chartManual": "Atención manual",
+    "chartBasic": "Chatbot básico",
+    "chartNone": "Sin atención",
+    "metrics": {
+      "time": "< 3",
+      "timeUnit": "seg",
+      "timeLabel": "respuesta",
+      "uptime": "24/7",
+      "uptimeLabel": "disponible",
+      "errors": "0",
+      "errorsLabel": "errores por cansancio"
+    }
+  },
+  "dashboard": {
+    "label": "PANEL DE CONTROL",
+    "title": "Tu negocio en tiempo real",
+    "desc": "Métricas, conversaciones y comportamiento del bot desde un panel simple y claro."
+  },
+  "liveDemo": {
+    "label": "Demo en vivo",
+    "title": "Probalo ahora, sin registrarte",
+    "desc": "Escribile como si fueras un cliente. Mirá cómo responde.",
+    "tryIt": "¿Te gustó? Empezar gratis"
+  },
+  "socialProof": {
+    "title": "Negocios que ya confían en Atento AI"
+  },
+  "platformAvailability": {
+    "label": "También disponible en",
+    "shopify": { "name": "Shopify App Store", "sub": "Instalación con 1 click" },
+    "tiendaNube": { "name": "Tienda Nube", "sub": "Integración nativa LATAM" },
+    "googleSheets": { "name": "Google Sheets", "sub": "Catálogo desde tu planilla" },
+    "badges": { "soon": "Próximamente", "now": "Disponible" }
+  },
+  "stats": {
+    "messages": "10.000+ mensajes respondidos esta semana",
+    "satisfaction": "4.9/5 satisfacción promedio",
+    "businesses": "340+ negocios activos"
+  },
+  "footer": {
+    "tagline": "El empleado que nunca falla. Disponible 24/7, conoce tu negocio al detalle y responde como humano.",
+    "product": "PRODUCTO",
+    "legal": "LEGAL",
+    "privacy": "Política de privacidad",
+    "terms": "Términos y condiciones",
+    "contact": "Contacto"
   }
 }

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronRight, Check, Star, Menu, X, ChevronDown, Send,
@@ -152,18 +152,19 @@ function LiveToast() {
 
 /* ─── Animated Bar Chart ──────────────────────────────── */
 function BarChart() {
+  const { t } = useTranslation();
   const [ref, inView] = useInView(0.3);
   const bars = [
-    { label: 'Con Atento',      pct: 97, color: 'linear-gradient(90deg,#e040fb,#9333ea)' },
-    { label: 'Atención manual', pct: 42, color: 'linear-gradient(90deg,#7c3aed,#a855f7)' },
-    { label: 'Chatbot básico',  pct: 61, color: 'linear-gradient(90deg,#00d4ff,#38bdf8)' },
-    { label: 'Sin atención',    pct: 18, color: 'linear-gradient(90deg,#e040fb,#00d4ff)' },
+    { label: t('platform.chartWithBot'),      pct: 97, color: 'linear-gradient(90deg,#e040fb,#9333ea)' },
+    { label: t('platform.chartManual'), pct: 42, color: 'linear-gradient(90deg,#7c3aed,#a855f7)' },
+    { label: t('platform.chartBasic'),  pct: 61, color: 'linear-gradient(90deg,#00d4ff,#38bdf8)' },
+    { label: t('platform.chartNone'),    pct: 18, color: 'linear-gradient(90deg,#e040fb,#00d4ff)' },
   ];
   return (
     <div ref={ref} style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '16px', padding: '1.5rem' }}>
       <div style={{ fontSize: '0.72rem', color: C.textMuted, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '1.25rem', fontWeight: 600 }}>
         <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: C.pink, marginRight: 6 }} />
-        Tasa de conversión (consultas → ventas)
+        {t('platform.conversionLabel')}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {bars.map((b, i) => (
@@ -186,17 +187,6 @@ function BarChart() {
 function DemoChat() {
   const { t } = useTranslation();
 
-  function getDemoResponse(input) {
-    const txt = input.toLowerCase();
-    if (/precio|price|cuanto|cost|cuesta|vale|costo/.test(txt))       return t('demo.responses.price');
-    if (/stock|tienen|hay|disponible|available|have/.test(txt))        return t('demo.responses.stock');
-    if (/envío|shipping|mandan|llega|despacho|deliver/.test(txt))      return t('demo.responses.shipping');
-    if (/pago|payment|transferencia|mercadopago|tarjeta|card/.test(txt)) return t('demo.responses.payment');
-    if (/horario|hour|atienden|cuando|abierto|open/.test(txt))         return t('demo.responses.hours');
-    if (/devolución|return|cambio|garantía|guarantee/.test(txt))        return t('demo.responses.returns');
-    return t('demo.responses.default');
-  }
-
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -209,13 +199,31 @@ function DemoChat() {
 
   useEffect(() => { if (messages.length > 1 || loading) bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
-  function send() {
+  async function send() {
     const txt = input.trim();
     if (!txt || loading) return;
     setInput('');
-    setMessages(m => [...m, { from: 'client', text: txt }]);
+    const newMsgs = [...messages, { from: 'client', text: txt }];
+    setMessages(newMsgs);
     setLoading(true);
-    setTimeout(() => { setMessages(m => [...m, { from: 'bot', text: getDemoResponse(txt) }]); setLoading(false); }, 1200);
+
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const res = await fetch(`${API_URL}/api/demo/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMsgs })
+      });
+      const data = await res.json();
+      if (res.ok && data.text) {
+        setMessages([...newMsgs, { from: 'bot', text: data.text }]);
+      } else {
+        setMessages([...newMsgs, { from: 'bot', text: data.error || t('demo.errors.network') }]);
+      }
+    } catch (err) {
+      setMessages([...newMsgs, { from: 'bot', text: t('demo.errors.brain') }]);
+    }
+    setLoading(false);
   }
 
   return (
@@ -429,6 +437,13 @@ export default function LandingVolume() {
 
         <div style={{ position: 'relative', zIndex: 1, maxWidth: '800px', margin: '0 auto' }}>
           <FadeIn>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', background: 'rgba(255,59,48,0.1)', border: '1px solid rgba(255,59,48,0.3)', borderRadius: '8px', padding: '0.5rem 1.2rem', fontSize: '0.9rem', color: '#ff453a', marginBottom: '1.5rem', fontWeight: 800, boxShadow: '0 0 20px rgba(255,59,48,0.15)' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff453a', display: 'inline-block', boxShadow: '0 0 8px #ff453a', animation: 'heroGlow 2s infinite' }} />
+              {t('hero.urgency')}
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={0.05}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(224,64,251,0.1)', border: '1px solid rgba(224,64,251,0.25)', borderRadius: '99px', padding: '0.3rem 1rem', fontSize: '0.8rem', color: C.pink, marginBottom: '1.5rem', fontWeight: 700 }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.pink, display: 'inline-block', boxShadow: `0 0 8px ${C.pink}` }} />
               {t('hero.badge')}
@@ -484,7 +499,7 @@ export default function LandingVolume() {
 
       {/* ════════════ SOCIAL PROOF ════════════ */}
       <section style={{ borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '1.75rem 0', overflow: 'hidden', background: C.bgCard2 }}>
-        <p style={{ textAlign: 'center', fontSize: '0.72rem', color: C.textMuted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.1rem', fontWeight: 700 }}>Negocios que ya confían en Atento AI</p>
+        <p style={{ textAlign: 'center', fontSize: '0.72rem', color: C.textMuted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.1rem', fontWeight: 700 }}>{t('socialProof.title')}</p>
         <div style={{ display: 'flex', width: 'max-content', animation: 'marquee 22s linear infinite' }}>
           {[...brands, ...brands].map((b, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '99px', padding: '0.38rem 1rem', marginRight: '0.75rem', whiteSpace: 'nowrap', fontSize: '0.82rem', color: C.textSec, fontWeight: 500 }}>
@@ -497,12 +512,12 @@ export default function LandingVolume() {
       {/* ════════════ PLATAFORMAS ════════════ */}
       <section style={{ padding: '2.75rem 2rem', borderBottom: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: '900px', margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: '0.72rem', color: C.textMuted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.5rem', fontWeight: 700 }}>También disponible en</div>
+          <div style={{ fontSize: '0.72rem', color: C.textMuted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.5rem', fontWeight: 700 }}>{t('platformAvailability.label')}</div>
           <div className="platform-grid" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             {[
-              { emoji: '🛍️', name: 'Shopify App Store', sub: 'Instalación con 1 click', soon: true },
-              { emoji: '☁️', name: 'Tienda Nube',       sub: 'Integración nativa LATAM', soon: true },
-              { emoji: '📊', name: 'Google Sheets',     sub: 'Catálogo desde tu planilla', soon: false },
+              { emoji: '🛍️', name: t('platformAvailability.shopify.name'), sub: t('platformAvailability.shopify.sub'), soon: true },
+              { emoji: '☁️', name: t('platformAvailability.tiendaNube.name'), sub: t('platformAvailability.tiendaNube.sub'), soon: true },
+              { emoji: '📊', name: t('platformAvailability.googleSheets.name'), sub: t('platformAvailability.googleSheets.sub'), soon: false },
             ].map((p, i) => (
               <div key={i} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '0.85rem', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '0.9rem 1.35rem', textAlign: 'left' }}>
                 <div style={{ fontSize: '1.7rem' }}>{p.emoji}</div>
@@ -510,8 +525,8 @@ export default function LandingVolume() {
                   <div style={{ fontWeight: 700, fontSize: '0.9rem', color: C.text }}>{p.name}</div>
                   <div style={{ fontSize: '0.73rem', color: C.textMuted }}>{p.sub}</div>
                 </div>
-                {p.soon  && <div style={{ position: 'absolute', top: '-10px', right: '10px', background: C.gradBtn, color: 'white', fontSize: '0.6rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', letterSpacing: '0.05em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Próximamente</div>}
-                {!p.soon && <div style={{ position: 'absolute', top: '-10px', right: '10px', background: C.green, color: 'white', fontSize: '0.6rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Disponible</div>}
+                {p.soon  && <div style={{ position: 'absolute', top: '-10px', right: '10px', background: C.gradBtn, color: 'white', fontSize: '0.6rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', letterSpacing: '0.05em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{t('platformAvailability.badges.soon')}</div>}
+                {!p.soon && <div style={{ position: 'absolute', top: '-10px', right: '10px', background: C.green, color: 'white', fontSize: '0.6rem', fontWeight: 800, padding: '2px 8px', borderRadius: '99px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{t('platformAvailability.badges.now')}</div>}
               </div>
             ))}
           </div>
@@ -546,9 +561,9 @@ export default function LandingVolume() {
       <section style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', background: C.bgCard2, borderBottom: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <FadeIn style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <div style={{ fontSize: '0.72rem', color: C.cyan, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>PLATAFORMA</div>
+            <div style={{ fontSize: '0.72rem', color: C.cyan, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>{t('platform.label')}</div>
             <h2 style={{ fontSize: 'clamp(1.9rem,3.5vw,3rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1 }}>
-              Diseñado para <GradText>resultados reales</GradText>
+              {t('platform.title')} <GradText>{t('platform.titleHighlight')}</GradText>
             </h2>
           </FadeIn>
           <div className="perf-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem', alignItems: 'center' }}>
@@ -556,13 +571,13 @@ export default function LandingVolume() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
                   <div style={{ width: 42, height: 42, borderRadius: '10px', background: 'rgba(224,64,251,0.12)', border: '1px solid rgba(224,64,251,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>⚡</div>
-                  <h3 style={{ fontWeight: 800, fontSize: '1.3rem', color: C.text }}>Velocidad de respuesta</h3>
+                  <h3 style={{ fontWeight: 800, fontSize: '1.3rem', color: C.text }}>{t('platform.speed')}</h3>
                 </div>
                 <p style={{ color: C.textSec, fontSize: '1rem', lineHeight: 1.75, marginBottom: '1.5rem' }}>
-                  Mientras la atención manual promedia 2 horas de espera, Atento responde en menos de 3 segundos — los 7 días de la semana, sin importar el horario.
+                  {t('platform.speedDesc')}
                 </p>
                 <div style={{ display: 'flex', gap: '2rem' }}>
-                  {[{ n: '< 3', unit: 'seg', label: 'respuesta' }, { n: '24/7', unit: '', label: 'disponible' }, { n: '0', unit: '', label: 'errores por cansancio' }].map((m, i) => (
+                  {[{ n: t('platform.metrics.time'), unit: t('platform.metrics.timeUnit'), label: t('platform.metrics.timeLabel') }, { n: t('platform.metrics.uptime'), unit: '', label: t('platform.metrics.uptimeLabel') }, { n: t('platform.metrics.errors'), unit: '', label: t('platform.metrics.errorsLabel') }].map((m, i) => (
                     <div key={i}>
                       <div style={{ fontSize: '1.4rem', fontWeight: 900, color: C.text, letterSpacing: '-0.03em' }}>{m.n}<span style={{ fontSize: '0.9rem', color: C.pink }}>{m.unit}</span></div>
                       <div style={{ fontSize: '0.72rem', color: C.textMuted, fontWeight: 600 }}>{m.label}</div>
@@ -611,9 +626,9 @@ export default function LandingVolume() {
       <section style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', background: C.bgCard2, borderBottom: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <FadeIn style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div style={{ fontSize: '0.72rem', color: C.pink, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>PANEL DE CONTROL</div>
-            <h2 style={{ fontSize: 'clamp(1.9rem,3.5vw,3rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1 }}>Tu negocio en tiempo real</h2>
-            <p style={{ color: C.textSec, fontSize: '1.05rem', maxWidth: '460px', margin: '0.75rem auto 0' }}>Métricas, conversaciones y comportamiento del bot desde un panel simple y claro.</p>
+            <div style={{ fontSize: '0.72rem', color: C.pink, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>{t('dashboard.label')}</div>
+            <h2 style={{ fontSize: 'clamp(1.9rem,3.5vw,3rem)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1 }}>{t('dashboard.title')}</h2>
+            <p style={{ color: C.textSec, fontSize: '1.05rem', maxWidth: '460px', margin: '0.75rem auto 0' }}>{t('dashboard.desc')}</p>
           </FadeIn>
           <FadeIn delay={0.1}><ProductDemo /></FadeIn>
         </div>
@@ -623,9 +638,9 @@ export default function LandingVolume() {
       <section style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', borderBottom: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <FadeIn style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <div style={{ fontSize: '0.72rem', color: C.cyan, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>CÓMO FUNCIONA</div>
+            <div style={{ fontSize: '0.72rem', color: C.cyan, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>{t('howItWorks.label')}</div>
             <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.7rem)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '0.5rem' }}>{t('howItWorks.title')} <GradText>{t('howItWorks.titleHighlight')}</GradText></h2>
-            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>Sin instalar nada. Sin programar nada.</p>
+            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>{t('howItWorks.desc')}</p>
           </FadeIn>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             {steps.map((s, i) => (
@@ -648,14 +663,14 @@ export default function LandingVolume() {
       <section id="demo" style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', background: C.bgCard2, borderBottom: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: '680px', margin: '0 auto' }}>
           <FadeIn style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.22)', borderRadius: '99px', padding: '0.3rem 0.9rem', fontSize: '0.78rem', color: C.waGreen, marginBottom: '1rem', fontWeight: 700 }}>● Demo en vivo</div>
-            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.5rem)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '0.6rem' }}>Probalo ahora, sin registrarte</h2>
-            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>Escribile como si fueras un cliente. Mirá cómo responde.</p>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.22)', borderRadius: '99px', padding: '0.3rem 0.9rem', fontSize: '0.78rem', color: C.waGreen, marginBottom: '1rem', fontWeight: 700 }}>● {t('liveDemo.label')}</div>
+            <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.5rem)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '0.6rem' }}>{t('liveDemo.title')}</h2>
+            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>{t('liveDemo.desc')}</p>
           </FadeIn>
           <FadeIn delay={0.1}><DemoChat /></FadeIn>
           <FadeIn delay={0.15} style={{ textAlign: 'center', marginTop: '2rem' }}>
             <button onClick={() => scrollTo('cta')} className="btn-primary" style={{ padding: '0.85rem 2rem', borderRadius: '10px', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-              ¿Te gustó? {t('nav.start')} <ChevronRight size={17} />
+              {t('liveDemo.tryIt')} <ChevronRight size={17} />
             </button>
           </FadeIn>
         </div>
@@ -687,7 +702,7 @@ export default function LandingVolume() {
           </div>
           <FadeIn>
             <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '1rem 1.75rem', display: 'flex', justifyContent: 'center', gap: '2.5rem', flexWrap: 'wrap' }}>
-              {['10.000+ mensajes respondidos esta semana', '4.9/5 satisfacción promedio', '340+ negocios activos'].map((t,i) => (
+              {[t('stats.messages'), t('stats.satisfaction'), t('stats.businesses')].map((t,i) => (
                 <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: C.textSec }}>
                   <span style={{ color: C.pink, fontSize: '0.6rem' }}>●</span> {t}
                 </span>
@@ -703,7 +718,7 @@ export default function LandingVolume() {
           <FadeIn style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div style={{ fontSize: '0.72rem', color: C.cyan, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>{t('nav.pricing').toUpperCase()}</div>
             <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.7rem)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '0.6rem' }}>{t('pricing.title')} <GradText>{t('pricing.titleHighlight')}</GradText></h2>
-            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>Todos los planes incluyen 7 días de prueba gratis.</p>
+            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>{t('pricing.trialInfo')}</p>
           </FadeIn>
           <div className="plan-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(265px,1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
             {plans.map((p, i) => {
@@ -714,8 +729,11 @@ export default function LandingVolume() {
                     {highlight && <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: C.gradBtn, color: 'white', borderRadius: '99px', padding: '0.2rem 1rem', fontSize: '0.72rem', fontWeight: 800, whiteSpace: 'nowrap' }}>{t('pricing.popular').toUpperCase()}</div>}
                     <div>
                       <div style={{ fontWeight: 800, fontSize: '0.8rem', color: highlight ? C.pink : C.textSec, marginBottom: '0.4rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{p.name}</div>
+                      {p.oldPrice && (
+                        <div style={{ fontSize: '1.2rem', color: C.textMuted, textDecoration: 'line-through', marginBottom: '-0.3rem', fontWeight: 600 }}>USD {p.oldPrice}</div>
+                      )}
                       <div style={{ fontSize: '2.4rem', fontWeight: 900, letterSpacing: '-0.03em', color: C.text }}>USD {p.price}<span style={{ fontSize: '1rem', fontWeight: 500, color: C.textSec }}>/{t('pricing.monthly')}</span></div>
-                      <div style={{ fontSize: '0.85rem', color: C.textMuted, marginTop: '0.25rem' }}>{p.desc}</div>
+                      <div style={{ fontSize: '0.85rem', color: highlight ? C.pink : C.cyan, marginTop: '0.25rem', fontWeight: 600 }}>{p.desc}</div>
                     </div>
                     <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem', flex: 1 }}>
                       {p.features.map((f, j) => (
@@ -732,7 +750,7 @@ export default function LandingVolume() {
           </div>
           <FadeIn>
             <p style={{ textAlign: 'center', color: C.textSec, fontSize: '0.88rem' }}>
-              Precios en USD · <a href="mailto:hola@atento.ai" style={{ color: C.pink, textDecoration: 'none', fontWeight: 700 }}>¿Múltiples negocios? Consultá el plan Agency →</a>
+              <a href="/premium" style={{ color: C.pink, textDecoration: 'none', fontWeight: 700 }}>{t('pricing.agencyPrompt')}</a>
             </p>
           </FadeIn>
           <FadeIn delay={0.1} style={{ maxWidth: '620px', margin: '3rem auto 0' }}>
@@ -775,17 +793,17 @@ export default function LandingVolume() {
                 <span style={{ fontSize: '1.3rem' }}>🤖</span>
                 <span style={{ fontWeight: 800, fontSize: '1.05rem', color: C.text }}>Atento AI</span>
               </div>
-              <p style={{ color: C.textMuted, fontSize: '0.87rem', lineHeight: 1.65, maxWidth: '240px', margin: 0 }}>El empleado que nunca falla. Disponible 24/7, conoce tu negocio al detalle y responde como humano.</p>
+              <p style={{ color: C.textMuted, fontSize: '0.87rem', lineHeight: 1.65, maxWidth: '240px', margin: 0 }}>{t('footer.tagline')}</p>
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: '0.78rem', color: C.textSec, marginBottom: '1rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Producto</div>
+              <div style={{ fontWeight: 700, fontSize: '0.78rem', color: C.textSec, marginBottom: '1rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{t('footer.product')}</div>
               {[['features', t('nav.features')],['pricing', t('nav.pricing')],['reviews', t('nav.clients')]].map(([id, label]) => (
                 <div key={id} style={{ marginBottom: '0.6rem' }}><button onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textMuted, cursor: 'pointer', fontSize: '0.87rem', padding: 0, fontFamily: 'inherit' }}>{label}</button></div>
               ))}
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: '0.78rem', color: C.textSec, marginBottom: '1rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Legal</div>
-              {[['Política de privacidad','/privacidad'],['Términos y condiciones','/terminos'],['Contacto','mailto:hola@atento.ai']].map(([label, href]) => (
+              <div style={{ fontWeight: 700, fontSize: '0.78rem', color: C.textSec, marginBottom: '1rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{t('footer.legal')}</div>
+              {[[t('footer.privacy'),'/privacidad'],[t('footer.terms'),'/terminos'],[t('footer.contact'),'mailto:hola@atento.ai']].map(([label, href]) => (
                 <div key={label} style={{ marginBottom: '0.6rem' }}><a href={href} style={{ color: C.textMuted, textDecoration: 'none', fontSize: '0.87rem' }}>{label}</a></div>
               ))}
             </div>

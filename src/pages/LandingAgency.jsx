@@ -1,5 +1,7 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, Phone, Settings, CheckCircle, BarChart2, Menu, X } from 'lucide-react';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 /* ─── Paleta ─────────────────────────────────────────── */
 const C = {
@@ -19,61 +21,9 @@ const C = {
 };
 
 /* ─── Datos ───────────────────────────────────────────── */
-const WA_MESSAGES = [
-  { from: 'client', text: 'Hola! tienen zapatos de cuero en número 42?' },
-  { from: 'bot',    text: 'Hola! Sí, tenemos mocasines de cuero vacuno en el 42. Disponibles en negro y marrón. ¿Cuál preferís?' },
-  { from: 'client', text: 'El negro. Cuánto sale?' },
-  { from: 'bot',    text: 'El negro está en $94.900. Lo podemos enviar mañana a cualquier punto del país. ¿Reservamos uno?' },
-  { from: 'client', text: 'Si, perfecto' },
-  { from: 'bot',    text: 'Genial! 🎉 En un momento te paso los datos para coordinar el pago.' },
-];
+const WA_NUMBER = '5491100000000'; // reemplazar por número real
 
-const DIFFERENTIATORS = [
-  { title: 'Entiende preguntas complejas', desc: 'No importa cómo escribe el cliente. Entiende variantes, errores de tipeo y preguntas en lenguaje natural.' },
-  { title: 'Conoce tu catálogo en tiempo real', desc: 'Se sincroniza con tu tienda. Nunca informa un precio desactualizado ni promete stock que no tenés.' },
-  { title: 'Aprende tus reglas de negocio', desc: 'Le enseñamos cómo operás: condiciones de venta, políticas de cambio, zonas de entrega. Las aplica siempre.' },
-];
-
-const STEPS = [
-  { n: '1', icon: <Phone size={20} />, title: 'Llamada de diagnóstico', desc: 'Hablamos 20 minutos. Entendemos tu negocio, tu catálogo, cómo hablás con tus clientes y qué querés que el bot haga y no haga.' },
-  { n: '2', icon: <Settings size={20} />, title: 'Configuramos todo', desc: 'Creamos el perfil del bot, le enseñamos tu catálogo completo, definimos su personalidad y sus reglas. Vos solo aprobás el resultado.' },
-  { n: '3', icon: <CheckCircle size={20} />, title: 'Activación en tu WhatsApp', desc: 'Vinculamos el bot a tu número. Desde ese momento empieza a responder. No necesitás instalar nada ni cambiar tu número.' },
-  { n: '4', icon: <BarChart2 size={20} />, title: 'Soporte y mejora continua', desc: 'Monitoreamos el rendimiento, actualizamos el catálogo cuando cambia y ajustamos respuestas. Somos tu equipo de tecnología.' },
-];
-
-const SETUP_ITEMS = [
-  'Diagnóstico y llamada de relevamiento',
-  'Configuración completa de personalidad y tono',
-  'Carga y sincronización del catálogo',
-  'Definición de reglas y políticas del negocio',
-  'Vinculación con tu número de WhatsApp',
-  'Testing y ajustes antes del lanzamiento',
-  'Capacitación de 30 min para entender el panel',
-];
-
-const MONTHLY_ITEMS = [
-  'Bot activo 24/7 los 365 días del año',
-  'Actualizaciones del catálogo cuando cambian precios/stock',
-  'Ajustes de respuestas y comportamiento',
-  'Reporte mensual de métricas y conversaciones',
-  'Soporte por WhatsApp con respuesta en menos de 2 horas',
-  'Mejoras y nuevas funciones incluidas',
-];
-
-const TESTIMONIALS = [
-  { text: 'Tenía miedo de que fuera un bot genérico, pero mis clientes no saben que están hablando con una IA. El tono es exactamente el de mi marca. Triplicamos las consultas respondidas en el primer mes y yo no hice absolutamente nada para que funcione.', name: 'Marcelo R.', role: 'Indumentaria', city: 'Buenos Aires' },
-  { text: 'Antes perdía ventas de madrugada porque no podía estar disponible. Ahora el bot atiende a las 3am igual que a las 3pm. Lo que me cobró el setup lo recuperé en la primera semana.', name: 'Valentina G.', role: 'Suplementos', city: 'Córdoba' },
-  { text: 'Manejo más de 2000 productos y el bot los conoce todos. Precio, disponibilidad, descripción. Mis vendedores ahora se enfocan solo en cerrar pedidos grandes. El resto lo hace solo.', name: 'Tomás B.', role: 'Ferretería mayorista', city: 'Rosario' },
-];
-
-const FAQS = [
-  { q: '¿Necesito cambiar mi número de WhatsApp?', a: 'No. El bot funciona con tu número actual de WhatsApp Business o personal. Tus clientes siguen escribiéndote al mismo número de siempre.' },
-  { q: '¿Qué pasa si el bot no sabe responder algo?', a: 'Le configuramos un comportamiento para esos casos: puede derivar al humano, pedir que reformulen la pregunta o escalar. Nunca deja a un cliente sin respuesta.' },
-  { q: '¿Puedo pausarlo si quiero responder yo?', a: 'Sí. Podés pausar el bot en cualquier momento desde el panel y retomar la conversación vos. También podemos configurar que se retire automáticamente si escribís vos primero.' },
-  { q: '¿Qué pasa si cambian mis precios o mi catálogo?', a: 'Nos avisás o nos dás acceso a tu tienda y lo actualizamos. Está incluido en la mensualidad. Sin costo adicional.' },
-  { q: '¿Cuánto tarda en estar listo?', a: 'Desde la llamada de diagnóstico hasta el bot funcionando son 48 horas hábiles en la mayoría de los casos.' },
-  { q: '¿Puedo cancelar cuando quiero?', a: 'Sí. No hay permanencia mínima. Si querés cancelar, nos avisás y listo.' },
-];
+const STEPS_ICONS = [<Phone size={20} />, <Settings size={20} />, <CheckCircle size={20} />, <BarChart2 size={20} />];
 
 const WA_NUMBER = '5491100000000'; // reemplazar por número real
 
@@ -106,6 +56,9 @@ function FadeIn({ children, delay = 0, style = {} }) {
 
 /* ─── WhatsApp Mockup (estética refinada) ─────────────── */
 function WhatsAppMockup() {
+  const { t } = useTranslation();
+  const waMessages = t('agency.waMessages', { returnObjects: true }) || [];
+  const mockup = t('agency.mockup', { returnObjects: true });
   const [visible, setVisible] = useState([]);
   const [typing, setTyping] = useState(false);
   const [phase, setPhase] = useState('building'); // building | fading | reset
@@ -116,9 +69,9 @@ function WhatsAppMockup() {
       setVisible([]);
       setTyping(false);
       setPhase('building');
-      for (let i = 0; i < WA_MESSAGES.length; i++) {
+      for (let i = 0; i < waMessages.length; i++) {
         if (cancelled) return;
-        const msg = WA_MESSAGES[i];
+        const msg = waMessages[i];
         if (msg.from === 'bot') {
           setTyping(true);
           await sleep(1400);
@@ -153,8 +106,8 @@ function WhatsAppMockup() {
           <div style={{ background: '#075e54', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '9px' }}>
             <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: '#128c7e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>🤖</div>
             <div>
-              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white' }}>Atento · Bot</div>
-              <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.75)' }}>{typing ? 'escribiendo...' : 'en línea'}</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'white' }}>{mockup.botName}</div>
+              <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.75)' }}>{typing ? mockup.typing : mockup.online}</div>
             </div>
           </div>
           {/* Chat */}
@@ -177,7 +130,7 @@ function WhatsAppMockup() {
           </div>
           {/* Input */}
           <div style={{ background: '#f0f0f0', padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ flex: 1, background: 'white', borderRadius: '20px', padding: '6px 12px', fontSize: '0.72rem', color: '#999' }}>Mensaje</div>
+            <div style={{ flex: 1, background: 'white', borderRadius: '20px', padding: '6px 12px', fontSize: '0.72rem', color: '#999' }}>{mockup.placeholder}</div>
             <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#075e54', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem' }}>🎤</div>
           </div>
         </div>
@@ -237,6 +190,16 @@ function CTAButton({ text = 'Agendar una llamada gratuita →', large = false, f
 
 /* ─── MAIN ────────────────────────────────────────────── */
 export default function LandingAgency() {
+  const { t } = useTranslation();
+  const navTexts = t('agency.nav', { returnObjects: true });
+  const differentiators = t('agency.differentiators', { returnObjects: true }) || [];
+  const stepsData = t('agency.steps', { returnObjects: true }) || [];
+  const steps = stepsData.map((s, i) => ({ ...s, icon: STEPS_ICONS[i] }));
+  const setupItems = t('agency.setupItems', { returnObjects: true }) || [];
+  const monthlyItems = t('agency.monthlyItems', { returnObjects: true }) || [];
+  const testimonials = t('agency.testimonials', { returnObjects: true }) || [];
+  const faqs = t('agency.faqs', { returnObjects: true }) || [];
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -284,14 +247,15 @@ export default function LandingAgency() {
           </div>
           {/* Desktop nav */}
           <div className="desktop-nav" style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
-            {[['proceso','Cómo funciona'],['resultados','Resultados'],['cta','Contacto']].map(([id,label]) => (
+            <LanguageSwitcher />
+            {[['proceso', navTexts.howItWorks],['resultados', navTexts.results],['cta', navTexts.contact]].map(([id,label]) => (
               <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500 }}>{label}</button>
             ))}
             <a href="/login-premium" style={{ color: C.textSec, fontSize: '0.9rem', fontWeight: 500, textDecoration: 'none', padding: '0.5rem 0.75rem', borderRadius: '6px', border: `1px solid ${C.border}`, transition: 'border-color 0.2s' }}
               onMouseEnter={e => e.currentTarget.style.borderColor = C.accent}
               onMouseLeave={e => e.currentTarget.style.borderColor = C.border}
-            >Ingresar</a>
-            <CTAButton text="Agendar llamada →" />
+            >{navTexts.login}</a>
+            <CTAButton text={navTexts.schedule} />
           </div>
           {/* Hamburger */}
           <button onClick={() => setMenuOpen(!menuOpen)} className="hamburger" style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', color: C.text }}>
@@ -300,11 +264,11 @@ export default function LandingAgency() {
         </div>
         {menuOpen && (
           <div style={{ borderTop: `1px solid ${C.border}`, padding: '1.25rem 2rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: C.bg }}>
-            {[['proceso','Cómo funciona'],['resultados','Resultados'],['cta','Contacto']].map(([id,label]) => (
+            {[['proceso', navTexts.howItWorks],['resultados', navTexts.results],['cta', navTexts.contact]].map(([id,label]) => (
               <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', fontSize: '1rem', textAlign: 'left', padding: '0.2rem 0' }}>{label}</button>
             ))}
-            <a href="/login-premium" style={{ color: C.accent, fontSize: '1rem', fontWeight: 600, textDecoration: 'none', padding: '0.2rem 0' }}>Ingresar →</a>
-            <CTAButton text="Agendar llamada gratuita →" full />
+            <a href="/login-premium" style={{ color: C.accent, fontSize: '1rem', fontWeight: 600, textDecoration: 'none', padding: '0.2rem 0' }}>{navTexts.login} →</a>
+            <CTAButton text={navTexts.scheduleFree} full />
           </div>
         )}
       </nav>
@@ -316,25 +280,23 @@ export default function LandingAgency() {
             {/* Badge */}
             <FadeIn>
               <div style={{ display: 'inline-block', background: C.accentSubtle, color: C.accent, fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.04em', padding: '0.35rem 0.9rem', borderRadius: '4px', marginBottom: '2rem' }}>
-                Servicio gestionado · Instalación incluida
+                {t('agency.hero.badge')}
               </div>
             </FadeIn>
             {/* Headline */}
             <FadeIn delay={0.08}>
-              <h1 className="serif" style={{ fontSize: 'clamp(2.6rem,5vw,4.2rem)', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: '1.5rem', color: C.text }}>
-                Tu negocio responde.<br />Vos te ocupás de vender.
-              </h1>
+              <h1 className="serif" dangerouslySetInnerHTML={{ __html: t('agency.hero.title') }} style={{ fontSize: 'clamp(2.6rem,5vw,4.2rem)', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: '1.5rem', color: C.text }} />
             </FadeIn>
             {/* Sub */}
             <FadeIn delay={0.14}>
               <p style={{ fontSize: '1.1rem', color: C.textSec, lineHeight: 1.75, maxWidth: '480px', marginBottom: '2.5rem' }}>
-                Instalamos, configuramos y operamos tu asistente de WhatsApp con IA. Vos no tocás nada. Tus clientes reciben atención inmediata, todos los días, a cualquier hora.
+                {t('agency.hero.subtitle')}
               </p>
             </FadeIn>
             {/* CTA */}
             <FadeIn delay={0.2}>
-              <CTAButton text="Agendar una llamada gratuita →" large />
-              <p style={{ marginTop: '0.85rem', fontSize: '0.82rem', color: C.textMuted }}>Sin compromiso. Te explicamos todo en 20 minutos.</p>
+              <CTAButton text={navTexts.scheduleFree} large />
+              <p style={{ marginTop: '0.85rem', fontSize: '0.82rem', color: C.textMuted }}>{t('agency.hero.ctaHint')}</p>
             </FadeIn>
           </div>
           {/* Mockup */}
@@ -347,11 +309,7 @@ export default function LandingAgency() {
 
         {/* Métricas */}
         <div className="metrics-bar" style={{ maxWidth: '700px', margin: '5rem auto 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {[
-            { big: '< 3 seg', label: 'Tiempo de respuesta' },
-            { big: '0', label: 'Conocimientos técnicos necesarios del cliente' },
-            { big: '48 hs', label: 'Tiempo hasta estar activo' },
-          ].map((m, i) => (
+          {(t('agency.hero.metrics', { returnObjects: true }) || []).map((m, i) => (
             <div key={i} style={{ flex: 1, textAlign: 'center', padding: '0 2rem', borderLeft: i > 0 ? `1px solid ${C.border}` : 'none' }}>
               <div className="serif" style={{ fontSize: 'clamp(1.6rem,3vw,2.4rem)', fontWeight: 800, color: C.text, marginBottom: '0.3rem' }}>{m.big}</div>
               <div style={{ fontSize: '0.8rem', color: C.textMuted, lineHeight: 1.4 }}>{m.label}</div>
@@ -364,15 +322,13 @@ export default function LandingAgency() {
       <section style={{ background: C.bgDark, padding: 'clamp(4rem,8vw,7rem) 2rem', borderBottom: `1px solid #222` }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <FadeIn style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <h2 className="serif" style={{ fontSize: 'clamp(2rem,4vw,3.2rem)', fontWeight: 800, lineHeight: 1.15, letterSpacing: '-0.5px', color: C.textInv, marginBottom: '1.25rem' }}>
-              No es un chatbot.<br />Es tu empleado más confiable.
-            </h2>
+            <h2 className="serif" dangerouslySetInnerHTML={{ __html: t('agency.valueProp.title') }} style={{ fontSize: 'clamp(2rem,4vw,3.2rem)', fontWeight: 800, lineHeight: 1.15, letterSpacing: '-0.5px', color: C.textInv, marginBottom: '1.25rem' }} />
             <p style={{ color: '#9ca3af', fontSize: '1.05rem', lineHeight: 1.75, maxWidth: '560px', margin: '0 auto' }}>
-              Los chatbots tradicionales tienen menús y respuestas predefinidas. Atento entiende el contexto, recuerda la conversación y responde como lo haría tu mejor vendedor — pero sin sueldo, sin vacaciones y sin errores por el cansancio.
+              {t('agency.valueProp.subtitle')}
             </p>
           </FadeIn>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: '2rem' }}>
-            {DIFFERENTIATORS.map((d, i) => (
+            {differentiators.map((d, i) => (
               <FadeIn key={i} delay={i * 0.1}>
                 <div style={{ borderTop: `1px solid #2d7a5f`, paddingTop: '1.5rem' }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#2d7a5f', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>0{i + 1}</div>
@@ -389,13 +345,11 @@ export default function LandingAgency() {
       <section id="proceso" style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', borderBottom: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
           <FadeIn style={{ marginBottom: '3.5rem' }}>
-            <h2 className="serif" style={{ fontSize: 'clamp(2rem,4vw,3rem)', fontWeight: 800, lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: '0.75rem' }}>
-              Vos no hacés nada.<br />Nosotros nos encargamos de todo.
-            </h2>
-            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>En 48 horas tu bot está activo. Este es nuestro proceso:</p>
+            <h2 className="serif" dangerouslySetInnerHTML={{ __html: t('agency.process.title') }} style={{ fontSize: 'clamp(2rem,4vw,3rem)', fontWeight: 800, lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: '0.75rem' }} />
+            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>{t('agency.process.subtitle')}</p>
           </FadeIn>
           <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0' }}>
-            {STEPS.map((s, i) => (
+            {steps.map((s, i) => (
               <FadeIn key={i} delay={i * 0.1}>
                 <div style={{ padding: '0 1.5rem 0 0', borderRight: i < STEPS.length - 1 ? `1px solid ${C.border}` : 'none', paddingRight: i < STEPS.length - 1 ? '1.5rem' : 0, marginRight: i < STEPS.length - 1 ? '1.5rem' : 0, position: 'relative' }}>
                   <div className="serif" style={{ fontSize: '4rem', fontWeight: 800, color: C.accentSubtle, lineHeight: 1, marginBottom: '1rem', userSelect: 'none' }}>{s.n}</div>
@@ -413,13 +367,13 @@ export default function LandingAgency() {
       <section style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', background: C.bgAlt, borderBottom: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           <FadeIn style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
-            <h2 className="serif" style={{ fontSize: 'clamp(2rem,4vw,2.8rem)', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '0.75rem' }}>Todo incluido. Sin sorpresas.</h2>
-            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>El setup cubre la instalación completa. La mensualidad cubre que todo siga funcionando perfectamente.</p>
+            <h2 className="serif" style={{ fontSize: 'clamp(2rem,4vw,2.8rem)', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '0.75rem' }}>{t('agency.included.title')}</h2>
+            <p style={{ color: C.textSec, fontSize: '1.05rem' }}>{t('agency.included.subtitle')}</p>
           </FadeIn>
           <div className="include-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
             {[
-              { label: 'Setup (pago único)', items: SETUP_ITEMS },
-              { label: 'Mensualidad (operación continua)', items: MONTHLY_ITEMS },
+              { label: t('agency.included.setupLabel'), items: setupItems },
+              { label: t('agency.included.monthlyLabel'), items: monthlyItems },
             ].map((col, ci) => (
               <FadeIn key={ci} delay={ci * 0.1}>
                 <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '16px', padding: '2rem' }}>
@@ -436,7 +390,7 @@ export default function LandingAgency() {
             ))}
           </div>
           <FadeIn delay={0.15} style={{ textAlign: 'center', marginTop: '1.75rem' }}>
-            <p style={{ fontSize: '0.88rem', color: C.accent, fontWeight: 500 }}>Los precios se definen en la llamada según el volumen y complejidad de tu negocio.</p>
+            <p style={{ fontSize: '0.88rem', color: C.accent, fontWeight: 500 }}>{t('agency.included.priceHint')}</p>
           </FadeIn>
         </div>
       </section>
@@ -445,10 +399,10 @@ export default function LandingAgency() {
       <section id="resultados" style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', borderBottom: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <FadeIn style={{ marginBottom: '3.5rem' }}>
-            <h2 className="serif" style={{ fontSize: 'clamp(2rem,4vw,2.8rem)', fontWeight: 800, letterSpacing: '-0.5px' }}>Lo que dicen quienes ya lo tienen funcionando</h2>
+            <h2 className="serif" style={{ fontSize: 'clamp(2rem,4vw,2.8rem)', fontWeight: 800, letterSpacing: '-0.5px' }}>{t('agency.results.title')}</h2>
           </FadeIn>
           <div className="testimonials-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '2rem', marginBottom: '3.5rem' }}>
-            {TESTIMONIALS.map((t, i) => (
+            {testimonials.map((t, i) => (
               <FadeIn key={i} delay={i * 0.1}>
                 <div style={{ borderTop: `2px solid ${C.accent}`, paddingTop: '1.75rem' }}>
                   <div className="serif" style={{ fontSize: '3rem', color: C.accentSubtle, lineHeight: 1, marginBottom: '1rem', userSelect: 'none' }}>"</div>
@@ -464,7 +418,7 @@ export default function LandingAgency() {
           {/* Métricas globales */}
           <FadeIn>
             <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '2rem', display: 'flex', gap: '3rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-              {['+340 bots activos', '98% satisfacción', '0 clientes que cancelaron el primer año'].map((t, i) => (
+              {(t('agency.results.metrics', { returnObjects: true }) || []).map((t, i) => (
                 <span key={i} className="serif" style={{ fontSize: '1.05rem', fontWeight: 700, color: C.textSec }}>{t}</span>
               ))}
             </div>
@@ -476,10 +430,10 @@ export default function LandingAgency() {
       <section style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', background: C.bgAlt, borderBottom: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: '700px', margin: '0 auto' }}>
           <FadeIn style={{ marginBottom: '3rem' }}>
-            <h2 className="serif" style={{ fontSize: 'clamp(1.8rem,3.5vw,2.6rem)', fontWeight: 800, letterSpacing: '-0.5px' }}>Preguntas que nos hacen antes de arrancar</h2>
+            <h2 className="serif" style={{ fontSize: 'clamp(1.8rem,3.5vw,2.6rem)', fontWeight: 800, letterSpacing: '-0.5px' }}>{t('agency.faq.title')}</h2>
           </FadeIn>
           <div style={{ borderTop: `1px solid ${C.border}` }}>
-            {FAQS.map((f, i) => <Accordion key={i} q={f.q} a={f.a} />)}
+            {faqs.map((f, i) => <Accordion key={i} q={f.q} a={f.a} />)}
           </div>
         </div>
       </section>
@@ -488,24 +442,22 @@ export default function LandingAgency() {
       <section id="cta" style={{ padding: 'clamp(5rem,10vw,9rem) 2rem', background: C.bgAlt, textAlign: 'center' }}>
         <div style={{ maxWidth: '580px', margin: '0 auto' }}>
           <FadeIn>
-            <h2 className="serif" style={{ fontSize: 'clamp(2rem,4.5vw,3.4rem)', fontWeight: 800, lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: '1.25rem', color: C.text }}>
-              Tu próxima venta<br />no debería esperar tu respuesta.
-            </h2>
+            <h2 className="serif" dangerouslySetInnerHTML={{ __html: t('agency.cta.title') }} style={{ fontSize: 'clamp(2rem,4.5vw,3.4rem)', fontWeight: 800, lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: '1.25rem', color: C.text }} />
           </FadeIn>
           <FadeIn delay={0.08}>
             <p style={{ color: C.textSec, fontSize: '1.05rem', lineHeight: 1.75, marginBottom: '2.5rem', maxWidth: '420px', margin: '0 auto 2.5rem' }}>
-              Agendá una llamada gratuita de 20 minutos. Te explicamos todo, vemos si es para tu negocio y si avanzamos definimos el precio juntos.
+              {t('agency.cta.subtitle')}
             </p>
           </FadeIn>
           <FadeIn delay={0.14}>
-            <CTAButton text="Agendar llamada gratuita →" large />
+            <CTAButton text={navTexts.scheduleFree} large />
             <div style={{ marginTop: '1.1rem' }}>
               <a href="mailto:hola@atento.ai" style={{ fontSize: '0.88rem', color: C.textMuted, textDecoration: 'none' }}>
-                O escribinos directamente: <span style={{ color: C.accent, fontWeight: 600 }}>hola@atento.ai</span>
+                {t('agency.cta.orWriteUs')} <span style={{ color: C.accent, fontWeight: 600 }}>hola@atento.ai</span>
               </a>
             </div>
             <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', marginTop: '1.75rem', flexWrap: 'wrap' }}>
-              {['Sin compromiso', 'Sin tarjeta de crédito', 'Respuesta en menos de 2 horas'].map((t, i) => (
+              {(t('agency.cta.trust', { returnObjects: true }) || []).map((t, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: C.textSec }}>
                   <Check size={14} color={C.accent} /> {t}
                 </div>
@@ -524,7 +476,7 @@ export default function LandingAgency() {
               <span style={{ fontSize: '0.7rem', color: C.accent, fontWeight: 500, background: C.accentSubtle, padding: '2px 6px', borderRadius: '4px' }}>Servicio</span>
             </div>
             <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-              {[['proceso','Cómo funciona'],['resultados','Resultados'],['cta','Contacto']].map(([id,label]) => (
+              {[['proceso', navTexts.howItWorks],['resultados', navTexts.results],['cta', navTexts.contact]].map(([id,label]) => (
                 <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textMuted, cursor: 'pointer', fontSize: '0.85rem' }}>{label}</button>
               ))}
               <a href="/privacidad" style={{ color: C.textMuted, textDecoration: 'none', fontSize: '0.85rem' }}>Política de privacidad</a>
@@ -532,7 +484,7 @@ export default function LandingAgency() {
             </div>
           </div>
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-            <span style={{ fontSize: '0.82rem', color: C.textMuted }}>© 2026 Atento AI. Todos los derechos reservados. · Hecho en Argentina 🇦🇷</span>
+            <span style={{ fontSize: '0.82rem', color: C.textMuted }}>{t('agency.footer.rights')}</span>
             <div style={{ display: 'flex', gap: '1rem' }}>
               {['Instagram','LinkedIn','WhatsApp'].map(s => (
                 <a key={s} href={s === 'WhatsApp' ? `https://wa.me/${WA_NUMBER}` : '#'} target="_blank" rel="noreferrer" style={{ fontSize: '0.82rem', color: C.textMuted, textDecoration: 'none' }}>{s}</a>

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { Settings, Smartphone, Loader, BrainCircuit, MessageCircle, Users, TrendingUp, Lock, Mail, ChevronRight, LogOut, Plus, X, Save, Bell, Clock, Trash2, Sun, Moon, Bot, BarChart2, Search, ChevronDown, ChevronUp, Megaphone, Calendar, ChevronLeft } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -174,6 +174,117 @@ function ConversationsPanel({ bots }) {
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Subscription Panel (Rebill Integration) ───────────────────
+function SubscriptionPanel({ user, bots }) {
+  const [loading, setLoading] = useState(false);
+  const [plans] = useState([
+    { 
+      id: 'test_prd_cd960fd9fec141ba83befc476ab6d340', 
+      name: 'Plan Starter', 
+      price: '$59', 
+      currency: 'USD', 
+      period: 'mes', 
+      features: ['1 número WhatsApp', 'Hasta 500 mensajes/mes', 'Catálogo sincronizado', 'Panel de control', 'Soporte por email'] 
+    },
+    { 
+      id: 'test_prd_d739705c98554f09a1bbdbd91917be26', 
+      name: 'Plan Growth', 
+      price: '$99', 
+      currency: 'USD', 
+      period: 'mes', 
+      features: ['Todo lo de Starter', 'Hasta 2.000 mensajes/mes', 'Soporte prioritario', 'Horario anti-nocturno', 'Base de conocimientos avanzada'],
+      recommended: true
+    },
+    { 
+      id: 'test_prd_e3a8b19ec8904c98aa7ff712981b3f13', 
+      name: 'Plan Scale', 
+      price: '$179', 
+      currency: 'USD', 
+      period: 'mes', 
+      features: ['Todo lo de Growth', 'Mensajes ilimitados', 'Instagram DMs', 'Soporte directo WhatsApp', 'Multi-idioma'] 
+    }
+  ]);
+
+  const handleSubscribe = async (planId) => {
+    setLoading(true);
+    try {
+      const res = await authFetch(`${API_URL}/api/payments/create-checkout`, {
+        method: 'POST',
+        body: JSON.stringify({ planId })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || 'Error al iniciar el pago. Verificá que la API Key de Rebill esté configurada.');
+      }
+    } catch (e) {
+      alert('Error de conexión con el servidor.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--bg)', flex: 1 }}>
+      <div style={{ textAlign: 'center', marginBottom: '3rem', maxWidth: '700px' }}>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '0.75rem', background: 'var(--gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          Potenciá tu Negocio con Atento AI
+        </h1>
+        <p style={{ color: 'var(--text-2)', fontSize: '1.15rem', lineHeight: 1.5 }}>
+          Activá tu suscripción para mantener tu bot atendiendo clientes las 24hs. 
+          <br/><strong style={{color: 'var(--success)'}}>Incluye 7 días de prueba gratis.</strong> Cancelá cuando quieras.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '1100px', width: '100%' }}>
+        {plans.map(plan => (
+          <div key={plan.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-strong)', borderRadius: '28px', padding: '3rem 2.5rem', width: '360px', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-lg)', position: 'relative', overflow: 'hidden', transition: 'transform 0.2s' }}>
+            {plan.recommended && (
+              <div style={{ position: 'absolute', top: '15px', right: '-40px', background: 'var(--success)', color: '#fff', padding: '5px 45px', transform: 'rotate(45deg)', fontSize: '0.7rem', fontWeight: 900, letterSpacing: '0.05em', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+                MÁS ELEGIDO
+              </div>
+            )}
+            
+            <div style={{ marginBottom: '2rem' }}>
+              <h2 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-1)' }}>{plan.name}</h2>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
+                <span style={{ fontSize: '2.8rem', fontWeight: 800, color: 'var(--text-1)' }}>{plan.price}</span>
+                <span style={{ color: 'var(--text-3)', fontWeight: 600, fontSize: '1rem' }}>{plan.currency}/{plan.period}</span>
+              </div>
+            </div>
+            
+            <div style={{ flex: 1, marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {plan.features.map((f, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem', fontSize: '0.92rem', color: 'var(--text-2)', lineHeight: 1.4 }}>
+                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(124,58,237,0.12)', color: '#a78bfa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0, marginTop: '2px', fontWeight: 800 }}>✓</div>
+                  {f}
+                </div>
+              ))}
+            </div>
+
+            <button 
+              onClick={() => handleSubscribe(plan.id)}
+              disabled={loading}
+              className="btn-primary" 
+              style={{ width: '100%', padding: '1.1rem', borderRadius: '16px', fontSize: '1.05rem', fontWeight: 700, boxShadow: '0 4px 15px rgba(124,58,237,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            >
+              {loading ? <Loader className="spinner" size={20} /> : <>Suscribirse ahora <ChevronRight size={18} /></>}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: '4rem', textAlign: 'center', color: 'var(--text-3)', fontSize: '0.88rem', maxWidth: '650px', background: 'var(--surface-2)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
+        <p style={{ margin: 0 }}>
+          🛡️ Transacción segura vía <strong>Rebill Payments</strong>. 
+          <br/>La activación es instantánea una vez procesado el pago. Podrás gestionar tu suscripción y descargar facturas desde este mismo panel.
+        </p>
       </div>
     </div>
   );
@@ -2288,6 +2399,10 @@ function Dashboard() {
             <Megaphone size={16} />
             <span>Campañas</span>
           </div>
+          <div className={`sidebar-nav-item ${currentView === 'subscription' ? 'active' : ''}`} onClick={() => { setCurrentView('subscription'); setSidebarOpen(false); }}>
+            <TrendingUp size={16} />
+            <span>Suscripción</span>
+          </div>
         </nav>
 
         <div className="sidebar-footer">
@@ -2334,12 +2449,14 @@ function Dashboard() {
               {currentView === 'conversations' && 'Conversaciones'}
               {currentView === 'analytics' && 'Analíticas'}
               {currentView === 'campaigns' && 'Campañas'}
+              {currentView === 'subscription' && 'Plan y Facturación'}
             </div>
             <div className="page-subtitle">
               {currentView === 'bots' && (user.role === 'admin' ? 'Vista Global Súper Administrador' : 'Panel de Auto-Gestión Inteligente')}
               {currentView === 'conversations' && 'Historial de mensajes por cliente y bot'}
               {currentView === 'analytics' && 'Métricas de actividad en tiempo real'}
               {currentView === 'campaigns' && 'Gestión de campañas de mensajería saliente'}
+              {currentView === 'subscription' && 'Gestioná tu suscripción y métodos de pago local'}
             </div>
           </div>
           <div className="header-actions">
@@ -2388,6 +2505,7 @@ function Dashboard() {
         {currentView === 'conversations' && <ConversationsPanel bots={bots} />}
         {currentView === 'analytics' && <AnalyticsPanel user={user} />}
         {currentView === 'campaigns' && <AdminCampaignsPanel bots={bots} />}
+        {currentView === 'subscription' && <SubscriptionPanel user={user} bots={bots} />}
 
         {currentView === 'bots' && <>
         {/* ── KPI Cards ── */}

@@ -1,4 +1,4 @@
-﻿{
+{
   "nav": {
     "features": "Funzionalità",
     "howItWorks": "Come funziona",
@@ -17,44 +17,97 @@
       "responses": "risposte automatiche",
       "uptime": "disponibile",
       "satisfaction": "soddisfazione clienti"
-    }
+    },
+    "urgency": "OFFERTA DI LANCIO: Rimangono solo 14 posti con prezzo bloccato."
   },
   "demo": {
     "online": "● online ora",
     "title": "Demo — Atento AI",
-    "placeholder": "Scrivi la tua domanda...",
-    "greeting": "Ciao! Sono il tuo assistente virtuale. Chiedimi prezzi, disponibilità, spedizioni o qualsiasi altra cosa 😊",
+    "placeholder": "Scrivi la tua richiesta...",
+    "greeting": "Ciao! Sono Atento, l'assistente virtuale di Atento AI. Chiedimi come funziono, i prezzi o come puoi provarmi gratis 🚀",
     "responses": {
-      "price": "Ciao! I prezzi variano in base al modello. I più venduti partono da 29,99 €. Vuoi saperne di più su un prodotto specifico?",
-      "stock": "Sì, abbiamo disponibilità in magazzino 👌 Quale taglia, colore o modello ti interessa?",
-      "shipping": "Spediamo in tutta Italia 🚚 La consegna richiede 2-4 giorni lavorativi con corriere espresso.",
-      "payment": "Accettiamo carte di credito, PayPal e bonifico bancario 💳",
-      "hours": "Atento risponde automaticamente 24 ore su 24, 7 giorni su 7, inclusi i festivi 😄",
-      "returns": "Offriamo 30 giorni di garanzia. Se il prodotto arriva danneggiato, lo sostituiamo gratuitamente.",
-      "default": "Ciao! Chiedimi pure prezzi, disponibilità, spedizioni, metodi di pagamento o qualsiasi dubbio 😊"
+      "price": "Abbiamo 3 piani: Starter (59€/mese), Growth (99€/mese) e Scale (179€/mese). Tutti includono 7 giorni di prova gratuita! Vuoi sapere cosa include ciascuno?",
+      "how": "Mi collego al tuo WhatsApp e rispondo automaticamente ai tuoi clienti 24 ore su 24. Imparo dalla tua attività per rispondere come se fossi tu. 😎",
+      "features": "Posso rispondere a dubbi, leggere cataloghi in tempo reale, fissare appuntamenti e persino chiudere vendite mentre dormi.",
+      "setup": "È semplicissimo: crei l'account, scansiona un codice QR con il tuo WhatsApp e il gioco è fatto, sono operativo in 5 minuti! ⏱️",
+      "free": "Sì, abbiamo una prova gratuita di 7 giorni. Puoi provare come rispondo ai tuoi clienti senza impegno. Vuoi il link per iniziare?",
+      "human": "Se una richiesta è troppo complessa, te la segno nel pannello per farla gestire a un umano. Non lascio mai il cliente in sospeso!",
+      "default": "Ciao! Sono Atento AI. Puoi chiedermi dei nostri piani, come funziona il bot o della prova gratuita di 7 giorni. 😊"
+    },
+    "errors": {
+      "network": "Ops, ho avuto un piccolo problema di connessione 😅",
+      "brain": "Ups, non sono riuscito a connettermi al cervello. Riprova."
     }
   },
   "brands": [
-    { "icon": "👕", "name": "Moda Milano" },
-    { "icon": "📱", "name": "Elettronica Roma" },
-    { "icon": "💎", "name": "Gioielleria online" },
-    { "icon": "🔧", "name": "Ferramenta ingrosso" },
-    { "icon": "💄", "name": "Cosmetici Napoli" },
-    { "icon": "💪", "name": "Integratori sport" },
-    { "icon": "🛋️", "name": "Arredamento Torino" },
-    { "icon": "📚", "name": "Libreria online" }
+    {
+      "icon": "👕",
+      "name": "Moda Milano"
+    },
+    {
+      "icon": "📱",
+      "name": "Elettronica Roma"
+    },
+    {
+      "icon": "💎",
+      "name": "Gioielleria online"
+    },
+    {
+      "icon": "🔧",
+      "name": "Ferramenta ingrosso"
+    },
+    {
+      "icon": "💄",
+      "name": "Cosmetici Napoli"
+    },
+    {
+      "icon": "💪",
+      "name": "Integratori sport"
+    },
+    {
+      "icon": "🛋️",
+      "name": "Arredamento Torino"
+    },
+    {
+      "icon": "📚",
+      "name": "Libreria online"
+    }
   ],
   "features": {
     "title": "Tutto quello che ti serve,",
     "titleHighlight": "senza complicazioni",
     "subtitle": "Atento si adatta alla tua attività, non il contrario.",
     "items": [
-      { "icon": "💬", "title": "Risponde come un umano", "desc": "Niente menu, niente pulsanti. Capisce il contesto, ricorda la conversazione e risponde in modo naturale ogni volta." },
-      { "icon": "🕐", "title": "Disponibile 24 ore", "desc": "Il tuo concorrente impiega 2 ore a rispondere. Atento lo fa in 3 secondi, alle 3 di notte. Ogni messaggio senza risposta è una vendita persa." },
-      { "icon": "⚡", "title": "Conosce il tuo catalogo in tempo reale", "desc": "Si collega al tuo negozio e sa in tempo reale cosa c'è in stock, a che prezzo e con quali caratteristiche. Non inventa mai un prezzo." },
-      { "icon": "🛡️", "title": "Impara le regole della tua attività", "desc": "Gli spieghi come funziona il tuo negozio, le tue condizioni di vendita, le tue politiche. Le applica in ogni conversazione." },
-      { "icon": "📈", "title": "Trasforma richieste in vendite", "desc": "Non si limita a informare — guida il cliente verso l'acquisto. Suggerisce prodotti, calcola prezzi e chiude la trattativa." },
-      { "icon": "🎛️", "title": "Controllo totale dal tuo pannello", "desc": "Modifica il comportamento del bot, aggiorna il catalogo e controlla le metriche da una dashboard semplice." }
+      {
+        "icon": "💬",
+        "title": "Risponde come un umano",
+        "desc": "Niente menu, niente pulsanti. Capisce il contesto, ricorda la conversazione e risponde in modo naturale ogni volta."
+      },
+      {
+        "icon": "🕐",
+        "title": "Disponibile 24 ore",
+        "desc": "Il tuo concorrente impiega 2 ore a rispondere. Atento lo fa in 3 secondi, alle 3 di notte. Ogni messaggio senza risposta è una vendita persa."
+      },
+      {
+        "icon": "⚡",
+        "title": "Conosce il tuo catalogo in tempo reale",
+        "desc": "Si collega al tuo negozio e sa in tempo reale cosa c'è in stock, a che prezzo e con quali caratteristiche. Non inventa mai un prezzo."
+      },
+      {
+        "icon": "🛡️",
+        "title": "Impara le regole della tua attività",
+        "desc": "Gli spieghi come funziona il tuo negozio, le tue condizioni di vendita, le tue politiche. Le applica in ogni conversazione."
+      },
+      {
+        "icon": "📈",
+        "title": "Trasforma richieste in vendite",
+        "desc": "Non si limita a informare — guida il cliente verso l'acquisto. Suggerisce prodotti, calcola prezzi e chiude la trattativa."
+      },
+      {
+        "icon": "🎛️",
+        "title": "Controllo totale dal tuo pannello",
+        "desc": "Modifica il comportamento del bot, aggiorna il catalogo e controlla le metriche da una dashboard semplice."
+      }
     ]
   },
   "beforeAfter": {
@@ -62,54 +115,169 @@
     "before": "Prima",
     "after": "Con Atento",
     "items": [
-      { "bad": "Perdi vendite mentre dormi", "good": "Risponde in 3 secondi alle 3 di notte" },
-      { "bad": "Citi prezzi che non hai", "good": "Mostra sempre le info reali sullo stock" },
-      { "bad": "Ore per rispondere ai messaggi", "good": "Risposta immediata, sempre" },
-      { "bad": "Ogni richiesta ti interrompe", "good": "Vedi solo quelle che richiedono la tua attenzione" },
-      { "bad": "Costo fisso anche senza vendite", "good": "Costo fisso, nessuna sorpresa" }
+      {
+        "bad": "Perdi vendite mentre dormi",
+        "good": "Risponde in 3 secondi alle 3 di notte"
+      },
+      {
+        "bad": "Citi prezzi che non hai",
+        "good": "Mostra sempre le info reali sullo stock"
+      },
+      {
+        "bad": "Ore per rispondere ai messaggi",
+        "good": "Risposta immediata, sempre"
+      },
+      {
+        "bad": "Ogni richiesta ti interrompe",
+        "good": "Vedi solo quelle che richiedono la tua attenzione"
+      },
+      {
+        "bad": "Costo fisso anche senza vendite",
+        "good": "Costo fisso, nessuna sorpresa"
+      }
     ]
   },
   "howItWorks": {
     "title": "Tre passaggi e",
     "titleHighlight": "sei operativo",
     "steps": [
-      { "n": "1", "title": "Crea il tuo account", "desc": "Registrati con la tua email in meno di 60 secondi.", "icon": "👤" },
-      { "n": "2", "title": "Configura il bot", "desc": "Digli come deve parlare: tono, nome, lingua, cosa può e non può dire.", "icon": "🧠" },
-      { "n": "3", "title": "Collega il tuo catalogo", "desc": "Incolla il link del tuo negozio o Google Sheets e il bot lo impara automaticamente.", "icon": "⚡" },
-      { "n": "4", "title": "Scansiona il QR di WhatsApp", "desc": "Collega il tuo numero e il gioco è fatto. Il bot inizia a rispondere in pochi secondi.", "icon": "📱" }
+      {
+        "n": "1",
+        "title": "Crea il tuo account",
+        "desc": "Registrati con la tua email in meno di 60 secondi.",
+        "icon": "👤"
+      },
+      {
+        "n": "2",
+        "title": "Configura il bot",
+        "desc": "Digli come deve parlare: tono, nome, lingua, cosa può e non può dire.",
+        "icon": "🧠"
+      },
+      {
+        "n": "3",
+        "title": "Collega il tuo catalogo",
+        "desc": "Incolla il link del tuo negozio o Google Sheets e il bot lo impara automaticamente.",
+        "icon": "⚡"
+      },
+      {
+        "n": "4",
+        "title": "Scansiona il QR di WhatsApp",
+        "desc": "Collega il tuo numero e il gioco è fatto. Il bot inizia a rispondere in pochi secondi.",
+        "icon": "📱"
+      }
     ]
   },
   "reviews": {
     "title": "Cosa dicono i nostri",
     "titleHighlight": "clienti",
     "items": [
-      { "name": "Marco R.", "biz": "Moda Milano", "text": "Temevo fosse un bot generico, ma Atento capisce il contesto. I miei clienti non sanno che stanno parlando con un'IA. Abbiamo triplicato il tasso di risposta nel primo mese." },
-      { "name": "Giulia K.", "biz": "Negozio integratori", "text": "Prima perdevo vendite perché non riuscivo a rispondere di notte. Ora il bot gestisce le 3 di notte come le 15. Le vendite notturne da sole hanno ripagato l'abbonamento." },
-      { "name": "Luca M.", "biz": "Elettronica Roma", "text": "La cosa che mi ha sorpreso di più è che sa quando qualcosa è disponibile e quando no. Non ha mai promesso a un cliente qualcosa che non avevamo. Solo questo vale il prezzo." },
-      { "name": "Sofia F.", "biz": "Gioielleria online", "text": "I miei clienti sono esigenti e pensavo si accorgessero che era un bot. Niente. Il tono che ho impostato è esattamente la voce del nostro brand." },
-      { "name": "Antonio B.", "biz": "Ferramenta ingrosso", "text": "Gestisco oltre 2.000 prodotti e Atento li conosce tutti. Prezzo, disponibilità, descrizione. Il mio team ora si concentra sugli ordini grandi." },
-      { "name": "Elena P.", "biz": "Cosmetici Napoli", "text": "In due settimane avevo già recuperato quello che avevo pagato. I clienti scrivono, il bot risponde, io confermo solo l'ordine. Non posso credere di non averlo avuto prima." }
+      {
+        "name": "Marco R.",
+        "biz": "Moda Milano",
+        "text": "Temevo fosse un bot generico, ma Atento capisce il contesto. I miei clienti non sanno che stanno parlando con un'IA. Abbiamo triplicato il tasso di risposta nel primo mese."
+      },
+      {
+        "name": "Giulia K.",
+        "biz": "Negozio integratori",
+        "text": "Prima perdevo vendite perché non riuscivo a rispondere di notte. Ora il bot gestisce le 3 di notte come le 15. Le vendite notturne da sole hanno ripagato l'abbonamento."
+      },
+      {
+        "name": "Luca M.",
+        "biz": "Elettronica Roma",
+        "text": "La cosa che mi ha sorpreso di più è che sa quando qualcosa è disponibile e quando no. Non ha mai promesso a un cliente qualcosa che non avevamo. Solo questo vale il prezzo."
+      },
+      {
+        "name": "Sofia F.",
+        "biz": "Gioielleria online",
+        "text": "I miei clienti sono esigenti e pensavo si accorgessero che era un bot. Niente. Il tono che ho impostato è esattamente la voce del nostro brand."
+      },
+      {
+        "name": "Antonio B.",
+        "biz": "Ferramenta ingrosso",
+        "text": "Gestisco oltre 2.000 prodotti e Atento li conosce tutti. Prezzo, disponibilità, descrizione. Il mio team ora si concentra sugli ordini grandi."
+      },
+      {
+        "name": "Elena P.",
+        "biz": "Cosmetici Napoli",
+        "text": "In due settimane avevo già recuperato quello che avevo pagato. I clienti scrivono, il bot risponde, io confermo solo l'ordine. Non posso credere di non averlo avuto prima."
+      }
     ]
   },
   "pricing": {
     "title": "Piani semplici,",
-    "titleHighlight": "nessuna sorpresa",
+    "titleHighlight": "senza sorprese",
     "monthly": "mese",
     "popular": "Più scelto",
+    "trialInfo": "Tutti i piani includono 7 giorni di prova gratuita.",
+    "agencyPrompt": "Molteplici attività? Richiedi il piano Agency →",
     "plans": [
-      { "name": "Starter", "price": 29, "desc": "Per attività che iniziano ad automatizzare", "features": ["1 numero WhatsApp", "Fino a 500 messaggi/mese", "Catalogo sincronizzato", "Pannello di controllo", "Supporto email"], "cta": "Inizia gratis" },
-      { "name": "Pro", "price": 59, "desc": "Il più scelto dalle attività in crescita", "features": ["Tutto di Starter", "Fino a 2.000 messaggi/mese", "Supporto prioritario", "Modalità fuori orario", "Knowledge base avanzata"], "cta": "Inizia gratis" },
-      { "name": "Business", "price": 99, "desc": "Per attività con alto volume di messaggi", "features": ["Tutto di Pro", "Messaggi illimitati", "Instagram DMs", "Supporto diretto WhatsApp", "Multilingua"], "cta": "Inizia gratis" }
+      {
+        "name": "Starter",
+        "price": 59,
+        "oldPrice": 99,
+        "desc": "Prezzo di lancio. Bloccato per sempre.",
+        "features": [
+          "1 numero WhatsApp",
+          "Fino a 500 messaggi/mese",
+          "Catalogo sincronizzato",
+          "Pannello di controllo",
+          "Supporto via email"
+        ],
+        "cta": "Inizia gratis"
+      },
+      {
+        "name": "Growth",
+        "price": 99,
+        "oldPrice": 150,
+        "desc": "Prezzo di lancio. Bloccato per sempre.",
+        "features": [
+          "Tutto da Starter",
+          "Fino a 2.000 messaggi/mese",
+          "Supporto prioritario",
+          "Orario anti-notte",
+          "Base di conoscenza avanzata"
+        ],
+        "cta": "Inizia gratis"
+      },
+      {
+        "name": "Scale",
+        "price": 179,
+        "oldPrice": 220,
+        "desc": "Prezzo di lancio. Bloccato per sempre.",
+        "features": [
+          "Tutto da Growth",
+          "Messaggi illimitati",
+          "DM Instagram",
+          "Supporto diretto WhatsApp",
+          "Multi-lingua"
+        ],
+        "cta": "Inizia gratis"
+      }
     ]
   },
   "faq": {
     "title": "Domande frequenti",
     "items": [
-      { "q": "Posso annullare quando voglio?", "a": "Sì, senza contratti o penali. Annulla dal tuo pannello in qualsiasi momento." },
-      { "q": "Cosa succede se supero il limite di messaggi?", "a": "Ti avvisiamo prima di raggiungere il limite. Puoi fare l'upgrade o aspettare il mese successivo." },
-      { "q": "Funziona con qualsiasi numero WhatsApp?", "a": "Funziona con WhatsApp Business e numeri personali. Non devi cambiare il tuo numero attuale." },
-      { "q": "Posso cambiare piano?", "a": "Sì, in qualsiasi momento dal tuo pannello. Il cambio ha effetto immediato." },
-      { "q": "In quanto tempo posso iniziare?", "a": "In meno di 10 minuti. La configurazione guidata ti accompagna passo dopo passo fino a quando il bot è attivo." }
+      {
+        "q": "Posso annullare quando voglio?",
+        "a": "Sì, senza contratti o penali. Annulla dal tuo pannello in qualsiasi momento."
+      },
+      {
+        "q": "Cosa succede se supero il limite di messaggi?",
+        "a": "Ti avvisiamo prima di raggiungere il limite. Puoi fare l'upgrade o aspettare il mese successivo."
+      },
+      {
+        "q": "Funziona con qualsiasi numero WhatsApp?",
+        "a": "Funziona con WhatsApp Business e numeri personali. Non devi cambiare il tuo numero attuale."
+      },
+      {
+        "q": "Posso cambiare piano?",
+        "a": "Sì, in qualsiasi momento dal tuo pannello. Il cambio ha effetto immediato."
+      },
+      {
+        "q": "In quanto tempo posso iniziare?",
+        "a": "In meno di 10 minuti. La configurazione guidata ti accompagna passo dopo passo fino a quando il bot è attivo."
+      }
     ]
   },
   "cta": {
@@ -119,7 +287,14 @@
     "button": "Crea il mio account gratis →",
     "trust": "Nessuna carta di credito · Annulla quando vuoi · 14 giorni gratis"
   },
-  "footer": { "rights": "Tutti i diritti riservati." },
+  "footer": {
+    "tagline": "L'impiegato che non fallisce mai. Disponibile 24/7, conosce la tua attività nel dettaglio e risponde come un umano.",
+    "product": "PRODOTTO",
+    "legal": "LEGALE",
+    "privacy": "Politica sulla privacy",
+    "terms": "Termini e condizioni",
+    "contact": "Contatti"
+  },
   "login": {
     "title": "Accedi",
     "subtitle": "Accedi al tuo pannello di controllo.",
@@ -130,7 +305,10 @@
     "loading": "Accesso in corso...",
     "noAccount": "Non hai un account?",
     "createAccount": "Crea account",
-    "errors": { "fillAll": "Compila tutti i campi.", "connection": "Impossibile connettersi al server." }
+    "errors": {
+      "fillAll": "Compila tutti i campi.",
+      "connection": "Impossibile connettersi al server."
+    }
   },
   "register": {
     "title": "Crea account",
@@ -142,14 +320,64 @@
     "loading": "Creazione in corso...",
     "hasAccount": "Hai già un account?",
     "login": "Accedi",
-    "errors": { "fillAll": "Compila tutti i campi.", "connection": "Impossibile connettersi al server." }
+    "errors": {
+      "fillAll": "Compila tutti i campi.",
+      "connection": "Impossibile connettersi al server."
+    }
   },
   "merchant": {
     "title": "Il mio pannello",
-    "status": { "active": "Attivo", "inactive": "Inattivo", "connecting": "Connessione...", "waitingQR": "In attesa del QR" },
-    "qr": { "title": "Scansiona QR", "instructions": "Apri WhatsApp → Dispositivi collegati → Collega dispositivo e scansiona questo QR.", "generating": "Generazione QR..." },
-    "stats": { "messages": "Messaggi risposti", "conversations": "Conversazioni", "uptime": "Disponibilità" },
+    "status": {
+      "active": "Attivo",
+      "inactive": "Inattivo",
+      "connecting": "Connessione in corso...",
+      "waitingQR": "In attesa del QR"
+    },
+    "qr": {
+      "title": "Scansiona QR",
+      "instructions": "Apri WhatsApp → Dispositivi collegati → Collega dispositivo e scansiona questo QR.",
+      "generating": "Generazione QR in corso..."
+    },
+    "stats": {
+      "messages": "Messaggi risposti",
+      "conversations": "Conversazioni",
+      "uptime": "Disponibilità"
+    },
     "logout": "Esci"
   },
-  "langSwitcher": { "language": "Lingua" }
+  "langSwitcher": {
+    "language": "Lingua"
+  },
+  "platform": {
+    "label": "PIATTAFORMA",
+    "title": "Progettato per",
+    "titleHighlight": "risultati reali",
+    "speed": "Velocità di risposta",
+    "speedDesc": "Mentre l'assistenza manuale ha una media di 2 ore di attesa, Atento risponde in meno di 3 secondi — 7 giorni su 7, indipendentemente dall'orario.",
+    "conversionLabel": "Tasso di conversione (richieste → vendite)",
+    "chartWithBot": "Con Atento",
+    "chartManual": "Assistenza manuale",
+    "chartBasic": "Chatbot base",
+    "chartNone": "Nessuna assistenza",
+    "metrics": {
+      "time": "< 3",
+      "timeUnit": "sec",
+      "timeLabel": "risposta",
+      "uptime": "24/7",
+      "uptimeLabel": "disponibile",
+      "errors": "0",
+      "errorsLabel": "errori per stanchezza"
+    }
+  },
+  "dashboard": {
+    "label": "PANNELLO DI CONTROLLO",
+    "title": "La tua attività in tempo reale",
+    "desc": "Metriche, conversazioni e comportamento del bot da un pannello semplice e chiaro."
+  },
+  "liveDemo": {
+    "label": "Demo live",
+    "title": "Provalo ora, senza registrarti",
+    "desc": "Scrivigli come se fossi un cliente. Guarda come risponde.",
+    "tryIt": "Ti è piaciuto? Inizia gratis"
+  }
 }
