@@ -2162,6 +2162,16 @@ function Dashboard() {
   }, 0);
 
   const handleStart = async (id) => {
+    const bot = bots.find(b => b.id === id);
+    const hasMetaOrTelegram = bot?.metaPageId || bot?.metaIgId || bot?.telegramBotToken;
+    const hasWhatsApp = bot?.businessPhone;
+    // If bot has Meta/Telegram but no WhatsApp, activate without QR
+    if (hasMetaOrTelegram && !hasWhatsApp) {
+      const res = await authFetch(`${API_URL}/api/bots/${id}/activate-meta`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) alert(data.error || 'Error al activar.');
+      return;
+    }
     setQrCodes(prev => ({ ...prev, [id]: null }));
     await authFetch(`${API_URL}/api/bots/${id}/start`, { method: 'POST' });
   };
