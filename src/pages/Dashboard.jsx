@@ -2913,12 +2913,14 @@ function Dashboard() {
                                   <div style={{fontSize:'0.83rem', fontWeight:700, color:'var(--text-1)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{bot.metaPageName || bot.metaPageId}</div>
                                 </div>
                                 <button onClick={async () => {
+                                  const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2);
+                                  const popup = window.open('about:blank','atento_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`);
                                   try {
                                     const res = await authFetch(`${API_URL}/api/oauth/meta/init`, { method: 'POST', body: JSON.stringify({ botId: bot.id, returnPath: '/oauth-callback' }) });
                                     const data = await res.json();
-                                    if (data.url) { const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2); window.open(data.url,'atento_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`); }
-                                    else alert(data.error || 'Error');
-                                  } catch { alert('Error de conexión'); }
+                                    if (data.url && popup && !popup.closed) { popup.location.href = data.url; }
+                                    else { popup?.close(); alert(data.error || 'Error'); }
+                                  } catch { popup?.close(); alert('Error de conexión'); }
                                 }} style={{background:'transparent', border:'none', color:'var(--text-2)', cursor:'pointer', fontSize:'0.72rem', padding:'0', whiteSpace:'nowrap', textDecoration:'underline'}}>reconectar</button>
                                 <button onClick={async () => {
                                   if (!confirm(`¿Desconectar "${bot.metaPageName || bot.metaPageId}"?`)) return;
@@ -2928,12 +2930,14 @@ function Dashboard() {
                               </div>
                             ) : (
                               <button onClick={async () => {
+                                const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2);
+                                const popup = window.open('about:blank','atento_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`);
                                 try {
                                   const res = await authFetch(`${API_URL}/api/oauth/meta/init`, { method: 'POST', body: JSON.stringify({ botId: bot.id, returnPath: '/oauth-callback' }) });
                                   const data = await res.json();
-                                  if (data.url) { const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2); window.open(data.url,'atento_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`); }
-                                  else alert(data.error || 'Error');
-                                } catch { alert('Error de conexión'); }
+                                  if (data.url && popup && !popup.closed) { popup.location.href = data.url; }
+                                  else { popup?.close(); alert(data.error || 'Error'); }
+                                } catch { popup?.close(); alert('Error de conexión'); }
                               }} style={{display:'flex', alignItems:'center', gap:'0.5rem', background:'#1877f2', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.85rem', fontWeight:600}}>
                                 <span style={{fontWeight:900}}>f</span> Conectar con Facebook
                               </button>
@@ -2953,12 +2957,14 @@ function Dashboard() {
                                   </div>
                                 </div>
                                 <button onClick={async () => {
+                                  const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2);
+                                  const popup = window.open('about:blank','atento_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`);
                                   try {
                                     const res = await authFetch(`${API_URL}/api/oauth/instagram/init`, { method: 'POST', body: JSON.stringify({ botId: bot.id, returnPath: '/oauth-callback' }) });
                                     const data = await res.json();
-                                    if (data.url) { const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2); window.open(data.url,'atento_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`); }
-                                    else alert(data.error || 'Error');
-                                  } catch { alert('Error de conexión'); }
+                                    if (data.url && popup && !popup.closed) { popup.location.href = data.url; }
+                                    else { popup?.close(); alert(data.error || 'Error'); }
+                                  } catch { popup?.close(); alert('Error de conexión'); }
                                 }} style={{background:'transparent', border:'none', color:'var(--text-2)', cursor:'pointer', fontSize:'0.72rem', padding:'0', whiteSpace:'nowrap', textDecoration:'underline'}}>reconectar</button>
                               </div>
                             ) : bot.metaPageId ? (
@@ -3025,12 +3031,14 @@ function Dashboard() {
                             ) : (
                               <div style={{display:'flex', flexDirection:'column', gap:'0.25rem'}}>
                                 <button onClick={async () => {
+                                  const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2);
+                                  const popup = window.open('about:blank','atento_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`);
                                   try {
                                     const res = await authFetch(`${API_URL}/api/oauth/instagram/init`, { method: 'POST', body: JSON.stringify({ botId: bot.id, returnPath: '/oauth-callback' }) });
                                     const data = await res.json();
-                                    if (data.url) { const w=580,h=680,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2); window.open(data.url,'atento_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`); }
-                                    else alert(data.error || 'Error');
-                                  } catch { alert('Error de conexión'); }
+                                    if (data.url && popup && !popup.closed) { popup.location.href = data.url; }
+                                    else { popup?.close(); alert(data.error || 'Error'); }
+                                  } catch { popup?.close(); alert('Error de conexión'); }
                                 }} style={{display:'flex', alignItems:'center', gap:'0.5rem', background:'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)', border:'none', borderRadius:'8px', color:'#fff', cursor:'pointer', padding:'0.5rem 1rem', fontSize:'0.85rem', fontWeight:600}}>
                                   📷 Vincular Instagram
                                 </button>
