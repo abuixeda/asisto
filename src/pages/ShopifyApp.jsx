@@ -186,6 +186,13 @@ function ShopifyPanel() {
   const [showNewAppt, setShowNewAppt] = useState(false);
   const [editingSpec, setEditingSpec] = useState(null);
 
+  // -- Multi-bot (Scale) --
+  const [allBots, setAllBots] = useState([]);
+  const [activeBotId, setActiveBotId] = useState(null);
+  const [creatingBot, setCreatingBot] = useState(false);
+  const [newBotName, setNewBotName] = useState('');
+  const [botSwitchMsg, setBotSwitchMsg] = useState(null);
+
   // -- Marketing --
   const [customers, setCustomers] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
@@ -199,7 +206,8 @@ function ShopifyPanel() {
 
   // -- Carga inicial --
   useEffect(() => {
-    shopifyFetch(`${API}/api/shopify/embedded/bot`)
+    const botParam = activeBotId ? `?botId=${activeBotId}` : '';
+    shopifyFetch(`${API}/api/shopify/embedded/bot${botParam}`)
       .then(r => r.json())
       .then(data => {
         setBot(data);
@@ -217,7 +225,32 @@ function ShopifyPanel() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [activeBotId]);
+
+  // -- Cargar lista de bots (para Scale) --
+  useEffect(() => {
+    shopifyFetch(`${API}/api/shopify/embedded/bots`)
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setAllBots(data); })
+      .catch(() => {});
+  }, [activeBotId]);
+
+  async function handleCreateSecondBot() {
+    if (!newBotName.trim()) return;
+    setCreatingBot(true); setBotSwitchMsg(null);
+    try {
+      const res = await shopifyFetch(`${API}/api/shopify/embedded/bots`, {
+        method: 'POST',
+        body: JSON.stringify({ name: newBotName.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setBotSwitchMsg({ ok: false, text: data.error || 'Error al crear el bot.' }); return; }
+      setNewBotName('');
+      setActiveBotId(data.botId);
+      setBotSwitchMsg({ ok: true, text: `Bot "${data.name}" creado exitosamente.` });
+    } catch (_e) { setBotSwitchMsg({ ok: false, text: 'Error de conexión.' }); }
+    finally { setCreatingBot(false); }
+  }
 
   useEffect(() => {
     if (selectedTab === 1) loadTurnos();
@@ -567,17 +600,94 @@ function ShopifyPanel() {
   const statusColors = { confirmed: '#10b981', completed: '#3b82f6', cancelled: '#ef4444' };
   const statusLabels = { confirmed: 'Confirmado', completed: 'Completado', cancelled: 'Cancelado' };
 
+  const planLimits = { starter: 1500, growth: 5000, scale: null };
+  const planLimit = planLimits[bot?.plan] ?? 1500;
+  const msgUsed = bot?.monthlyMessages || 0;
+  const msgPct = planLimit ? Math.min(100, Math.round((msgUsed / planLimit) * 100)) : 0;
+  const isScale = bot?.plan === 'scale';
+
   return (
     <Page title={bot?.name || 'Atento AI'} subtitle="Asistente virtual con inteligencia artificial">
       <Layout>
 
+        {/* -- Selector de bot (Scale) -- */}
+        {isScale && (
+          <Layout.Section>
+            <Card>
+              <Box padding="400">
+                <BlockStack gap="300">
+                  <InlineStack align="space-between" blockAlign="center">
+                    <Text variant="headingSm" as="h3">Mis bots — Plan Scale</Text>
+                    <Text variant="bodySm" tone="subdued">{allBots.length}/2 bots activos</Text>
+                  </InlineStack>
+                  <InlineStack gap="200" wrap>
+                    {allBots.map(b => (
+                      <Button
+                        key={b.id}
+                        variant={b.id === (activeBotId || allBots[0]?.id) ? 'primary' : 'secondary'}
+                        onClick={() => setActiveBotId(b.id)}
+                      >
+                        {b.name} {b.status === 'ON' ? '🟢' : '⚫'}
+                      </Button>
+                    ))}
+                  </InlineStack>
+                  {allBots.length < 2 && (
+                    <BlockStack gap="200">
+                      <TextField
+                        label="Nombre del segundo bot"
+                        value={newBotName}
+                        onChange={setNewBotName}
+                        placeholder="Ej: Bot Sucursal Norte"
+                        autoComplete="off"
+                      />
+                      <Button onClick={handleCreateSecondBot} loading={creatingBot} variant="primary">
+                        + Crear segundo bot
+                      </Button>
+                    </BlockStack>
+                  )}
+                  {botSwitchMsg && (
+                    <Banner tone={botSwitchMsg.ok ? 'success' : 'critical'}>{botSwitchMsg.text}</Banner>
+                  )}
+                </BlockStack>
+              </Box>
+            </Card>
+          </Layout.Section>
+        )}
+
+        {/* -- Plan y uso de mensajes -- */}
+        <Layout.Section>
+          <Card>
+            <Box padding="400">
+              <InlineStack align="space-between" blockAlign="center">
+                <BlockStack gap="100">
+                  <Text variant="headingSm" as="h3">
+                    Plan {bot?.plan ? bot.plan.charAt(0).toUpperCase() + bot.plan.slice(1) : 'Starter'}
+                  </Text>
+                  <Text variant="bodySm" tone="subdued">
+                    {planLimit
+                      ? `${msgUsed.toLocaleString()} / ${planLimit.toLocaleString()} mensajes este mes (${msgPct}%)`
+                      : `${msgUsed.toLocaleString()} mensajes este mes — ilimitados`}
+                  </Text>
+                </BlockStack>
+              </InlineStack>
+              {planLimit && (
+                <Box paddingBlockStart="300">
+                  <div style={{ height: 6, background: '#e4e5e7', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${msgPct}%`, background: msgPct >= 90 ? '#ef4444' : msgPct >= 70 ? '#f59e0b' : '#22c55e', borderRadius: 3, transition: 'width 0.3s' }} />
+                  </div>
+                </Box>
+              )}
+            </Box>
+          </Card>
+        </Layout.Section>
+
         {/* -- Banner estado -- */}
         <Layout.Section>
-          <Banner tone={isOn ? 'success' : 'warning'} title={isOn ? '? Asistente activo' : '?? Asistente inactivo'}>
+          <Banner tone={isOn ? 'success' : 'warning'} title={isOn ? '✅ Asistente activo' : '⚠️ Asistente inactivo'}>
             <Text as="p" variant="bodyMd" tone="subdued">
               {isOn
-                ? `${metrics.messagesSent || 0} mensajes respondidos  ${metrics.customersHelped || 0} chats atendidos`
-                : 'Conect WhatsApp en la seccin de Configuracin para activar el asistente.'}
+                ? `${metrics.messagesSent || 0} mensajes respondidos · ${metrics.customersHelped || 0} chats atendidos`
+                : 'Conectá WhatsApp en la sección de Configuración para activar el asistente.'}
             </Text>
           </Banner>
         </Layout.Section>
