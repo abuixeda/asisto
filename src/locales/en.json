@@ -8,7 +8,7 @@
     "start": "Start free"
   },
   "hero": {
-    "badge": "Atento AI 2.0 · Multi-language · WhatsApp + Instagram",
+    "badge": "Atento AI 2.0 · Multi-language · WhatsApp + Telegram",
     "title": "Your business replies on its own.",
     "titleHighlight": "24/7. No errors. No salary.",
     "subtitle": "Atento AI handles your WhatsApp messages, knows your catalog in detail, and responds like a human — without you being there.",
@@ -29,7 +29,7 @@
     "placeholder": "Type your query...",
     "greeting": "Hi! I'm Atento, Atento AI's virtual assistant. Ask me how I work, about pricing, or how you can try me for free 🚀",
     "responses": {
-      "price": "We have 3 plans: Starter ($59/month), Growth ($99/month), and Scale ($179/month). All include a 7-day free trial! Would you like to know what each one includes?",
+      "price": "We have 3 plans: Starter ($59/month, 1,500 messages), Growth ($99/month, 5,000 messages) and Scale ($179/month, unlimited + 2 bots). All include a 7-day free trial! Would you like to know what each one includes?",
       "how": "I connect to your WhatsApp and automatically reply to your customers 24 hours a day. I learn about your business to respond as if it were you. 😎",
       "features": "I can answer questions, read real-time catalogs, schedule appointments, and even close sales while you sleep.",
       "setup": "It's super easy: create your account, scan a QR code with your WhatsApp, and that's it, I'm already working in 5 minutes! ⏱️",
@@ -220,8 +220,8 @@
         "oldPrice": 99,
         "desc": "Launch price. Frozen for life.",
         "features": [
-          "1 WhatsApp number",
-          "Up to 500 messages/month",
+          "1,500 messages/month",
+          "WhatsApp + Telegram",
           "Synchronized catalog",
           "Dashboard",
           "Email support"
@@ -234,9 +234,9 @@
         "oldPrice": 150,
         "desc": "Launch price. Frozen for life.",
         "features": [
-          "Everything in Starter",
-          "Up to 2,000 messages/month",
-          "Priority support",
+          "5,000 messages/month",
+          "WhatsApp + Telegram",
+          "Instagram (coming soon) + Facebook (coming soon)",
           "Anti-nighttime hours",
           "Advanced knowledge base"
         ],
@@ -248,9 +248,9 @@
         "oldPrice": 220,
         "desc": "Launch price. Frozen for life.",
         "features": [
-          "Everything in Growth",
           "Unlimited messages",
-          "Instagram DMs",
+          "All channels",
+          "2 independent bots",
           "Direct WhatsApp support",
           "Multi-language"
         ],

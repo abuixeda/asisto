@@ -8,7 +8,7 @@
     "start": "Empezar gratis"
   },
   "hero": {
-    "badge": "Atento AI 2.0 · Multi-idioma · WhatsApp + Instagram",
+    "badge": "Atento AI 2.0 · Multi-idioma · WhatsApp + Telegram",
     "title": "Tu negocio responde solo.",
     "titleHighlight": "24hs. Sin errores. Sin sueldo.",
     "subtitle": "Atento AI atiende las consultas de WhatsApp de tu negocio, conoce tu catálogo al detalle y responde como un humano — sin que vos estés presente.",
@@ -29,7 +29,7 @@
     "placeholder": "Escribí tu consulta...",
     "greeting": "¡Hola! Soy Atento, el asistente virtual de Atento AI. Preguntame cómo funciono, los precios o cómo podés probarme gratis 🚀",
     "responses": {
-      "price": "Tenemos 3 planes: Starter ($59/mes), Growth ($99/mes) y Scale ($179/mes). ¡Todos incluyen 7 días de prueba gratis! ¿Te gustaría saber qué incluye cada uno?",
+      "price": "Tenemos 3 planes: Starter ($59/mes, 1.500 mensajes), Growth ($99/mes, 5.000 mensajes) y Scale ($179/mes, ilimitado + 2 bots). ¡Todos incluyen 7 días de prueba gratis! ¿Te gustaría saber qué incluye cada uno?",
       "how": "Me conecto a tu WhatsApp y respondo automáticamente a tus clientes las 24 horas. Aprendo de tu negocio para responder como si fueras vos. 😎",
       "features": "Puedo contestar dudas, leer catálogos en tiempo real, agendar citas y hasta cerrar ventas mientras vos dormís.",
       "setup": "Es súper fácil: te creás la cuenta, escaneás un código QR con tu WhatsApp y listo, ¡ya estoy funcionando en 5 minutos! ⏱️",
@@ -109,9 +109,9 @@
     "trialInfo": "Todos los planes incluyen 7 días de prueba gratis.",
     "agencyPrompt": "¿Múltiples negocios? Consultá el plan Agency →",
     "plans": [
-      { "name": "Starter", "price": 59, "oldPrice": 99, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["1 número WhatsApp", "Hasta 500 mensajes/mes", "Catálogo sincronizado", "Panel de control", "Soporte por email"], "cta": "Empezar gratis" },
-      { "name": "Growth", "price": 99, "oldPrice": 150, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["Todo lo de Starter", "Hasta 2.000 mensajes/mes", "Soporte prioritario", "Horario anti-nocturno", "Base de conocimientos avanzada"], "cta": "Empezar gratis" },
-      { "name": "Scale", "price": 179, "oldPrice": 220, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["Todo lo de Growth", "Mensajes ilimitados", "Instagram DMs", "Soporte directo WhatsApp", "Multi-idioma"], "cta": "Empezar gratis" }
+      { "name": "Starter", "price": 59, "oldPrice": 99, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["1.500 mensajes/mes", "WhatsApp + Telegram", "Catálogo sincronizado", "Panel de control", "Soporte por email"], "cta": "Empezar gratis" },
+      { "name": "Growth", "price": 99, "oldPrice": 150, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["5.000 mensajes/mes", "WhatsApp + Telegram", "Instagram (próx.) + Facebook (próx.)", "Horario anti-nocturno", "Base de conocimientos avanzada"], "cta": "Empezar gratis" },
+      { "name": "Scale", "price": 179, "oldPrice": 220, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["Mensajes ilimitados", "Todos los canales", "2 bots independientes", "Soporte directo WhatsApp", "Multi-idioma"], "cta": "Empezar gratis" }
     ]
   },
   "faq": {
