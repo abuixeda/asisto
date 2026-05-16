@@ -14,7 +14,7 @@ const API = 'https://asisto-backend-production.up.railway.app';
 // --- Preview Chat (simulacin WhatsApp) ---------------------------------------
 function PreviewChat({ botName, onSend }) {
   const [messages, setMessages] = useState([
-    { role: 'model', text: 'Hola! Soy el asistente virtual. En qu te puedo ayudar? ??' }
+    { role: 'model', text: '¡Hola! Soy el asistente virtual. ¿En qué te puedo ayudar?' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -73,10 +73,10 @@ function PreviewChat({ botName, onSend }) {
           <input
             value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-            placeholder="Escrib un mensaje..."
+            placeholder="Escribí un mensaje..."
             style={{ flex: 1, background: '#2a3942', border: 'none', borderRadius: 20, padding: '8px 14px', color: '#e9edef', fontSize: '0.82rem', outline: 'none' }}
           />
-          <button onClick={sendMessage} disabled={loading || !input.trim()} style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: loading || !input.trim() ? '#2a3942' : '#00a884', color: '#fff', cursor: loading || !input.trim() ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>?</button>
+          <button onClick={sendMessage} disabled={loading || !input.trim()} style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', background: loading || !input.trim() ? '#2a3942' : '#00a884', color: '#fff', cursor: loading || !input.trim() ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>➤</button>
         </div>
       </div>
     </Box>
