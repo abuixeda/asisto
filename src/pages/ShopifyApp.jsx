@@ -579,8 +579,8 @@ function ShopifyPanel() {
   const tabs = [
     { id: 'config', content: 'Configuracin' },
     { id: 'turnos', content: 'Turnos' },
-    { id: 'preview', content: '?? Probar asistente' },
-    { id: 'marketing', content: '?? Marketing' },
+    { id: 'preview', content: 'Probar asistente' },
+    { id: 'marketing', content: 'Marketing' },
   ];
 
   async function sendPreview(message, history) {
@@ -836,7 +836,7 @@ function ShopifyPanel() {
 
                     {/* -- Idioma -- */}
                     <BlockStack gap="300">
-                      <Text variant="headingMd" as="h2">?? Idioma de respuestas</Text>
+                      <Text variant="headingMd" as="h2">Idioma de respuestas</Text>
                       <Text variant="bodySm" tone="subdued">
                         En qu idioma responde el asistente. Si elegs un idioma distinto al espaol, el asistente responder siempre en ese idioma aunque el cliente escriba en otro.
                       </Text>
@@ -877,7 +877,7 @@ function ShopifyPanel() {
 
                     {/* -- Tiempo de espera -- */}
                     <BlockStack gap="300">
-                      <Text variant="headingMd" as="h2">?? Tiempo de espera antes de responder</Text>
+                      <Text variant="headingMd" as="h2">Tiempo de espera antes de responder</Text>
                       <Text variant="bodySm" tone="subdued">
                         Si el cliente manda varios mensajes seguidos, el asistente espera este tiempo antes de responder  as agrupa todos los mensajes y contesta una sola vez.
                       </Text>
@@ -895,7 +895,7 @@ function ShopifyPanel() {
 
                     {/* -- Horario -- */}
                     <BlockStack gap="300">
-                      <Text variant="headingMd" as="h2">?? Horario de Atencin (Anti-Nocturno)</Text>
+                      <Text variant="headingMd" as="h2">Horario de atención (Anti-Nocturno)</Text>
                       <Text variant="bodySm" tone="subdued">
                         Activ esta opcin para que el asistente solo responda dentro de tu horario comercial. Fuera de ese horario, enviar el mensaje automtico.
                       </Text>
@@ -928,7 +928,7 @@ function ShopifyPanel() {
 
                     {/* -- Celular del dueo -- */}
                     <BlockStack gap="300">
-                      <Text variant="headingMd" as="h2">?? Tu celular (lnea directa con el asistente)</Text>
+                      <Text variant="headingMd" as="h2">Tu celular (línea directa con el asistente)</Text>
                       <Text variant="bodySm" tone="subdued">
                         Escribile desde este nmero para dar indicaciones en tiempo real: actualizar info, consultar reportes de ventas, ver turnos del da. El asistente te responde solo a vos con informacin de dueo.
                       </Text>
@@ -946,7 +946,7 @@ function ShopifyPanel() {
 
                     {/* -- Instagram & Facebook  Prximamente -- */}
                     <BlockStack gap="300">
-                      <Text variant="headingMd" as="h2">?? Instagram & Facebook DMs</Text>
+                      <Text variant="headingMd" as="h2">Instagram & Facebook DMs</Text>
                       <div style={{ background: 'rgba(225,48,108,0.04)', border: '1px solid rgba(225,48,108,0.18)', borderRadius: 12, padding: '1.1rem 1.25rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', flexShrink: 0, paddingTop: '0.1rem' }}>
                           <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>??</span>
@@ -1020,7 +1020,7 @@ function ShopifyPanel() {
                           </div>
                           <div style={{ background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 10, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
                             <div>
-                              <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#202223' }}>?? Recordatorio automtico</div>
+                              <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#202223' }}>Recordatorio automático</div>
                               <div style={{ fontSize: '0.75rem', color: '#6d7175' }}>Avisa al cliente por WhatsApp antes del turno</div>
                             </div>
                             <label style={{ position: 'relative', display: 'inline-block', width: 44, height: 24, flexShrink: 0 }}>
@@ -1092,7 +1092,7 @@ function ShopifyPanel() {
                           </div>
                           <div style={{ background: 'rgba(124,58,237,0.07)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 10, padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
                             <div>
-                              <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#202223' }}>?? Recordatorio automtico</div>
+                              <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#202223' }}>Recordatorio automático</div>
                               <div style={{ fontSize: '0.75rem', color: '#6d7175' }}>Avisa al cliente por WhatsApp antes del turno</div>
                             </div>
                             <label style={{ position: 'relative', display: 'inline-block', width: 44, height: 24, flexShrink: 0 }}>
@@ -1231,7 +1231,7 @@ function ShopifyPanel() {
                             )}
                             <button onClick={() => deleteAppt(apptDetail.id)}
                               style={{ width: '100%', marginTop: '0.5rem', background: 'rgba(216,44,13,0.06)', border: '1px solid rgba(216,44,13,0.25)', borderRadius: 8, color: '#d82c0d', cursor: 'pointer', padding: '0.45rem', fontWeight: 600, fontSize: '0.8rem' }}>
-                              ?? Eliminar turno
+                              Eliminar turno
                             </button>
                           </div>
                         </div>
@@ -1241,7 +1241,7 @@ function ShopifyPanel() {
                     {/* Header y tabs de vista */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
-                        {[{ id: 'agenda', label: '?? Agenda' }, { id: 'servicios', label: '?? Servicios' }].map(t => (
+                        {[{ id: 'agenda', label: 'Agenda' }, { id: 'servicios', label: 'Servicios' }].map(t => (
                           <button key={t.id} onClick={() => setTurnosView(t.id)}
                             style={{ padding: '0.4rem 0.9rem', borderRadius: 20, border: '1px solid #c9cccf', background: turnosView === t.id ? 'linear-gradient(135deg,#7c3aed,#3b82f6)' : '#f6f6f7', color: turnosView === t.id ? '#fff' : '#6d7175', cursor: 'pointer', fontSize: '0.85rem', fontWeight: turnosView === t.id ? 700 : 400 }}>
                             {t.label}
@@ -1259,7 +1259,7 @@ function ShopifyPanel() {
                       <div>
                         {specialties.length === 0 ? (
                           <div style={{ background: '#f6f6f7', border: '1px dashed #c9cccf', borderRadius: 12, padding: '2rem', textAlign: 'center', color: '#6d7175', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                            No hay servicios configurados. Cre uno en <strong>?? Servicios</strong>.
+                            No hay servicios configurados. Creá uno en <strong>Servicios</strong>.
                           </div>
                         ) : (
                           <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
@@ -1472,7 +1472,7 @@ function ShopifyPanel() {
 
                     {/* -- Carritos abandonados -- */}
                     <BlockStack gap="300">
-                      <Text variant="headingMd" as="h2">?? Recupero de carritos abandonados</Text>
+                      <Text variant="headingMd" as="h2">Recupero de carritos abandonados</Text>
                       <Text variant="bodySm" tone="subdued">
                         Cuando un cliente agrega productos al carrito pero no completa la compra, el asistente le manda un WhatsApp automtico recordndole. Requiere WhatsApp conectado.
                       </Text>
@@ -1531,7 +1531,7 @@ function ShopifyPanel() {
 
                     {/* -- Clientes -- */}
                     <BlockStack gap="300">
-                      <Text variant="headingMd" as="h2">?? Clientes recolectados</Text>
+                      <Text variant="headingMd" as="h2">Clientes recolectados</Text>
                       <Text variant="bodySm" tone="subdued">
                         Cada vez que alguien completa una compra en tu tienda, su nombre y nmero de WhatsApp quedan guardados automticamente. Pods usarlos para difusiones.
                       </Text>
@@ -1561,7 +1561,7 @@ function ShopifyPanel() {
                     {/* -- Difusiones -- */}
                     <BlockStack gap="300">
                       <InlineStack align="space-between">
-                        <Text variant="headingMd" as="h2">?? Difusiones</Text>
+                        <Text variant="headingMd" as="h2">Difusiones</Text>
                         <Button onClick={() => setShowNewCampaign(v => !v)} size="slim" disabled={customers.length === 0}>
                           {showNewCampaign ? 'Cancelar' : '+ Nueva difusin'}
                         </Button>
