@@ -843,13 +843,13 @@ function ShopifyPanel() {
                       <Select
                         label="Idioma del asistente"
                         options={[
-                          { label: '???? Espaol', value: 'es' },
-                          { label: '???? English', value: 'en' },
-                          { label: '???? Portugus', value: 'pt' },
-                          { label: '???? Deutsch', value: 'de' },
-                          { label: '???? Franais', value: 'fr' },
-                          { label: '???? ???????', value: 'ar' },
-                          { label: '???? Italiano', value: 'it' },
+                          { label: 'Español', value: 'es' },
+                          { label: 'English', value: 'en' },
+                          { label: 'Português', value: 'pt' },
+                          { label: 'Deutsch', value: 'de' },
+                          { label: 'Français', value: 'fr' },
+                          { label: 'العربية', value: 'ar' },
+                          { label: 'Italiano', value: 'it' },
                         ]}
                         value={language}
                         onChange={setLanguage}
