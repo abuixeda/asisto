@@ -58,13 +58,13 @@ function PreviewChat({ botName, onSend }) {
             <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
               <div style={{ maxWidth: '80%', padding: '6px 10px 4px', borderRadius: m.role === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px', background: m.role === 'user' ? '#005c4b' : '#202c33', color: '#e9edef', fontSize: '0.82rem', lineHeight: 1.5, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
                 {m.text}
-                <div style={{ fontSize: '0.6rem', color: '#aebac1', textAlign: 'right', marginTop: 2 }}>{now} {m.role === 'user' && '??'}</div>
+                <div style={{ fontSize: '0.6rem', color: '#aebac1', textAlign: 'right', marginTop: 2 }}>{now} {m.role === 'user' && '✓✓'}</div>
               </div>
             </div>
           ))}
           {loading && (
             <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 6 }}>
-              <div style={{ background: '#202c33', borderRadius: '12px 12px 12px 2px', padding: '8px 14px', color: '#aebac1', fontSize: '0.82rem' }}>? ? ?</div>
+              <div style={{ background: '#202c33', borderRadius: '12px 12px 12px 2px', padding: '8px 14px', color: '#aebac1', fontSize: '0.82rem' }}>· · ·</div>
             </div>
           )}
           <div ref={bottomRef} />
@@ -196,7 +196,7 @@ function ShopifyPanel() {
   // -- Marketing --
   const [customers, setCustomers] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
-  const [cartConfig, setCartConfig] = useState({ enabled: false, delayHours: 2, message: 'Hola {{nombre}}! ?? Notamos que dejaste productos en tu carrito:\n\n{{productos}}\n\nQuers completar tu compra? ?? {{url}}' });
+  const [cartConfig, setCartConfig] = useState({ enabled: false, delayHours: 2, message: 'Hola {{nombre}}! Notamos que dejaste productos en tu carrito:\n\n{{productos}}\n\n¿Querés completar tu compra? {{url}}' });
   const [abandonedCarts, setAbandonedCarts] = useState([]);
   const [newCampaign, setNewCampaign] = useState({ name: '', message_template: '', delay_seconds: 30 });
   const [showNewCampaign, setShowNewCampaign] = useState(false);
@@ -362,7 +362,7 @@ function ShopifyPanel() {
         body: JSON.stringify({ prompt, knowledgeBase: kb, responseDelay, workingHours: hours, adminPhone, widget, language }),
       });
       const d = await res.json();
-      setSaveMsg(d.ok ? { ok: true, text: 'Configuracin guardada.' } : { ok: false, text: d.error || 'Error.' });
+      setSaveMsg(d.ok ? { ok: true, text: 'Configuración guardada.' } : { ok: false, text: d.error || 'Error.' });
     } catch (_e) { setSaveMsg({ ok: false, text: 'Error de conexin.' }); }
     finally { setSaving(false); }
   }
@@ -372,7 +372,7 @@ function ShopifyPanel() {
     try {
       const res = await shopifyFetch(`${API}/api/shopify/embedded/sync`, { method: 'POST' });
       const d = await res.json();
-      setSyncMsg(d.success ? { ok: true, text: 'Catlogo sincronizado.' } : { ok: false, text: d.error || 'Error.' });
+      setSyncMsg(d.success ? { ok: true, text: 'Catálogo sincronizado.' } : { ok: false, text: d.error || 'Error.' });
     } catch (_e) { setSyncMsg({ ok: false, text: 'Error de conexin.' }); }
     finally { setSyncing(false); }
   }
@@ -515,7 +515,7 @@ function ShopifyPanel() {
     setCartSaving(true);
     try {
       await shopifyFetch(`${API}/api/shopify/embedded/abandoned-cart`, { method: 'PUT', body: JSON.stringify(cartConfig) });
-      setMarketingMsg({ ok: true, text: 'Configuracin de carritos guardada.' });
+      setMarketingMsg({ ok: true, text: 'Configuración de carritos guardada.' });
     } catch (_e) { setMarketingMsg({ ok: false, text: 'Error de conexin.' }); }
     finally { setCartSaving(false); setTimeout(() => setMarketingMsg(null), 4000); }
   }
@@ -577,7 +577,7 @@ function ShopifyPanel() {
   const metrics = (() => { try { return JSON.parse(bot?.metrics || '{}'); } catch { return {}; } })();
 
   const tabs = [
-    { id: 'config', content: 'Configuracin' },
+    { id: 'config', content: 'Configuración' },
     { id: 'turnos', content: 'Turnos' },
     { id: 'preview', content: 'Probar asistente' },
     { id: 'marketing', content: 'Marketing' },
@@ -735,7 +735,7 @@ function ShopifyPanel() {
                                   Nmero conectado: <strong>+{bot.businessPhone}</strong>
                                 </Text>
                               )}
-                              <Text variant="bodySm" tone="subdued">El asistente est respondiendo mensajes automticamente.</Text>
+                              <Text variant="bodySm" tone="subdued">El asistente está respondiendo mensajes automáticamente.</Text>
                             </BlockStack>
                           </Banner>
                           <InlineStack>
@@ -759,7 +759,7 @@ function ShopifyPanel() {
                                   <QRCodeSVG value={qrData} size={200} />
                                 </div>
                               </InlineStack>
-                              <Text variant="bodySm" tone="subdued" alignment="center">El cdigo expira en 60 segundos  se actualiza automticamente.</Text>
+                              <Text variant="bodySm" tone="subdued" alignment="center">El código expira en 60 segundos — se actualiza automáticamente.</Text>
                             </>
                           ) : (
                             <InlineStack gap="300">
@@ -785,15 +785,15 @@ function ShopifyPanel() {
 
                     {/* -- Botn WhatsApp en la tienda -- */}
                     <BlockStack gap="300">
-                      <Text variant="headingMd" as="h2">Botn de WhatsApp en tu tienda</Text>
+                      <Text variant="headingMd" as="h2">Botón de WhatsApp en tu tienda</Text>
                       <Text variant="bodySm" tone="subdued">
-                        Agrega un botn flotante en tu tienda. Cuando un cliente lo toca, se abre WhatsApp listo para escribirte a vos.
+                        Agrega un botón flotante en tu tienda. Cuando un cliente lo toca, se abre WhatsApp listo para escribirte a vos.
                         {bot?.businessPhone
-                          ? ` Los mensajes llegarn al nmero +${bot.businessPhone}.`
-                          : ' Conect WhatsApp arriba para activarlo.'}
+                          ? ` Los mensajes llegarán al número +${bot.businessPhone}.`
+                          : ' Conectá WhatsApp arriba para activarlo.'}
                       </Text>
                       <Checkbox
-                        label="Mostrar botn de WhatsApp en la tienda"
+                        label="Mostrar botón de WhatsApp en la tienda"
                         checked={!!widget.enabled}
                         onChange={v => setWidget(w => ({ ...w, enabled: v }))}
                         disabled={!bot?.businessPhone}
@@ -805,15 +805,15 @@ function ShopifyPanel() {
                             value={widget.welcomeMessage}
                             onChange={v => setWidget(w => ({ ...w, welcomeMessage: v }))}
                             placeholder="Hola! Tengo una consulta sobre un producto."
-                            helpText="Texto que aparece pre-escrito en WhatsApp cuando el cliente toca el botn."
+                            helpText="Texto que aparece pre-escrito en WhatsApp cuando el cliente toca el botón."
                             autoComplete="off"
                           />
                           <TextField
-                            label="Texto del botn flotante"
+                            label="Texto del botón flotante"
                             value={widget.buttonText}
                             onChange={v => setWidget(w => ({ ...w, buttonText: v }))}
                             placeholder="Chate con nosotros"
-                            helpText="Etiqueta que aparece al lado del botn verde."
+                            helpText="Etiqueta que aparece al lado del botón verde."
                             autoComplete="off"
                           />
                         </BlockStack>
@@ -824,8 +824,8 @@ function ShopifyPanel() {
 
                     {/* -- Catlogo -- */}
                     <BlockStack gap="300">
-                      <Text variant="headingMd" as="h2">Catlogo de productos</Text>
-                      <Text variant="bodySm" tone="subdued">El asistente sincroniza tu catlogo automticamente al crear o modificar productos. Tambin pods hacerlo manualmente.</Text>
+                      <Text variant="headingMd" as="h2">Catálogo de productos</Text>
+                      <Text variant="bodySm" tone="subdued">El asistente sincroniza tu catálogo automáticamente al crear o modificar productos. También podés hacerlo manualmente.</Text>
                       {syncMsg && <Banner tone={syncMsg.ok ? 'success' : 'critical'}>{syncMsg.text}</Banner>}
                       <InlineStack>
                         <Button onClick={syncCatalog} loading={syncing}>Sincronizar ahora</Button>
@@ -838,7 +838,7 @@ function ShopifyPanel() {
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Idioma de respuestas</Text>
                       <Text variant="bodySm" tone="subdued">
-                        En qu idioma responde el asistente. Si elegs un idioma distinto al espaol, el asistente responder siempre en ese idioma aunque el cliente escriba en otro.
+                        En qué idioma responde el asistente. Si elegís un idioma distinto al español, el asistente responderá siempre en ese idioma aunque el cliente escriba en otro.
                       </Text>
                       <Select
                         label="Idioma del asistente"
@@ -861,14 +861,14 @@ function ShopifyPanel() {
                     {/* -- Comportamiento -- */}
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Comportamiento del asistente</Text>
-                      <Text variant="bodySm" tone="subdued">Defin la personalidad: cmo saluda, qu tono usa, si tutea o usa "usted".</Text>
+                      <Text variant="bodySm" tone="subdued">Definí la personalidad: cómo saluda, qué tono usa, si tutea o usa "usted".</Text>
                       <TextField label="Personalidad e instrucciones" value={prompt} onChange={setPrompt} multiline={6}
                         placeholder="Ej: Sos el asistente de [Negocio]. Respond de forma amigable..." autoComplete="off" />
                     </BlockStack>
 
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Base de conocimientos</Text>
-                      <Text variant="bodySm" tone="subdued">Horarios, precios, polticas, preguntas frecuentes, catlogo.</Text>
+                      <Text variant="bodySm" tone="subdued">Horarios, precios, políticas, preguntas frecuentes, catálogo.</Text>
                       <TextField label="Conocimiento del negocio" value={kb} onChange={setKb} multiline={8}
                         placeholder="[HORARIOS]&#10;Lunes a viernes 9-18hs&#10;&#10;[ENVOS]&#10;..." autoComplete="off" />
                     </BlockStack>
@@ -879,7 +879,7 @@ function ShopifyPanel() {
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Tiempo de espera antes de responder</Text>
                       <Text variant="bodySm" tone="subdued">
-                        Si el cliente manda varios mensajes seguidos, el asistente espera este tiempo antes de responder  as agrupa todos los mensajes y contesta una sola vez.
+                        Si el cliente manda varios mensajes seguidos, el asistente espera este tiempo antes de responder — así agrupa todos los mensajes y contesta una sola vez.
                       </Text>
                       <RangeSlider
                         label={`Espera: ${responseDelay}s`}
@@ -887,7 +887,7 @@ function ShopifyPanel() {
                         value={responseDelay}
                         onChange={v => setResponseDelay(v)}
                         output
-                        suffix={<Text variant="bodySm" tone="subdued">Recomendado: 2.5s  Mnimo: 0.5s  Mximo: 60s</Text>}
+                        suffix={<Text variant="bodySm" tone="subdued">Recomendado: 2.5s · Mínimo: 0.5s · Máximo: 60s</Text>}
                       />
                     </BlockStack>
 
@@ -897,10 +897,10 @@ function ShopifyPanel() {
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Horario de atención (Anti-Nocturno)</Text>
                       <Text variant="bodySm" tone="subdued">
-                        Activ esta opcin para que el asistente solo responda dentro de tu horario comercial. Fuera de ese horario, enviar el mensaje automtico.
+                        Activá esta opción para que el asistente solo responda dentro de tu horario comercial. Fuera de ese horario, enviará el mensaje automático.
                       </Text>
                       <Checkbox
-                        label="Activar lmite de horario"
+                        label="Activar límite de horario"
                         checked={!!hours.active}
                         onChange={v => setHours(h => ({ ...h, active: v }))}
                       />
@@ -913,10 +913,10 @@ function ShopifyPanel() {
                               onChange={v => setHours(h => ({ ...h, end: v }))} autoComplete="off" />
                           </InlineStack>
                           <TextField
-                            label="Mensaje automtico fuera de horario"
+                            label="Mensaje automático fuera de horario"
                             value={hours.autoReplyMsg}
                             onChange={v => setHours(h => ({ ...h, autoReplyMsg: v }))}
-                            placeholder="Ej: Hola! Estamos cerrados ahora, maana a primera hora te atendemos."
+                            placeholder="Ej: Hola! Estamos cerrados ahora, mañana a primera hora te atendemos."
                             multiline={3}
                             autoComplete="off"
                           />
@@ -930,14 +930,14 @@ function ShopifyPanel() {
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Tu celular (línea directa con el asistente)</Text>
                       <Text variant="bodySm" tone="subdued">
-                        Escribile desde este nmero para dar indicaciones en tiempo real: actualizar info, consultar reportes de ventas, ver turnos del da. El asistente te responde solo a vos con informacin de dueo.
+                        Escribile desde este número para dar indicaciones en tiempo real: actualizar info, consultar reportes de ventas, ver turnos del día. El asistente te responde solo a vos con información de dueño.
                       </Text>
                       <TextField
-                        label="Tu nmero de WhatsApp"
+                        label="Tu número de WhatsApp"
                         value={adminPhone}
                         onChange={setAdminPhone}
                         placeholder="5491150001234"
-                        helpText="Cdigo de pas + nmero, sin + ni espacios. Ejemplo para Argentina: 5491150001234."
+                        helpText="Código de país + número, sin + ni espacios. Ejemplo para Argentina: 5491150001234."
                         autoComplete="off"
                       />
                     </BlockStack>
@@ -949,16 +949,16 @@ function ShopifyPanel() {
                       <Text variant="headingMd" as="h2">Instagram & Facebook DMs</Text>
                       <div style={{ background: 'rgba(225,48,108,0.04)', border: '1px solid rgba(225,48,108,0.18)', borderRadius: 12, padding: '1.1rem 1.25rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', flexShrink: 0, paddingTop: '0.1rem' }}>
-                          <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>??</span>
-                          <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>??</span>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, background: 'rgba(225,48,108,0.15)', color: '#e1306c', padding: '2px 6px', borderRadius: 4 }}>IG</span>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, background: 'rgba(24,119,242,0.15)', color: '#1877f2', padding: '2px 6px', borderRadius: 4 }}>FB</span>
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
-                            <Text variant="bodyMd" fontWeight="semibold">Respuestas automticas por Instagram y Facebook</Text>
-                            <span style={{ background: '#ff6900', color: '#fff', fontSize: '0.63rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>Prximamente</span>
+                            <Text variant="bodyMd" fontWeight="semibold">Respuestas automáticas por Instagram y Facebook</Text>
+                            <span style={{ background: '#ff6900', color: '#fff', fontSize: '0.63rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>Próximamente</span>
                           </div>
                           <Text variant="bodySm" tone="subdued">
-                            Estamos tramitando el acceso como Meta Partner. Cuando est disponible, el asistente responder DMs de Instagram y mensajes de Facebook Messenger sin configuracin adicional.
+                            Estamos tramitando el acceso como Meta Partner. Cuando esté disponible, el asistente responderá DMs de Instagram y mensajes de Facebook Messenger sin configuración adicional.
                           </Text>
                         </div>
                       </div>
@@ -966,7 +966,7 @@ function ShopifyPanel() {
 
                     {saveMsg && <Banner tone={saveMsg.ok ? 'success' : 'critical'}>{saveMsg.text}</Banner>}
                     <InlineStack>
-                      <Button onClick={saveConfig} loading={saving} variant="primary">Guardar configuracin</Button>
+                      <Button onClick={saveConfig} loading={saving} variant="primary">Guardar configuración</Button>
                     </InlineStack>
 
                   </BlockStack>
@@ -1204,7 +1204,7 @@ function ShopifyPanel() {
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                               {apptDetail.client_phone && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.6rem 0.85rem', background: '#f6f6f7', borderRadius: 8, border: '1px solid #e1e3e5' }}>
-                                  <span>??</span>
+                                  <span style={{ fontSize: '0.75rem', color: '#6d7175' }}>Tel.</span>
                                   <span style={{ fontSize: '0.875rem', flex: 1, color: '#202223' }}>{apptDetail.client_phone}</span>
                                   <a href={`https://wa.me/${apptDetail.client_phone.replace(/\D/g, '')}`} target="_blank" rel="noreferrer"
                                     style={{ fontSize: '0.72rem', background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.35)', borderRadius: 6, color: '#1a9c44', padding: '2px 8px', textDecoration: 'none', fontWeight: 600 }}>WhatsApp</a>
@@ -1212,7 +1212,7 @@ function ShopifyPanel() {
                               )}
                               {apptDetail.notes && (
                                 <div style={{ display: 'flex', gap: '0.6rem', padding: '0.6rem 0.85rem', background: '#f6f6f7', borderRadius: 8, border: '1px solid #e1e3e5' }}>
-                                  <span style={{ flexShrink: 0 }}>??</span>
+                                  <span style={{ flexShrink: 0, fontSize: '0.75rem', color: '#6d7175' }}>Nota:</span>
                                   <span style={{ fontSize: '0.875rem', color: '#6d7175', lineHeight: 1.4 }}>{apptDetail.notes}</span>
                                 </div>
                               )}
@@ -1220,14 +1220,14 @@ function ShopifyPanel() {
                             {apptDetail.status === 'confirmed' && (
                               <div style={{ display: 'flex', gap: '0.6rem' }}>
                                 <button onClick={() => { updateApptStatus(apptDetail.id, 'completed'); setApptDetail(p => ({ ...p, status: 'completed' })); }}
-                                  style={{ flex: 1, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.35)', borderRadius: 8, color: '#2563eb', cursor: 'pointer', padding: '0.55rem', fontWeight: 600, fontSize: '0.85rem' }}>? Completado</button>
+                                  style={{ flex: 1, background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.35)', borderRadius: 8, color: '#2563eb', cursor: 'pointer', padding: '0.55rem', fontWeight: 600, fontSize: '0.85rem' }}>Completado</button>
                                 <button onClick={() => { updateApptStatus(apptDetail.id, 'cancelled'); setApptDetail(p => ({ ...p, status: 'cancelled' })); }}
-                                  style={{ flex: 1, background: 'rgba(216,44,13,0.08)', border: '1px solid rgba(216,44,13,0.3)', borderRadius: 8, color: '#d82c0d', cursor: 'pointer', padding: '0.55rem', fontWeight: 600, fontSize: '0.85rem' }}>? Cancelar</button>
+                                  style={{ flex: 1, background: 'rgba(216,44,13,0.08)', border: '1px solid rgba(216,44,13,0.3)', borderRadius: 8, color: '#d82c0d', cursor: 'pointer', padding: '0.55rem', fontWeight: 600, fontSize: '0.85rem' }}>Cancelar</button>
                               </div>
                             )}
                             {apptDetail.status === 'cancelled' && (
                               <button onClick={() => { updateApptStatus(apptDetail.id, 'confirmed'); setApptDetail(p => ({ ...p, status: 'confirmed' })); }}
-                                style={{ width: '100%', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 8, color: '#008060', cursor: 'pointer', padding: '0.55rem', fontWeight: 600, fontSize: '0.85rem' }}>? Restaurar turno</button>
+                                style={{ width: '100%', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 8, color: '#008060', cursor: 'pointer', padding: '0.55rem', fontWeight: 600, fontSize: '0.85rem' }}>Restaurar turno</button>
                             )}
                             <button onClick={() => deleteAppt(apptDetail.id)}
                               style={{ width: '100%', marginTop: '0.5rem', background: 'rgba(216,44,13,0.06)', border: '1px solid rgba(216,44,13,0.25)', borderRadius: 8, color: '#d82c0d', cursor: 'pointer', padding: '0.45rem', fontWeight: 600, fontSize: '0.8rem' }}>
@@ -1272,7 +1272,7 @@ function ShopifyPanel() {
                                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: spec.color, flexShrink: 0 }} />
                                   <span style={{ fontWeight: 600, fontSize: '0.82rem', color: isActive ? '#202223' : '#6d7175', whiteSpace: 'nowrap' }}>{spec.name}</span>
                                   {confirmed > 0 && <span style={{ fontSize: '0.7rem', fontWeight: 700, background: spec.color, color: '#fff', borderRadius: 10, padding: '0 5px', lineHeight: '1.4' }}>{confirmed}</span>}
-                                  <span style={{ fontSize: '0.75rem', color: '#6d7175', marginLeft: 1 }}>{isActive ? '?' : '?'}</span>
+                                  <span style={{ fontSize: '0.75rem', color: '#6d7175', marginLeft: 1 }}>{isActive ? '▲' : '▼'}</span>
                                 </div>
                               );
                             })}
@@ -1336,7 +1336,7 @@ function ShopifyPanel() {
                                               <div onClick={() => setApptDetail(appt)}
                                                 style={{ background: appt.status === 'cancelled' ? 'rgba(216,44,13,0.1)' : appt.status === 'completed' ? 'rgba(59,130,246,0.12)' : `${activeSpec.color}22`, border: `1px solid ${appt.status === 'cancelled' ? 'rgba(216,44,13,0.4)' : appt.status === 'completed' ? 'rgba(59,130,246,0.4)' : `${activeSpec.color}55`}`, borderRadius: 6, padding: '0.25rem 0.4rem', cursor: 'pointer', minHeight: 36 }}>
                                                 <div style={{ fontSize: '0.7rem', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: appt.status === 'cancelled' ? '#d82c0d' : appt.status === 'completed' ? '#2563eb' : '#202223' }}>{appt.client_name || ''}</div>
-                                                {appt.client_phone && <div style={{ fontSize: '0.62rem', color: '#6d7175', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>?? {appt.client_phone}</div>}
+                                                {appt.client_phone && <div style={{ fontSize: '0.62rem', color: '#6d7175', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{appt.client_phone}</div>}
                                               </div>
                                             ) : (
                                               <div onClick={() => { setNewAppt({ specialty_id: activeSpec.id, date, time: slot, client_phone: '', client_name: '', notes: '' }); setShowNewAppt(true); setApptMsg(null); }}
@@ -1358,7 +1358,7 @@ function ShopifyPanel() {
                                   <div style={{ width: 10, height: 10, borderRadius: 2, background: l.color }} />{l.label}
                                 </div>
                               ))}
-                              <div style={{ marginLeft: 'auto', fontSize: '0.72rem', color: '#6d7175' }}>Clic en un casillero vaco para crear un turno</div>
+                              <div style={{ marginLeft: 'auto', fontSize: '0.72rem', color: '#6d7175' }}>Clic en un casillero vacío para crear un turno</div>
                             </div>
                           </div>
                         )}
@@ -1370,8 +1370,8 @@ function ShopifyPanel() {
                       <div>
                         {specialties.length === 0 && (
                           <div style={{ background: '#f6f6f7', border: '1px dashed #c9cccf', borderRadius: 12, padding: '2.5rem', textAlign: 'center' }}>
-                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>??</div>
-                            <p style={{ color: '#6d7175', margin: 0 }}>No hay servicios configurados. Cre uno con el botn de arriba.</p>
+                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>+</div>
+                            <p style={{ color: '#6d7175', margin: 0 }}>No hay servicios configurados. Creá uno con el botón de arriba.</p>
                           </div>
                         )}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -1383,7 +1383,7 @@ function ShopifyPanel() {
                                 <span style={{ fontSize: '0.78rem', color: '#6d7175', background: '#fff', border: '1px solid #e1e3e5', borderRadius: 20, padding: '2px 8px' }}>{spec.duration_minutes} min{spec.capacity > 1 ? `  ${spec.capacity} lugares` : ''}</span>
                                 {spec.reminder_enabled ? (
                                   <span style={{ fontSize: '0.72rem', color: '#008060', background: 'rgba(0,128,96,0.08)', border: '1px solid rgba(0,128,96,0.25)', borderRadius: 20, padding: '2px 8px' }}>
-                                    ?? {(Array.isArray(spec.reminder_hours) ? spec.reminder_hours : [spec.reminder_hours]).join('h / ')}h antes
+                                    Recordatorio: {(Array.isArray(spec.reminder_hours) ? spec.reminder_hours : [spec.reminder_hours]).join('h / ')}h antes
                                   </span>
                                 ) : (
                                   <span style={{ fontSize: '0.72rem', color: '#6d7175', opacity: 0.6 }}>Sin recordatorio</span>
@@ -1474,10 +1474,10 @@ function ShopifyPanel() {
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Recupero de carritos abandonados</Text>
                       <Text variant="bodySm" tone="subdued">
-                        Cuando un cliente agrega productos al carrito pero no completa la compra, el asistente le manda un WhatsApp automtico recordndole. Requiere WhatsApp conectado.
+                        Cuando un cliente agrega productos al carrito pero no completa la compra, el asistente le manda un WhatsApp automático recordándole. Requiere WhatsApp conectado.
                       </Text>
                       <Checkbox
-                        label="Activar recupero automtico de carritos"
+                        label="Activar recupero automático de carritos"
                         checked={!!cartConfig.enabled}
                         onChange={v => setCartConfig(c => ({ ...c, enabled: v }))}
                         disabled={!isOn}
@@ -1504,12 +1504,12 @@ function ShopifyPanel() {
                         </BlockStack>
                       )}
                       <InlineStack>
-                        <Button onClick={saveCartConfig} loading={cartSaving} variant="primary">Guardar configuracin</Button>
+                        <Button onClick={saveCartConfig} loading={cartSaving} variant="primary">Guardar configuración</Button>
                       </InlineStack>
 
                       {abandonedCarts.length > 0 && (
                         <BlockStack gap="200">
-                          <Text variant="headingSm" as="h3">ltimos carritos detectados</Text>
+                          <Text variant="headingSm" as="h3">Últimos carritos detectados</Text>
                           {abandonedCarts.slice(0, 8).map(cart => (
                             <Card key={cart.id}>
                               <InlineStack align="space-between">
@@ -1533,7 +1533,7 @@ function ShopifyPanel() {
                     <BlockStack gap="300">
                       <Text variant="headingMd" as="h2">Clientes recolectados</Text>
                       <Text variant="bodySm" tone="subdued">
-                        Cada vez que alguien completa una compra en tu tienda, su nombre y nmero de WhatsApp quedan guardados automticamente. Pods usarlos para difusiones.
+                        Cada vez que alguien completa una compra en tu tienda, su nombre y número de WhatsApp quedan guardados automáticamente. Podés usarlos para difusiones.
                       </Text>
                       <Card>
                         <Box padding="400">
@@ -1544,7 +1544,7 @@ function ShopifyPanel() {
                             </BlockStack>
                             {customers.length > 0 && (
                               <BlockStack gap="100">
-                                <Text variant="bodySm" tone="subdued">lt. cliente: {customers[0]?.name || customers[0]?.phone || ''}</Text>
+                                <Text variant="bodySm" tone="subdued">Últ. cliente: {customers[0]?.name || customers[0]?.phone || ''}</Text>
                                 <Text variant="bodySm" tone="subdued">{customers[0]?.total_orders || 1} compra{customers[0]?.total_orders !== 1 ? 's' : ''}</Text>
                               </BlockStack>
                             )}
@@ -1552,7 +1552,7 @@ function ShopifyPanel() {
                         </Box>
                       </Card>
                       {customers.length === 0 && (
-                        <Banner tone="info">Todava no hay clientes registrados. Se cargarn automticamente con cada nueva compra en la tienda.</Banner>
+                        <Banner tone="info">Todavía no hay clientes registrados. Se cargarán automáticamente con cada nueva compra en la tienda.</Banner>
                       )}
                     </BlockStack>
 
@@ -1563,22 +1563,22 @@ function ShopifyPanel() {
                       <InlineStack align="space-between">
                         <Text variant="headingMd" as="h2">Difusiones</Text>
                         <Button onClick={() => setShowNewCampaign(v => !v)} size="slim" disabled={customers.length === 0}>
-                          {showNewCampaign ? 'Cancelar' : '+ Nueva difusin'}
+                          {showNewCampaign ? 'Cancelar' : '+ Nueva difusión'}
                         </Button>
                       </InlineStack>
                       <Text variant="bodySm" tone="subdued">
-                        Mand un mensaje personalizado a todos tus clientes de una vez. Us {'{{nombre}}'} para personalizar. El sistema enva los mensajes con un intervalo automtico para evitar bloqueos.
+                        Mandá un mensaje personalizado a todos tus clientes de una vez. Usá {'{{nombre}}'} para personalizar. El sistema envía los mensajes con un intervalo automático para evitar bloqueos.
                       </Text>
                       <Banner tone="warning">
-                        WhatsApp puede bloquear nmeros que enven mensajes masivos. Us esta funcin con moderacin, con mensajes de valor real para tus clientes.
+                        WhatsApp puede bloquear números que envíen mensajes masivos. Usá esta función con moderación, con mensajes de valor real para tus clientes.
                       </Banner>
 
                       {showNewCampaign && (
                         <Card>
                           <BlockStack gap="300">
-                            <Text variant="headingSm" as="h3">Nueva difusin</Text>
+                            <Text variant="headingSm" as="h3">Nueva difusión</Text>
                             <TextField
-                              label="Nombre de la difusin"
+                              label="Nombre de la difusión"
                               value={newCampaign.name}
                               onChange={v => setNewCampaign(c => ({ ...c, name: v }))}
                               placeholder="Ej: Promo Mayo 2026"
@@ -1589,8 +1589,8 @@ function ShopifyPanel() {
                               value={newCampaign.message_template}
                               onChange={v => setNewCampaign(c => ({ ...c, message_template: v }))}
                               multiline={5}
-                              placeholder={'Hola {{nombre}}! ?? Tenemos una novedad especial para vos...'}
-                              helpText="Us {{nombre}} para personalizar con el nombre del cliente."
+                              placeholder={'Hola {{nombre}}! Tenemos una novedad especial para vos...'}
+                              helpText="Usá {{nombre}} para personalizar con el nombre del cliente."
                               autoComplete="off"
                             />
                             <TextField
@@ -1598,18 +1598,18 @@ function ShopifyPanel() {
                               type="number"
                               value={String(newCampaign.delay_seconds)}
                               onChange={v => setNewCampaign(c => ({ ...c, delay_seconds: parseInt(v) || 30 }))}
-                              helpText="Mnimo recomendado: 30 segundos. Menos tiempo aumenta el riesgo de bloqueo."
+                              helpText="Mínimo recomendado: 30 segundos. Menos tiempo aumenta el riesgo de bloqueo."
                               autoComplete="off"
                             />
                             <InlineStack>
-                              <Button onClick={createCampaign} variant="primary">Crear difusin</Button>
+                              <Button onClick={createCampaign} variant="primary">Crear difusión</Button>
                             </InlineStack>
                           </BlockStack>
                         </Card>
                       )}
 
                       {campaigns.length === 0 ? (
-                        <Text variant="bodySm" tone="subdued">No hay difusiones creadas todava.</Text>
+                        <Text variant="bodySm" tone="subdued">No hay difusiones creadas todavía.</Text>
                       ) : (
                         <BlockStack gap="200">
                           {campaigns.map(c => {
