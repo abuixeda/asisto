@@ -753,7 +753,7 @@ function ShopifyPanel() {
                         <BlockStack gap="400">
                           {qrData ? (
                             <>
-                              <Text variant="bodySm" tone="subdued">Escane con WhatsApp ? Dispositivos vinculados ? Escanear QR</Text>
+                              <Text variant="bodySm" tone="subdued">Abrí WhatsApp &gt; Dispositivos vinculados &gt; Escanear QR</Text>
                               <InlineStack align="center">
                                 <div style={{ background: 'white', padding: '12px', borderRadius: '12px', display: 'inline-block' }}>
                                   <QRCodeSVG value={qrData} size={200} />
@@ -773,7 +773,7 @@ function ShopifyPanel() {
                         </BlockStack>
                       ) : (
                         <BlockStack gap="300">
-                          <Text variant="bodySm" tone="subdued">Escane el QR con tu WhatsApp Business para que el asistente empiece a responder mensajes.</Text>
+                          <Text variant="bodySm" tone="subdued">Escaneá el QR con tu WhatsApp Business para que el asistente empiece a responder mensajes.</Text>
                           <InlineStack>
                             <Button onClick={startBot} variant="primary">Conectar WhatsApp</Button>
                           </InlineStack>
