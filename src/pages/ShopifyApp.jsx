@@ -84,7 +84,7 @@ function PreviewChat({ botName, onSend }) {
 }
 
 // --- Constantes y helpers de Turnos ------------------------------------------
-const DAYS = ['Lunes','Martes','Mircoles','Jueves','Viernes','Sbado','Domingo'];
+const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
 const DAYS_SHORT = ['Lun','Mar','Mi','Jue','Vie','Sb','Dom'];
 const SPEC_COLORS = ['#7c3aed','#3b82f6','#10b981','#f59e0b','#ef4444','#ec4899','#06b6d4'];
 
