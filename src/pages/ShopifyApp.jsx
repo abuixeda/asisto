@@ -1006,7 +1006,7 @@ function ShopifyPanel() {
                             <div style={{ flex: 1 }}><label style={labelSt}>Duración (min)</label>
                               <input style={inputSt} type="number" min="5" max="480" value={editingSpec.duration_minutes} onChange={e => setEditingSpec(p => ({ ...p, duration_minutes: Number(e.target.value) }))} />
                             </div>
-                            <div style={{ flex: 1 }}><label style={labelSt}>Lugares simultneos</label>
+                            <div style={{ flex: 1 }}><label style={labelSt}>Lugares simultáneos</label>
                               <input style={inputSt} type="number" min="1" max="100" value={editingSpec.capacity} onChange={e => setEditingSpec(p => ({ ...p, capacity: Number(e.target.value) }))} />
                             </div>
                             <div><label style={labelSt}>Color</label>
@@ -1072,13 +1072,13 @@ function ShopifyPanel() {
                             <button onClick={() => setShowNewSpec(false)} style={{ background: 'none', border: '1px solid #c9cccf', borderRadius: 8, color: '#6d7175', cursor: 'pointer', padding: '0.3rem 0.7rem' }}>?</button>
                           </div>
                           <div><label style={labelSt}>Nombre *</label>
-                            <input style={inputSt} value={newSpec.name} onChange={e => setNewSpec(p => ({ ...p, name: e.target.value }))} placeholder="Ej: Corte de cabello, Consulta mdica..." />
+                            <input style={inputSt} value={newSpec.name} onChange={e => setNewSpec(p => ({ ...p, name: e.target.value }))} placeholder="Ej: Corte de cabello, Consulta médica..." />
                           </div>
                           <div style={{ display: 'flex', gap: '1rem' }}>
                             <div style={{ flex: 1 }}><label style={labelSt}>Duración (min)</label>
                               <input style={inputSt} type="number" min="5" max="480" value={newSpec.duration_minutes} onChange={e => setNewSpec(p => ({ ...p, duration_minutes: Number(e.target.value) }))} />
                             </div>
-                            <div style={{ flex: 1 }}><label style={labelSt}>Lugares simultneos</label>
+                            <div style={{ flex: 1 }}><label style={labelSt}>Lugares simultáneos</label>
                               <input style={inputSt} type="number" min="1" max="100" value={newSpec.capacity} onChange={e => setNewSpec(p => ({ ...p, capacity: Number(e.target.value) }))} />
                             </div>
                             <div><label style={labelSt}>Color</label>
