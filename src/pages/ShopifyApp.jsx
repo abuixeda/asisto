@@ -49,7 +49,7 @@ function PreviewChat({ botName, onSend }) {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ color: '#e9edef', fontWeight: 600, fontSize: '0.9rem' }}>{botName || 'Mi Asistente'}</div>
-            <div style={{ color: '#aebac1', fontSize: '0.7rem' }}>en lnea</div>
+            <div style={{ color: '#aebac1', fontSize: '0.7rem' }}>en línea</div>
           </div>
           <div style={{ fontSize: '0.6rem', color: '#aebac1', background: '#2a3942', padding: '2px 8px', borderRadius: 8, fontWeight: 600 }}>PREVIEW</div>
         </div>
@@ -1458,7 +1458,7 @@ function ShopifyPanel() {
                 {selectedTab === 2 && (
                   <BlockStack gap="300">
                     <Text variant="bodySm" tone="subdued">
-                      Prob el asistente con el prompt y la base de conocimientos actuales. No es necesario guardar primero.
+                      Probá el asistente con el prompt y la base de conocimientos actuales. No es necesario guardar primero.
                     </Text>
                     <PreviewChat botName={bot?.name} onSend={sendPreview} />
                   </BlockStack>
