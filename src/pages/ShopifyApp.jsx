@@ -315,7 +315,7 @@ function ShopifyPanel() {
     if (pollCountRef.current > 45) {
       clearInterval(pollRef.current);
       setStarting(false); setQrData(null);
-      setStartError('No se pudo generar el cdigo QR. Revis que el servidor tenga Chromium disponible e intent de nuevo.');
+      setStartError('No se pudo generar el código QR. Revisá que el servidor tenga Chromium disponible e intentá de nuevo.');
       return;
     }
     try {
@@ -428,7 +428,7 @@ function ShopifyPanel() {
   }
 
   async function deleteAppt(id) {
-    if (!confirm('Eliminar este turno definitivamente? Esta accin no se puede deshacer.')) return;
+    if (!confirm('¿Eliminar este turno definitivamente? Esta acción no se puede deshacer.')) return;
     await shopifyFetch(`${API}/api/shopify/embedded/appointments/${id}`, { method: 'DELETE' });
     setApptDetail(null); loadTurnos();
   }
@@ -724,7 +724,7 @@ function ShopifyPanel() {
 
                     {/* -- WhatsApp -- */}
                     <BlockStack gap="300">
-                      <Text variant="headingMd" as="h2">Conexin WhatsApp</Text>
+                      <Text variant="headingMd" as="h2">Conexión WhatsApp</Text>
                       {isOn ? (
                         <BlockStack gap="300">
                           <Banner tone="success">
@@ -764,7 +764,7 @@ function ShopifyPanel() {
                           ) : (
                             <InlineStack gap="300">
                               <Spinner size="small" />
-                              <Text variant="bodySm" tone="subdued">Iniciando, aguard el cdigo QR</Text>
+                              <Text variant="bodySm" tone="subdued">Iniciando, aguardá el código QR</Text>
                             </InlineStack>
                           )}
                           <InlineStack>
@@ -1003,7 +1003,7 @@ function ShopifyPanel() {
                             <input style={inputSt} value={editingSpec.name} onChange={e => setEditingSpec(p => ({ ...p, name: e.target.value }))} placeholder="Nombre del servicio..." />
                           </div>
                           <div style={{ display: 'flex', gap: '1rem' }}>
-                            <div style={{ flex: 1 }}><label style={labelSt}>Duracin (min)</label>
+                            <div style={{ flex: 1 }}><label style={labelSt}>Duración (min)</label>
                               <input style={inputSt} type="number" min="5" max="480" value={editingSpec.duration_minutes} onChange={e => setEditingSpec(p => ({ ...p, duration_minutes: Number(e.target.value) }))} />
                             </div>
                             <div style={{ flex: 1 }}><label style={labelSt}>Lugares simultneos</label>
@@ -1075,7 +1075,7 @@ function ShopifyPanel() {
                             <input style={inputSt} value={newSpec.name} onChange={e => setNewSpec(p => ({ ...p, name: e.target.value }))} placeholder="Ej: Corte de cabello, Consulta mdica..." />
                           </div>
                           <div style={{ display: 'flex', gap: '1rem' }}>
-                            <div style={{ flex: 1 }}><label style={labelSt}>Duracin (min)</label>
+                            <div style={{ flex: 1 }}><label style={labelSt}>Duración (min)</label>
                               <input style={inputSt} type="number" min="5" max="480" value={newSpec.duration_minutes} onChange={e => setNewSpec(p => ({ ...p, duration_minutes: Number(e.target.value) }))} />
                             </div>
                             <div style={{ flex: 1 }}><label style={labelSt}>Lugares simultneos</label>
@@ -1171,7 +1171,7 @@ function ShopifyPanel() {
                             <input style={inputSt} value={newAppt.client_name} onChange={e => setNewAppt(p => ({ ...p, client_name: e.target.value }))} placeholder="Ej: Mara Gonzlez" />
                           </div>
                           <div><label style={labelSt}>Notas</label>
-                            <input style={inputSt} value={newAppt.notes} onChange={e => setNewAppt(p => ({ ...p, notes: e.target.value }))} placeholder="Ej: Primera vez, requiere confirmacin..." />
+                            <input style={inputSt} value={newAppt.notes} onChange={e => setNewAppt(p => ({ ...p, notes: e.target.value }))} placeholder="Ej: Primera vez, requiere confirmación..." />
                           </div>
                           {apptMsg && <p style={{ margin: 0, fontSize: '0.875rem', color: apptMsg.ok ? '#008060' : '#d82c0d' }}>{apptMsg.text}</p>}
                           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
