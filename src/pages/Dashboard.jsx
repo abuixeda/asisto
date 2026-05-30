@@ -4,7 +4,7 @@ import { Settings, Smartphone, Loader, BrainCircuit, MessageCircle, Users, Trend
 import { QRCodeSVG } from 'qrcode.react';
 import '../index.css';
 
-const API_URL = 'https://asisto-backend-production.up.railway.app';
+const API_URL = import.meta.env.VITE_API_URL || 'https://asisto-backend-production.up.railway.app';
 const socket = io(API_URL);
 
 function authFetch(url, options = {}) {
@@ -179,111 +179,171 @@ function ConversationsPanel({ bots }) {
   );
 }
 
-// ─── Subscription Panel (Rebill Integration) ───────────────────
-function SubscriptionPanel({ user, bots }) {
-  const [loading, setLoading] = useState(false);
-  const [plans] = useState([
-    { 
-      id: 'test_prd_cd960fd9fec141ba83befc476ab6d340', 
-      name: 'Plan Starter', 
-      price: '$59', 
-      currency: 'USD', 
-      period: 'mes', 
-      features: ['1 número WhatsApp', 'Hasta 500 mensajes/mes', 'Catálogo sincronizado', 'Panel de control', 'Soporte por email'] 
-    },
-    { 
-      id: 'test_prd_d739705c98554f09a1bbdbd91917be26', 
-      name: 'Plan Growth', 
-      price: '$99', 
-      currency: 'USD', 
-      period: 'mes', 
-      features: ['Todo lo de Starter', 'Hasta 2.000 mensajes/mes', 'Soporte prioritario', 'Horario anti-nocturno', 'Base de conocimientos avanzada'],
-      recommended: true
-    },
-    { 
-      id: 'test_prd_e3a8b19ec8904c98aa7ff712981b3f13', 
-      name: 'Plan Scale', 
-      price: '$179', 
-      currency: 'USD', 
-      period: 'mes', 
-      features: ['Todo lo de Growth', 'Mensajes ilimitados', 'Instagram DMs', 'Soporte directo WhatsApp', 'Multi-idioma'] 
-    }
-  ]);
+// ─── Subscription Panel (LemonSqueezy) ────────────────────────
+const LS_PLANS = [
+  {
+    variantId: import.meta.env.VITE_LS_VARIANT_STARTER || '',
+    name: 'Plan Starter', price: '$59', currency: 'USD', period: 'mes',
+    key: 'starter',
+    features: ['1 número WhatsApp', 'Hasta 1.500 mensajes/mes', 'Catálogo sincronizado', 'Panel de control', 'Soporte por email'],
+  },
+  {
+    variantId: import.meta.env.VITE_LS_VARIANT_GROWTH || '',
+    name: 'Plan Growth', price: '$99', currency: 'USD', period: 'mes',
+    key: 'growth',
+    recommended: true,
+    features: ['Todo lo de Starter', 'Hasta 5.000 mensajes/mes', 'Soporte prioritario', 'Horario anti-nocturno', 'Base de conocimientos avanzada'],
+  },
+  {
+    variantId: import.meta.env.VITE_LS_VARIANT_SCALE || '',
+    name: 'Plan Scale', price: '$179', currency: 'USD', period: 'mes',
+    key: 'scale',
+    features: ['Todo lo de Growth', 'Mensajes ilimitados', 'Instagram DMs', 'Soporte directo WhatsApp', 'Multi-idioma'],
+  },
+];
 
-  const handleSubscribe = async (planId) => {
-    setLoading(true);
+function SubscriptionPanel({ user, bots }) {
+  const [loading, setLoading] = useState(null); // variantId del plan en proceso
+  const [subscription, setSubscription] = useState(null);
+  const [subLoading, setSubLoading] = useState(true);
+
+  useEffect(() => {
+    authFetch(`${API_URL}/api/payments/subscription`)
+      .then(r => r.json())
+      .then(data => { if (!data.error) setSubscription(data); })
+      .catch(() => {})
+      .finally(() => setSubLoading(false));
+  }, []);
+
+  const handleSubscribe = async (variantId) => {
+    if (!variantId) return alert('Variant ID no configurado. Revisá las variables de entorno del frontend.');
+    setLoading(variantId);
     try {
       const res = await authFetch(`${API_URL}/api/payments/create-checkout`, {
         method: 'POST',
-        body: JSON.stringify({ planId })
+        body: JSON.stringify({ variantId }),
       });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.error || 'Error al iniciar el pago. Verificá que la API Key de Rebill esté configurada.');
+        alert(data.error || 'Error al iniciar el pago.');
       }
-    } catch (e) {
+    } catch {
       alert('Error de conexión con el servidor.');
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
+  };
+
+  const isActive = subscription && ['active', 'on_trial'].includes(subscription.status);
+  const renewDate = subscription?.renewsAt
+    ? new Date(subscription.renewsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
+
+  const statusLabel = {
+    active: 'Activa',
+    on_trial: 'En período de prueba',
+    cancelled: 'Cancelada',
+    expired: 'Expirada',
+    paused: 'Pausada',
+    none: null,
   };
 
   return (
     <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--bg)', flex: 1 }}>
+
+      {/* Banner suscripción activa */}
+      {!subLoading && isActive && (
+        <div style={{ width: '100%', maxWidth: '900px', marginBottom: '2rem', background: 'linear-gradient(135deg, rgba(124,58,237,0.12), rgba(59,130,246,0.10))', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '20px', padding: '1.5rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.3rem' }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--success)', display: 'inline-block' }} />
+              <strong style={{ color: 'var(--text-1)', fontSize: '1.05rem' }}>
+                {statusLabel[subscription.status] || subscription.status} — {subscription.plan ? `Plan ${subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}` : ''}
+              </strong>
+            </div>
+            {renewDate && (
+              <p style={{ margin: 0, color: 'var(--text-3)', fontSize: '0.85rem' }}>
+                Próxima renovación: {renewDate}
+              </p>
+            )}
+          </div>
+          <a
+            href={`https://app.lemonsqueezy.com/my-orders`}
+            target="_blank"
+            rel="noreferrer"
+            style={{ padding: '0.6rem 1.4rem', borderRadius: '12px', border: '1px solid var(--border-strong)', background: 'var(--surface)', color: 'var(--text-1)', fontWeight: 600, fontSize: '0.88rem', textDecoration: 'none', cursor: 'pointer' }}
+          >
+            Gestionar suscripción →
+          </a>
+        </div>
+      )}
+
       <div style={{ textAlign: 'center', marginBottom: '3rem', maxWidth: '700px' }}>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '0.75rem', background: 'var(--gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           Potenciá tu Negocio con Atento AI
         </h1>
         <p style={{ color: 'var(--text-2)', fontSize: '1.15rem', lineHeight: 1.5 }}>
-          Activá tu suscripción para mantener tu bot atendiendo clientes las 24hs. 
-          <br/><strong style={{color: 'var(--success)'}}>Incluye 7 días de prueba gratis.</strong> Cancelá cuando quieras.
+          Activá tu suscripción para mantener tu bot atendiendo clientes las 24hs.
+          <br/><strong style={{ color: 'var(--success)' }}>Incluye 7 días de prueba gratis.</strong> Cancelá cuando quieras.
         </p>
       </div>
 
       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '1100px', width: '100%' }}>
-        {plans.map(plan => (
-          <div key={plan.id} style={{ background: 'var(--surface)', border: '1px solid var(--border-strong)', borderRadius: '28px', padding: '3rem 2.5rem', width: '360px', display: 'flex', flexDirection: 'column', boxShadow: 'var(--shadow-lg)', position: 'relative', overflow: 'hidden', transition: 'transform 0.2s' }}>
-            {plan.recommended && (
-              <div style={{ position: 'absolute', top: '15px', right: '-40px', background: 'var(--success)', color: '#fff', padding: '5px 45px', transform: 'rotate(45deg)', fontSize: '0.7rem', fontWeight: 900, letterSpacing: '0.05em', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-                MÁS ELEGIDO
-              </div>
-            )}
-            
-            <div style={{ marginBottom: '2rem' }}>
-              <h2 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-1)' }}>{plan.name}</h2>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
-                <span style={{ fontSize: '2.8rem', fontWeight: 800, color: 'var(--text-1)' }}>{plan.price}</span>
-                <span style={{ color: 'var(--text-3)', fontWeight: 600, fontSize: '1rem' }}>{plan.currency}/{plan.period}</span>
-              </div>
-            </div>
-            
-            <div style={{ flex: 1, marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {plan.features.map((f, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem', fontSize: '0.92rem', color: 'var(--text-2)', lineHeight: 1.4 }}>
-                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(124,58,237,0.12)', color: '#a78bfa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0, marginTop: '2px', fontWeight: 800 }}>✓</div>
-                  {f}
+        {LS_PLANS.map(plan => {
+          const isCurrent = isActive && subscription?.plan === plan.key;
+          return (
+            <div key={plan.key} style={{ background: 'var(--surface)', border: isCurrent ? '2px solid #7c3aed' : '1px solid var(--border-strong)', borderRadius: '28px', padding: '3rem 2.5rem', width: '360px', display: 'flex', flexDirection: 'column', boxShadow: isCurrent ? '0 0 0 4px rgba(124,58,237,0.1), var(--shadow-lg)' : 'var(--shadow-lg)', position: 'relative', overflow: 'hidden', transition: 'transform 0.2s' }}>
+              {plan.recommended && !isCurrent && (
+                <div style={{ position: 'absolute', top: '15px', right: '-40px', background: 'var(--success)', color: '#fff', padding: '5px 45px', transform: 'rotate(45deg)', fontSize: '0.7rem', fontWeight: 900, letterSpacing: '0.05em', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+                  MÁS ELEGIDO
                 </div>
-              ))}
-            </div>
+              )}
+              {isCurrent && (
+                <div style={{ position: 'absolute', top: '15px', right: '-40px', background: '#7c3aed', color: '#fff', padding: '5px 45px', transform: 'rotate(45deg)', fontSize: '0.7rem', fontWeight: 900, letterSpacing: '0.05em', boxShadow: '0 2px 8px rgba(124,58,237,0.4)' }}>
+                  TU PLAN
+                </div>
+              )}
 
-            <button 
-              onClick={() => handleSubscribe(plan.id)}
-              disabled={loading}
-              className="btn-primary" 
-              style={{ width: '100%', padding: '1.1rem', borderRadius: '16px', fontSize: '1.05rem', fontWeight: 700, boxShadow: '0 4px 15px rgba(124,58,237,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-            >
-              {loading ? <Loader className="spinner" size={20} /> : <>Suscribirse ahora <ChevronRight size={18} /></>}
-            </button>
-          </div>
-        ))}
+              <div style={{ marginBottom: '2rem' }}>
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-1)' }}>{plan.name}</h2>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
+                  <span style={{ fontSize: '2.8rem', fontWeight: 800, color: 'var(--text-1)' }}>{plan.price}</span>
+                  <span style={{ color: 'var(--text-3)', fontWeight: 600, fontSize: '1rem' }}>{plan.currency}/{plan.period}</span>
+                </div>
+              </div>
+
+              <div style={{ flex: 1, marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {plan.features.map((f, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem', fontSize: '0.92rem', color: 'var(--text-2)', lineHeight: 1.4 }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(124,58,237,0.12)', color: '#a78bfa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0, marginTop: '2px', fontWeight: 800 }}>✓</div>
+                    {f}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => !isCurrent && handleSubscribe(plan.variantId)}
+                disabled={!!loading || isCurrent}
+                className="btn-primary"
+                style={{ width: '100%', padding: '1.1rem', borderRadius: '16px', fontSize: '1.05rem', fontWeight: 700, boxShadow: isCurrent ? 'none' : '0 4px 15px rgba(124,58,237,0.3)', cursor: isCurrent ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: isCurrent ? 0.7 : 1, background: isCurrent ? 'var(--surface-2)' : undefined }}
+              >
+                {loading === plan.variantId
+                  ? <Loader className="spinner" size={20} />
+                  : isCurrent
+                    ? <>Plan actual ✓</>
+                    : <>Suscribirse ahora <ChevronRight size={18} /></>}
+              </button>
+            </div>
+          );
+        })}
       </div>
 
       <div style={{ marginTop: '4rem', textAlign: 'center', color: 'var(--text-3)', fontSize: '0.88rem', maxWidth: '650px', background: 'var(--surface-2)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
         <p style={{ margin: 0 }}>
-          🛡️ Transacción segura vía <strong>Rebill Payments</strong>. 
-          <br/>La activación es instantánea una vez procesado el pago. Podrás gestionar tu suscripción y descargar facturas desde este mismo panel.
+          🛡️ Transacción segura vía <strong>LemonSqueezy</strong>.
+          <br/>La activación es instantánea una vez procesado el pago. Podés gestionar tu suscripción y descargar facturas desde el portal de LemonSqueezy.
         </p>
       </div>
     </div>
@@ -2046,6 +2106,9 @@ function Dashboard() {
   const [telegramTokens, setTelegramTokens] = useState({});
   const [telegramSaving, setTelegramSaving] = useState({});
   const [telegramMsg, setTelegramMsg] = useState({});
+  const [whatsappCloudForm, setWhatsappCloudForm] = useState({});
+  const [whatsappCloudSaving, setWhatsappCloudSaving] = useState({});
+  const [whatsappCloudMsg, setWhatsappCloudMsg] = useState({});
   const [igManualInputs, setIgManualInputs] = useState({}); // botId → username string
   const [igManualShow, setIgManualShow] = useState({});     // botId → bool (show manual input)
   const [igManualSaving, setIgManualSaving] = useState({});
@@ -2057,6 +2120,8 @@ function Dashboard() {
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [metaPageSelect, setMetaPageSelect] = useState(null);
   const [metaConnecting, setMetaConnecting] = useState(false);
+  const [whatsappNumberSelect, setWhatsappNumberSelect] = useState(null);
+  const [whatsappConnecting, setWhatsappConnecting] = useState(false);
 
   const [theme, setTheme] = useState(() => localStorage.getItem('atento_theme') || 'dark');
   const [currentView, setCurrentView] = useState('bots');
@@ -2113,18 +2178,33 @@ function Dashboard() {
         .then(data => { if (data.pages) setMetaPageSelect({ token: selToken, pages: data.pages }); })
         .catch(() => {});
     }
+    const waToken = params.get('whatsapp_select');
+    if (waToken) {
+      window.history.replaceState({}, '', window.location.pathname);
+      authFetch(`${API_URL}/api/oauth/whatsapp/numbers?token=${waToken}`)
+        .then(r => r.json())
+        .then(data => { if (data.numbers) setWhatsappNumberSelect({ token: waToken, numbers: data.numbers }); })
+        .catch(() => {});
+    }
     const onOAuthMessage = (e) => {
       if (e.origin !== window.location.origin) return;
       const { type, token, error } = e.data || {};
       if (type === 'meta_ok') {
+        fetchBots();
+      } else if (type === 'whatsapp_ok') {
         fetchBots();
       } else if (type === 'meta_select') {
         authFetch(`${API_URL}/api/oauth/meta/pages?token=${token}`)
           .then(r => r.json())
           .then(data => { if (data.pages) setMetaPageSelect({ token, pages: data.pages }); })
           .catch(() => {});
+      } else if (type === 'whatsapp_select') {
+        authFetch(`${API_URL}/api/oauth/whatsapp/numbers?token=${token}`)
+          .then(r => r.json())
+          .then(data => { if (data.numbers) setWhatsappNumberSelect({ token, numbers: data.numbers }); })
+          .catch(() => {});
       } else if (type === 'meta_error') {
-        const msgs = { acceso_denegado: 'Cancelaste el acceso.', sesion_expirada: 'La sesión expiró.', sin_paginas: 'No se encontraron páginas de Facebook.', error_interno: 'Error interno.' };
+        const msgs = { acceso_denegado: 'Cancelaste el acceso.', sesion_expirada: 'La sesión expiró.', sin_paginas: 'No se encontraron páginas de Facebook.', sin_whatsapp: 'No se encontraron números de WhatsApp.', error_whatsapp: 'No pudimos conectar WhatsApp.', error_interno: 'Error interno.' };
         alert(msgs[error] || error);
       }
     };
@@ -2163,7 +2243,7 @@ function Dashboard() {
 
   const handleStart = async (id) => {
     const bot = bots.find(b => b.id === id);
-    const hasMetaOrTelegram = bot?.metaPageId || bot?.metaIgId || bot?.telegramBotToken;
+    const hasMetaOrTelegram = bot?.metaPageId || bot?.metaIgId || bot?.telegramBotToken || bot?.whatsappPhoneNumberId;
     const hasWhatsApp = bot?.businessPhone;
     // If bot has Meta/Telegram but no WhatsApp, activate without QR
     if (hasMetaOrTelegram && !hasWhatsApp) {
@@ -2179,6 +2259,40 @@ function Dashboard() {
     await authFetch(`${API_URL}/api/bots/${id}/stop`, { method: 'POST' });
     setQrCodes(prev => ({ ...prev, [id]: null }));
   };
+
+  const handleSaveWhatsAppCloud = async (bot, disconnect = false) => {
+    const form = whatsappCloudForm[bot.id] || {};
+    const payload = disconnect ? { disconnect: true } : {
+      phoneNumberId: form.phoneNumberId ?? bot.whatsappPhoneNumberId ?? '',
+      businessAccountId: form.businessAccountId ?? bot.whatsappBusinessAccountId ?? '',
+      accessToken: form.accessToken ?? '',
+    };
+    setWhatsappCloudSaving(s => ({ ...s, [bot.id]: true }));
+    setWhatsappCloudMsg(m => ({ ...m, [bot.id]: null }));
+    try {
+      const res = await authFetch(`${API_URL}/api/bots/${bot.id}/whatsapp-cloud`, { method: 'PUT', body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (!res.ok) {
+        setWhatsappCloudMsg(m => ({ ...m, [bot.id]: { ok: false, text: data.error || 'Error al guardar WhatsApp API.' } }));
+        return;
+      }
+      setBots(prev => prev.map(b => b.id === bot.id ? {
+        ...b,
+        whatsappPhoneNumberId: data.connected ? data.phoneNumberId : null,
+        whatsappBusinessAccountId: data.connected ? data.businessAccountId : null,
+        whatsappAccessToken: data.connected ? (payload.accessToken || b.whatsappAccessToken || 'configured') : null,
+        whatsappMode: data.connected ? 'cloud' : 'webjs',
+      } : b));
+      setWhatsappCloudForm(f => ({ ...f, [bot.id]: { phoneNumberId: data.phoneNumberId || '', businessAccountId: data.businessAccountId || '', accessToken: '' } }));
+      setWhatsappCloudMsg(m => ({ ...m, [bot.id]: { ok: true, text: data.connected ? 'WhatsApp API conectado.' : 'WhatsApp API desconectado.' } }));
+    } catch {
+      setWhatsappCloudMsg(m => ({ ...m, [bot.id]: { ok: false, text: 'Error de conexión.' } }));
+    } finally {
+      setWhatsappCloudSaving(s => ({ ...s, [bot.id]: false }));
+      setTimeout(() => setWhatsappCloudMsg(m => ({ ...m, [bot.id]: null })), 4500);
+    }
+  };
+
   const handleLogout = async (id) => {
     if (!confirm('¿Desvincular WhatsApp? Se borrará la sesión y deberás escanear el QR nuevamente.')) return;
     await authFetch(`${API_URL}/api/bots/${id}/logout`, { method: 'POST' });
@@ -2277,6 +2391,28 @@ function Dashboard() {
     setMetaConnecting(false);
   };
 
+  const handleConnectWhatsAppNumber = async (phoneNumberId) => {
+    if (!whatsappNumberSelect) return;
+    setWhatsappConnecting(true);
+    try {
+      const res = await authFetch(`${API_URL}/api/oauth/whatsapp/connect-number`, {
+        method: 'POST',
+        body: JSON.stringify({ token: whatsappNumberSelect.token, phoneNumberId }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setWhatsappNumberSelect(null);
+        fetchBots();
+        alert(`WhatsApp "${data.phone}" conectado correctamente.`);
+      } else {
+        alert(data.error || 'Error al conectar WhatsApp.');
+      }
+    } catch {
+      alert('Error de conexión.');
+    }
+    setWhatsappConnecting(false);
+  };
+
   return (
     <div className="app-shell">
 
@@ -2311,6 +2447,29 @@ function Dashboard() {
       )}
 
       {/* ── Modal expandido ── */}
+      {whatsappNumberSelect && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '16px', padding: '2rem', maxWidth: '460px', width: '90%' }}>
+            <h3 style={{ margin: '0 0 0.4rem', color: 'var(--text-1)' }}>Seleccioná el número de WhatsApp</h3>
+            <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: 'var(--text-2)' }}>Elegí el número oficial que va a atender este bot.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              {whatsappNumberSelect.numbers.map(n => (
+                <button key={n.phoneNumberId} onClick={() => handleConnectWhatsAppNumber(n.phoneNumberId)} disabled={whatsappConnecting}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.25rem', background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.3)', borderRadius: '10px', color: 'var(--text-1)', cursor: 'pointer', padding: '0.85rem 1rem', fontSize: '0.95rem', fontWeight: 600 }}>
+                  <span>{n.displayPhoneNumber || n.verifiedName || n.phoneNumberId}</span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--text-2)', fontWeight: 400 }}>
+                    {n.verifiedName || 'WhatsApp Business'} · {n.wabaName || n.wabaId}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setWhatsappNumberSelect(null)} style={{ marginTop: '1rem', width: '100%', background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-2)', cursor: 'pointer', padding: '0.5rem' }}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
       {expandedField && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 10000, display: 'flex', flexDirection: 'column', padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
@@ -2877,6 +3036,60 @@ function Dashboard() {
                         )}
                       </div>
                     )}
+
+                    {/* WhatsApp Cloud API */}
+                    <div style={{marginTop:'2rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
+                      <div className="prompt-header">
+                        <Smartphone size={18} color="#25d366" />
+                        <h3 style={{color:'#25d366', flex:1}}>WhatsApp API oficial</h3>
+                        {bot.whatsappPhoneNumberId && <span style={{fontSize:'0.72rem', background:'rgba(16,185,129,0.12)', color:'var(--success)', padding:'2px 8px', borderRadius:'6px', border:'1px solid var(--success-border)'}}>● Cloud conectado</span>}
+                      </div>
+                      <p style={{fontSize:'0.82rem', color:'var(--text-2)', margin:'0 0 0.75rem'}}>Conectá WhatsApp oficial desde Meta para responder sin QR. El token se guarda automáticamente en el servidor.</p>
+                      <button onClick={async () => {
+                        const w=620,h=740,l=Math.round(window.screenX+(window.outerWidth-w)/2),t=Math.round(window.screenY+(window.outerHeight-h)/2);
+                        const popup = window.open('about:blank','atento_whatsapp_oauth',`width=${w},height=${h},left=${l},top=${t},scrollbars=yes`);
+                        try {
+                          const res = await authFetch(`${API_URL}/api/oauth/whatsapp/init`, { method: 'POST', body: JSON.stringify({ botId: bot.id, returnPath: '/oauth-callback' }) });
+                          const data = await res.json();
+                          if (data.url && popup && !popup.closed) { popup.location.href = data.url; }
+                          else { popup?.close(); alert(data.error || 'Error'); }
+                        } catch { popup?.close(); alert('Error de conexión'); }
+                      }} className="btn-solid-blue" style={{margin:'0 0 0.75rem', width:'auto', padding:'0.65rem 1rem', background:'#25d366'}}>
+                        {bot.whatsappPhoneNumberId ? 'Reconectar con Meta' : 'Conectar WhatsApp con Meta'}
+                      </button>
+                      <details style={{marginBottom:'0.75rem'}}>
+                        <summary style={{cursor:'pointer', color:'var(--text-2)', fontSize:'0.78rem'}}>Configuración manual avanzada</summary>
+                      <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:'0.75rem', background:'rgba(37,211,102,0.04)', border:'1px solid rgba(37,211,102,0.18)', borderRadius:'12px', padding:'1rem'}}>
+                        <input className="modal-input" inputMode="numeric" placeholder="Phone Number ID"
+                          value={whatsappCloudForm[bot.id]?.phoneNumberId ?? (bot.whatsappPhoneNumberId || '')}
+                          onChange={e => setWhatsappCloudForm(f => ({...f, [bot.id]: {...f[bot.id], phoneNumberId: e.target.value.replace(/\D/g, '')}}))}
+                          style={{marginBottom:0, background:'var(--surface)'}} />
+                        <input className="modal-input" inputMode="numeric" placeholder="WhatsApp Business Account ID"
+                          value={whatsappCloudForm[bot.id]?.businessAccountId ?? (bot.whatsappBusinessAccountId || '')}
+                          onChange={e => setWhatsappCloudForm(f => ({...f, [bot.id]: {...f[bot.id], businessAccountId: e.target.value.replace(/\D/g, '')}}))}
+                          style={{marginBottom:0, background:'var(--surface)'}} />
+                        <input className="modal-input" type="password" placeholder={bot.whatsappAccessToken ? 'Token guardado (pegá uno nuevo para cambiarlo)' : 'Access Token permanente'}
+                          value={whatsappCloudForm[bot.id]?.accessToken ?? ''}
+                          onChange={e => setWhatsappCloudForm(f => ({...f, [bot.id]: {...f[bot.id], accessToken: e.target.value}}))}
+                          style={{marginBottom:0, background:'var(--surface)', gridColumn:'1 / -1'}} />
+                        <div style={{display:'flex', gap:'0.6rem', alignItems:'center', flexWrap:'wrap', gridColumn:'1 / -1'}}>
+                          <button disabled={whatsappCloudSaving[bot.id]}
+                            onClick={() => handleSaveWhatsAppCloud(bot)}
+                            className="btn-solid-blue" style={{margin:0, width:'auto', padding:'0.6rem 1rem', background:'#25d366'}}>
+                            {whatsappCloudSaving[bot.id] ? 'Guardando...' : (bot.whatsappPhoneNumberId ? 'Actualizar API' : 'Conectar API')}
+                          </button>
+                          {bot.whatsappPhoneNumberId && (
+                            <button disabled={whatsappCloudSaving[bot.id]}
+                              onClick={() => { if (confirm('¿Desconectar WhatsApp API oficial? El bot volverá al modo QR.')) handleSaveWhatsAppCloud(bot, true); }}
+                              style={{background:'transparent', border:'1px solid var(--danger-border)', borderRadius:'8px', color:'var(--danger)', cursor:'pointer', padding:'0.55rem 0.9rem', fontSize:'0.82rem'}}>
+                              Desconectar API
+                            </button>
+                          )}
+                          {whatsappCloudMsg[bot.id] && <span style={{fontSize:'0.85rem', color: whatsappCloudMsg[bot.id].ok ? 'var(--success)' : 'var(--danger)'}}>{whatsappCloudMsg[bot.id].text}</span>}
+                        </div>
+                      </div>
+                      </details>
+                    </div>
 
                     {/* Instagram / Facebook */}
                     <div style={{marginTop:'2rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>

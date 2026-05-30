@@ -14,6 +14,19 @@ export default function OAuthCallback() {
       window.opener?.postMessage({ type: 'meta_ok', pageName }, window.location.origin);
       setTimeout(() => window.close(), 2800);
 
+    } else if (params.get('whatsapp_ok')) {
+      const phone = params.get('phone') || 'WhatsApp';
+      setLabel(phone);
+      setStatus('success');
+      window.opener?.postMessage({ type: 'whatsapp_ok', phone }, window.location.origin);
+      setTimeout(() => window.close(), 2800);
+
+    } else if (params.get('whatsapp_select')) {
+      const token = params.get('whatsapp_select');
+      window.opener?.postMessage({ type: 'whatsapp_select', token }, window.location.origin);
+      setStatus('redirect');
+      setTimeout(() => window.close(), 800);
+
     } else if (params.get('meta_select')) {
       const token = params.get('meta_select');
       window.opener?.postMessage({ type: 'meta_select', token }, window.location.origin);
@@ -26,6 +39,8 @@ export default function OAuthCallback() {
         acceso_denegado: 'Cancelaste el acceso.',
         sesion_expirada: 'La sesión expiró, intentá de nuevo.',
         sin_paginas: 'No encontramos páginas de Facebook en tu cuenta.',
+        sin_whatsapp: 'No encontramos numeros de WhatsApp en tu negocio.',
+        error_whatsapp: 'No pudimos conectar WhatsApp. Revisa permisos o intenta de nuevo.',
         error_interno: 'Error interno. Contactá soporte.',
       };
       setLabel(msgs[err] || err);
