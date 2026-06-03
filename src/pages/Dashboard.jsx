@@ -2135,7 +2135,18 @@ function Dashboard() {
   const fetchBots = () => {
     authFetch(`${API_URL}/api/bots`)
       .then(res => res.json())
-      .then(data => setBots(Array.isArray(data) ? data : []));
+      .then(data => {
+        const list = Array.isArray(data) ? data : [];
+        setBots(list);
+        setQrCodes(prev => {
+          const next = { ...prev };
+          list.forEach(bot => {
+            if (bot.qr) next[bot.id] = bot.qr;
+            else if (bot.status !== 'QR_READY') delete next[bot.id];
+          });
+          return next;
+        });
+      });
   };
 
   const fetchDebtors = async (botId) => {
@@ -3311,7 +3322,7 @@ function Dashboard() {
               )}
 
               {/* QR */}
-              {bot.status === 'QR_READY' && qrCodes[bot.id] && (
+              {bot.status === 'QR_READY' && (
                 <div className="bot-card-expanded qr-container">
                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem', width: '100%' }}>
                     <button onClick={() => handleLogout(bot.id)} style={{ background: 'transparent', border: '1px solid var(--danger-border)', borderRadius: '6px', color: 'var(--danger)', cursor: 'pointer', padding: '0.4rem 1rem', fontSize: '0.8rem', fontWeight: 500 }}>
@@ -3319,7 +3330,13 @@ function Dashboard() {
                     </button>
                   </div>
                   <p>Escanea este Código con WhatsApp Business para conectar la IA:</p>
-                  <div className="qr-wrapper"><QRCodeSVG value={qrCodes[bot.id]} size={180} /></div>
+                  {qrCodes[bot.id] ? (
+                    <div className="qr-wrapper"><QRCodeSVG value={qrCodes[bot.id]} size={180} /></div>
+                  ) : (
+                    <div className="qr-wrapper" style={{ minHeight: 180, display: 'grid', placeItems: 'center', color: 'var(--text-2)', fontSize: '0.86rem', textAlign: 'center', padding: '1rem' }}>
+                      Generando QR...
+                    </div>
+                  )}
                 </div>
               )}
 
