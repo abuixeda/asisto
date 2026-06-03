@@ -2243,9 +2243,9 @@ function Dashboard() {
 
   const handleStart = async (id) => {
     const bot = bots.find(b => b.id === id);
-    const hasMetaOrTelegram = bot?.metaPageId || bot?.metaIgId || bot?.telegramBotToken || bot?.whatsappPhoneNumberId;
+    const hasMetaOrTelegram = bot?.metaPageId || bot?.metaIgId || bot?.telegramBotToken;
     const hasWhatsApp = bot?.businessPhone;
-    // If bot has Meta/Telegram but no WhatsApp, activate without QR
+    // WhatsApp uses QR/Web session. Meta/Telegram can still activate without QR.
     if (hasMetaOrTelegram && !hasWhatsApp) {
       const res = await authFetch(`${API_URL}/api/bots/${id}/activate-meta`, { method: 'POST' });
       const data = await res.json();
@@ -3037,7 +3037,8 @@ function Dashboard() {
                       </div>
                     )}
 
-                    {/* WhatsApp Cloud API */}
+                    {false && (
+                    /* WhatsApp Cloud API */
                     <div style={{marginTop:'2rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
                       <div className="prompt-header">
                         <Smartphone size={18} color="#25d366" />
@@ -3090,6 +3091,8 @@ function Dashboard() {
                       </div>
                       </details>
                     </div>
+
+                    )}
 
                     {/* Instagram / Facebook */}
                     <div style={{marginTop:'2rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
