@@ -131,7 +131,7 @@ export default function Onboarding() {
       {/* Top bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 800, fontSize: '1rem' }}>
-          <div className="brand-logo" style={{ width: '28px', height: '28px', fontSize: '0.85rem', margin: 0, boxShadow: 'none' }}>TJ</div>
+          <div className="brand-logo" style={{ width: '28px', height: '28px', fontSize: '0.85rem', margin: 0, boxShadow: 'none' }}><img src="/atento-logo.png" alt="Atento AI" /></div>
           Atento AI
         </div>
         <button onClick={() => nav('/mi-panel')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}>

@@ -402,7 +402,7 @@ export default function LandingVolume() {
       <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(10,10,18,0.9)', backdropFilter: 'blur(16px)', borderBottom: `1px solid ${C.border}`, padding: '0 2rem' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '62px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }} onClick={() => scrollTo('hero')}>
-            <span style={{ fontSize: '1.4rem' }}>🤖</span>
+            <img src="/atento-logo.png" alt="Atento AI" style={{ width: 30, height: 30, borderRadius: 8, objectFit: 'cover', boxShadow: '0 4px 14px rgba(124,58,237,0.35)' }} />
             <span style={{ fontWeight: 800, fontSize: '1.05rem', color: C.text }}>Atento AI</span>
           </div>
           <div className="desktop-nav" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
@@ -790,7 +790,7 @@ export default function LandingVolume() {
           <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '3rem', marginBottom: '2.5rem' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.75rem' }}>
-                <span style={{ fontSize: '1.3rem' }}>🤖</span>
+                <img src="/atento-logo.png" alt="Atento AI" style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'cover', boxShadow: '0 4px 14px rgba(124,58,237,0.28)' }} />
                 <span style={{ fontWeight: 800, fontSize: '1.05rem', color: C.text }}>Atento AI</span>
               </div>
               <p style={{ color: C.textMuted, fontSize: '0.87rem', lineHeight: 1.65, maxWidth: '240px', margin: 0 }}>{t('footer.tagline')}</p>

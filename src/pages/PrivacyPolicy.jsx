@@ -21,7 +21,7 @@ export default function PrivacyPolicy() {
       <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(13,15,24,0.92)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.border}`, padding: '0 2rem' }}>
         <div style={{ maxWidth: '860px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '60px' }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
-            <span style={{ fontSize: '1.2rem' }}>🤖</span>
+            <img src="/atento-logo.png" alt="Atento AI" style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'cover', boxShadow: '0 4px 14px rgba(124,58,237,0.28)' }} />
             <span style={{ fontWeight: 700, fontSize: '0.95rem', color: C.text }}>Atento AI</span>
           </Link>
           <Link to="/" style={{ fontSize: '0.875rem', color: C.textSec, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>

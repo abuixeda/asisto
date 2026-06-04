@@ -1760,7 +1760,7 @@ export default function MerchantPanel() {
         {/* -- Sidebar -- */}
         <aside className="sidebar">
           <div className="sidebar-logo">
-            <div className="sidebar-logo-icon">TJ</div>
+            <div className="sidebar-logo-icon"><img src="/atento-logo.png" alt="Atento AI" /></div>
             Atento AI
           </div>
           <nav className="sidebar-nav" id="tour-tabs">

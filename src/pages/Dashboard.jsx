@@ -1268,7 +1268,7 @@ function LoginScreen({ onLogin }) {
     <div className="login-container">
       <div className="login-box">
         <div className="login-header">
-          <div className="brand-logo">A</div>
+          <div className="brand-logo"><img src="/atento-logo.png" alt="Atento AI" /></div>
           <h2>Atento AI</h2>
           <p>{isRegistering ? 'Crea tu Espacio de Trabajo' : 'Portal de Acceso Privado SaaS'}</p>
         </div>
@@ -2557,7 +2557,7 @@ function Dashboard() {
       {/* ══════════════════ SIDEBAR ══════════════════ */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">A</div>
+          <div className="sidebar-logo-icon"><img src="/atento-logo.png" alt="Atento AI" /></div>
           <span>Atento AI</span>
         </div>
 
