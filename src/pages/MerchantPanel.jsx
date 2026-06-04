@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
+import { Moon, Sun } from 'lucide-react';
 
 const API = 'https://asisto-backend-production.up.railway.app';
 
@@ -1504,6 +1505,7 @@ export default function MerchantPanel() {
   const [activeTab, setActiveTab] = useState('config'); // 'config' | 'campaigns'
   const [showTour, setShowTour] = useState(() => !localStorage.getItem('atento_tour_done'));
   const [showPreview, setShowPreview] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem('atento_theme') || 'dark');
   const pollRef = useRef(null);
 
   // Meta Config (Instagram/Facebook)
@@ -1516,6 +1518,10 @@ export default function MerchantPanel() {
   const [telegramSaving, setTelegramSaving] = useState(false);
   const [telegramMsg, setTelegramMsg] = useState(null);
 
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('atento_theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     if (!token || !botId) { nav('/registro'); return; }
@@ -1773,7 +1779,14 @@ export default function MerchantPanel() {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', paddingTop: '0.2rem' }}>
               <a href="/olvide-contrasena" style={{ fontSize: '0.75rem', color: 'var(--text-3)', textDecoration: 'none', padding: '0.2rem 0.1rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>Olvide mi contrasena</a>
-              <button onClick={logout} style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '0.75rem', textAlign: 'left', padding: '0.2rem 0.1rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>Cerrar sesion</button>
+              <button
+                onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.55rem 0.85rem', cursor: 'pointer', color: 'var(--text-2)', fontSize: '0.82rem', fontWeight: 500, transition: 'all 0.15s' }}
+              >
+                {theme === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} color="#818cf8" />}
+                <span>{theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}</span>
+              </button>
+              <button onClick={logout} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', width: '100%', background: 'transparent', border: '1px solid var(--danger-border)', borderRadius: '8px', padding: '0.55rem 0.85rem', cursor: 'pointer', color: 'var(--danger)', fontSize: '0.82rem', fontWeight: 500, transition: 'all 0.15s', textAlign: 'left' }}>Cerrar sesion</button>
             </div>
           </div>
         </aside>
