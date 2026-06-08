@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const API = 'https://asisto-backend-production.up.railway.app';
 
 export default function Register() {
+  const [params] = useSearchParams();
+  const cameFromPayment = params.get('payment') === 'success';
+  const selectedPlan = params.get('plan');
   const [step, setStep] = useState(1); // 1: datos, 2: plataforma, 3: shopify-domain
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,9 +29,18 @@ export default function Register() {
         body: JSON.stringify({ email, password, name })
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error || 'Error al registrarse.'); return; }
+      if (!res.ok) {
+        if (res.status === 409 && cameFromPayment) {
+          setError('Ya existe una cuenta con ese email. Inicia sesion con ese mismo email para acreditar el pago.');
+        } else {
+          setError(data.error || 'Error al registrarse.');
+        }
+        return;
+      }
       localStorage.setItem('merchant_token', data.token);
       localStorage.setItem('merchant_bot_id', data.botId);
+      localStorage.setItem('atento_token', data.token);
+      if (data.whopPaymentApplied) localStorage.setItem('atento_payment_confirmed', 'whop');
       setStep(2);
     } catch (err) {
       console.error('[Register] fetch error:', err, '| API URL:', API);
@@ -72,10 +84,19 @@ export default function Register() {
           Atento AI
         </div>
 
+        {cameFromPayment && step === 1 && (
+          <div style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.28)', borderRadius: '14px', padding: '1rem', marginBottom: '1.25rem' }}>
+            <div style={{ color: '#34d399', fontWeight: 800, marginBottom: '0.35rem' }}>Pago recibido</div>
+            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem', lineHeight: 1.55 }}>
+              Ahora crea tu cuenta o inicia sesion usando el mismo email con el que pagaste en Whop. Asi Atento puede acreditar automaticamente tu plan{selectedPlan ? ` ${selectedPlan}` : ''}.
+            </p>
+          </div>
+        )}
+
         {step === 1 && (
           <>
             <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem' }}>Crear cuenta</h2>
-            <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem 0' }}>Gratis. Sin tarjeta de crdito.</p>
+            <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem 0' }}>{cameFromPayment ? 'Completa tu cuenta para activar el panel.' : 'Gratis. Sin tarjeta de credito.'}</p>
 
             <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
@@ -109,7 +130,7 @@ export default function Register() {
             </form>
 
             <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              Ya tens cuenta? <a href="/login" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Ingresar</a>
+              Ya tenes cuenta? <a href={cameFromPayment ? '/login?payment=success' : '/login'} style={{ color: 'var(--accent)', textDecoration: 'none' }}>Ingresar</a>
             </p>
           </>
         )}

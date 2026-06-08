@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const API = 'https://asisto-backend-production.up.railway.app';
 
 export default function Login() {
+  const [params] = useSearchParams();
+  const cameFromPayment = params.get('payment') === 'success';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,10 +29,11 @@ export default function Login() {
       localStorage.setItem('merchant_bot_id', data.user.botId);
       localStorage.setItem('atento_token', data.token);
       localStorage.setItem('atento_user', JSON.stringify(data.user));
+      if (data.whopPaymentApplied) localStorage.setItem('atento_payment_confirmed', 'whop');
       if (data.user.role === 'admin') {
         nav('/admin');
       } else {
-        nav('/mi-panel');
+        nav(data.whopPaymentApplied ? '/mi-panel?payment=success' : '/mi-panel');
       }
     } catch {
       setError('No se pudo conectar con el servidor.');
@@ -49,7 +52,16 @@ export default function Login() {
         </div>
 
         <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.6rem' }}>Ingresar</h2>
-        <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem 0' }}>Acced a tu panel de control.</p>
+        <p style={{ color: 'var(--text-secondary)', margin: '0 0 2rem 0' }}>{cameFromPayment ? 'Inicia sesion con el email usado en Whop para acreditar el pago.' : 'Accede a tu panel de control.'}</p>
+
+        {cameFromPayment && (
+          <div style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.28)', borderRadius: '14px', padding: '1rem', marginBottom: '1.25rem' }}>
+            <div style={{ color: '#34d399', fontWeight: 800, marginBottom: '0.35rem' }}>Pago recibido</div>
+            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem', lineHeight: 1.55 }}>
+              Si esta cuenta usa el mismo email del pago, Atento va a activar tu plan automaticamente al entrar.
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
