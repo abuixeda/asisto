@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ChevronRight, Check, Star, Menu, X, ChevronDown, Send,
@@ -37,7 +37,12 @@ const FEATURE_STYLES = [
 ];
 
 const PLAN_HIGHLIGHTS = [false, true, false];
-const WHOP_TEST_CHECKOUT_URL = 'https://whop.com/atento-ai/test-atento/';
+const WHOP_PLAN_IDS = {
+  test: 'plan_IGDxDefJVieN5',
+  starter: 'plan_v5NUICSwihOKZ',
+  growth: 'plan_074m3NxwBdu3r',
+  scale: 'plan_b3RCl3tcxlikv',
+};
 
 const LIVE_TOASTS = [
   { name: 'Valentina G.', action: 'activó su bot',              city: 'Córdoba'      },
@@ -346,10 +351,59 @@ function GradText({ children, style = {} }) {
   return <span style={{ background: C.gradText, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', ...style }}>{children}</span>;
 }
 
+function WhopCheckoutModal({ checkout, onClose }) {
+  const returnUrl = useMemo(() => {
+    if (typeof window === 'undefined') return 'https://www.atento-ai.com/registro';
+    return `${window.location.origin}/registro?payment=success&plan=${checkout?.key || 'starter'}`;
+  }, [checkout?.key]);
+
+  useEffect(() => {
+    if (!checkout) return;
+    const existing = document.getElementById('whop-checkout-loader');
+    existing?.remove();
+    const script = document.createElement('script');
+    script.id = 'whop-checkout-loader';
+    script.src = 'https://js.whop.com/static/checkout/loader.js';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+  }, [checkout]);
+
+  if (!checkout) return null;
+
+  return (
+    <div role="dialog" aria-modal="true" style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(3,3,10,0.82)', backdropFilter: 'blur(14px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+      <div style={{ width: 'min(100%, 860px)', maxHeight: '92vh', overflow: 'auto', background: C.bgCard, border: `1px solid ${C.borderStr}`, borderRadius: '18px', boxShadow: '0 30px 90px rgba(0,0,0,0.55)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '1rem 1.2rem', borderBottom: `1px solid ${C.border}` }}>
+          <div>
+            <div style={{ color: C.text, fontWeight: 900, fontSize: '1.05rem' }}>Finalizar compra en Atento</div>
+            <div style={{ color: C.textSec, fontSize: '0.82rem', marginTop: '0.12rem' }}>{checkout.name} · pago seguro procesado por Whop</div>
+          </div>
+          <button onClick={onClose} aria-label="Cerrar checkout" style={{ width: 38, height: 38, borderRadius: '10px', border: `1px solid ${C.borderStr}`, background: C.bgCardEl, color: C.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={18} />
+          </button>
+        </div>
+        <div style={{ padding: '1.2rem', minHeight: '520px' }}>
+          <div
+            key={checkout.planId}
+            data-whop-checkout-plan-id={checkout.planId}
+            data-whop-checkout-return-url={returnUrl}
+            data-whop-checkout-theme="dark"
+          />
+          <p style={{ margin: '1rem 0 0', color: C.textMuted, fontSize: '0.78rem', textAlign: 'center' }}>
+            Si el formulario no carga, desactivá bloqueadores del navegador o abrilo desde Whop.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── MAIN ────────────────────────────────────────────── */
 export default function LandingVolume() {
   const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [checkout, setCheckout] = useState(null);
 
   function scrollTo(id) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
@@ -398,6 +452,7 @@ export default function LandingVolume() {
       `}</style>
 
       <LiveToast />
+      <WhopCheckoutModal checkout={checkout} onClose={() => setCheckout(null)} />
 
       {/* ════════════ NAVBAR ════════════ */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(10,10,18,0.9)', backdropFilter: 'blur(16px)', borderBottom: `1px solid ${C.border}`, padding: '0 2rem' }}>
@@ -728,7 +783,7 @@ export default function LandingVolume() {
                 <div style={{ color: C.text, fontWeight: 800, fontSize: '1.25rem' }}>USD 1</div>
                 <div style={{ color: C.textSec, fontSize: '0.84rem', marginTop: '0.15rem' }}>Producto temporal para probar la pasarela de pagos.</div>
               </div>
-              <a href={WHOP_TEST_CHECKOUT_URL} className="btn-primary" style={{ padding: '0.75rem 1.1rem', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 800, textAlign: 'center', textDecoration: 'none', whiteSpace: 'nowrap' }}>Probar pago</a>
+              <button onClick={() => setCheckout({ key: 'test', name: 'TEST ATENTO', planId: WHOP_PLAN_IDS.test })} className="btn-primary" style={{ padding: '0.75rem 1.1rem', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 800, textAlign: 'center', textDecoration: 'none', whiteSpace: 'nowrap' }}>Probar pago</button>
             </div>
           </FadeIn>
           <div className="plan-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(265px,1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
@@ -753,7 +808,16 @@ export default function LandingVolume() {
                         </li>
                       ))}
                     </ul>
-                    <a href={WHOP_TEST_CHECKOUT_URL} className={highlight ? 'btn-primary' : 'btn-ghost'} style={{ padding: '0.85rem', borderRadius: '10px', fontSize: '0.95rem', fontWeight: 700, textAlign: 'center', textDecoration: 'none' }}>{p.cta}</a>
+                    <button
+                      onClick={() => {
+                        const planKey = ['starter', 'growth', 'scale'][idx] || 'starter';
+                        setCheckout({ key: planKey, name: p.name, planId: WHOP_PLAN_IDS[planKey] });
+                      }}
+                      className={highlight ? 'btn-primary' : 'btn-ghost'}
+                      style={{ padding: '0.85rem', borderRadius: '10px', fontSize: '0.95rem', fontWeight: 700, textAlign: 'center', textDecoration: 'none' }}
+                    >
+                      {p.cta}
+                    </button>
                   </div>
                 </FadeIn>
               );
