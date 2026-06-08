@@ -1,7 +1,29 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { Moon, Sun } from 'lucide-react';
+import {
+  Bot,
+  BrainCircuit,
+  CalendarClock,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  Database,
+  ExternalLink,
+  KeyRound,
+  Lock,
+  MessageCircle,
+  Moon,
+  PlugZap,
+  Send,
+  Settings,
+  ShieldCheck,
+  Smartphone,
+  Sun,
+  TestTube2,
+  Wifi,
+  WifiOff,
+} from 'lucide-react';
 
 const API = 'https://asisto-backend-production.up.railway.app';
 
@@ -10,6 +32,63 @@ function authFetch(url, options = {}, token) {
     ...options,
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...options.headers }
   });
+}
+
+const cardStyle = {
+  background: 'linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.022))',
+  border: '1px solid var(--border)',
+  borderRadius: '12px',
+  padding: '1.15rem',
+  boxShadow: '0 12px 30px rgba(0,0,0,0.10)'
+};
+
+function IconBox({ children, tone = 'violet' }) {
+  const tones = {
+    violet: ['rgba(124,58,237,0.16)', '#a78bfa'],
+    blue: ['rgba(59,130,246,0.16)', '#60a5fa'],
+    cyan: ['rgba(6,182,212,0.14)', '#22d3ee'],
+    green: ['rgba(16,185,129,0.14)', '#34d399'],
+    amber: ['rgba(245,158,11,0.14)', '#fbbf24'],
+    rose: ['rgba(225,48,108,0.14)', '#fb7185'],
+    slate: ['rgba(148,163,184,0.12)', 'var(--text-secondary)']
+  };
+  const [bg, color] = tones[tone] || tones.violet;
+  return (
+    <div style={{ width: 38, height: 38, borderRadius: 10, background: bg, color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      {children}
+    </div>
+  );
+}
+
+function PanelCard({ children, style, ...props }) {
+  return <div {...props} style={{ ...cardStyle, ...style }}>{children}</div>;
+}
+
+function SectionHeader({ icon, tone = 'violet', title, desc, action }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.85rem' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', minWidth: 0 }}>
+        <IconBox tone={tone}>{icon}</IconBox>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '0.98rem', color: 'var(--text-primary)', fontWeight: 800 }}>{title}</h3>
+          {desc && <p style={{ margin: '0.25rem 0 0', color: 'var(--text-secondary)', fontSize: '0.84rem', lineHeight: 1.55 }}>{desc}</p>}
+        </div>
+      </div>
+      {action}
+    </div>
+  );
+}
+
+function MetricPill({ icon, value, label }) {
+  return (
+    <div style={{ background: 'rgba(255,255,255,0.045)', border: '1px solid var(--border)', borderRadius: '10px', padding: '0.55rem 0.75rem', minWidth: 150, display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+      <span style={{ color: 'var(--text-secondary)', display: 'flex' }}>{icon}</span>
+      <div>
+        <div style={{ color: 'var(--text-primary)', fontWeight: 800, lineHeight: 1 }}>{value}</div>
+        <div style={{ color: 'var(--text-secondary)', fontSize: '0.73rem', marginTop: '0.2rem' }}>{label}</div>
+      </div>
+    </div>
+  );
 }
 
 // --- CampaignPanel ------------------------------------------------------------
@@ -1776,9 +1855,9 @@ export default function MerchantPanel() {
           </div>
           <nav className="sidebar-nav" id="tour-tabs">
             <span className="sidebar-nav-section">Principal</span>
-            <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => setActiveTab('config')}>Configuracion</div>
-            <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => setActiveTab('campaigns')}>Campanas</div>
-            <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => setActiveTab('turnos')}>Turnos</div>
+            <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => setActiveTab('config')}><Settings size={16} /> Configuracion</div>
+            <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => setActiveTab('campaigns')}><Send size={16} /> Campanas</div>
+            <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => setActiveTab('turnos')}><CalendarClock size={16} /> Turnos</div>
           </nav>
           <div className="sidebar-footer">
             <div className="sidebar-user">
@@ -1810,139 +1889,124 @@ export default function MerchantPanel() {
 
           {activeTab === 'config' && (<>
 
-          {/* Cabecera */}
-          <div id="tour-config-area" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-            <div>
-              <h1 style={{ margin: '0 0 0.3rem', fontSize: '1.8rem', fontWeight: 800 }}>
-                Asistente Manager <span style={{ background: '#3b82f6', color: '#fff', fontSize: '0.65rem', padding: '2px 8px', borderRadius: '6px', verticalAlign: 'middle', marginLeft: '0.4rem' }}>PRO</span>
-              </h1>
-              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Panel de Autogestion inteligente</p>
-            </div>
-            <div id="tour-status" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-              <button onClick={() => setShowPreview(p => !p)} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #00a884', background: showPreview ? '#00a884' : 'transparent', color: showPreview ? '#fff' : '#00a884', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                {showPreview ? 'Cerrar preview' : 'Probar asistente'}
-              </button>
-              {isOn ? (
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={stopBot} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #ef4444', background: 'transparent', color: '#ef4444', cursor: 'pointer', fontSize: '0.9rem' }}>
-                    Detener asistente
-                  </button>
-                  <button onClick={unlinkWhatsApp} disabled={unlinking} style={{ padding: '0.6rem 1.2rem', borderRadius: '8px', border: '1px solid #6b7280', background: 'transparent', color: '#9ca3af', cursor: 'pointer', fontSize: '0.9rem' }}>
-                    {unlinking ? 'Desvinculando...' : 'Desvincular WhatsApp'}
-                  </button>
+          <PanelCard id="tour-config-area" style={{ marginBottom: '1rem', padding: '1.25rem 1.35rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+                <IconBox tone={isOn ? 'green' : starting ? 'amber' : 'blue'}>
+                  {isOn ? <Wifi size={20} /> : starting ? <Clock size={20} /> : <Bot size={20} />}
+                </IconBox>
+                <div>
+                  <h1 style={{ margin: '0 0 0.25rem', fontSize: '1.65rem', fontWeight: 850, letterSpacing: 0 }}>Asistente Manager</h1>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 750 }}>{bot.name}</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: isOn ? '#34d399' : starting ? '#f59e0b' : 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 700 }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: isOn ? '#10b981' : starting ? '#f59e0b' : '#64748b' }} />
+                      {isOn ? 'Activo' : starting ? 'Conectando' : 'Pausado'}
+                    </span>
+                    <span style={{ background: 'rgba(59,130,246,0.14)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.24)', fontSize: '0.66rem', padding: '2px 8px', borderRadius: 999, fontWeight: 800 }}>PLAN {planName.toUpperCase()}</span>
+                  </div>
                 </div>
-              ) : (
-                <button onClick={startBot} disabled={starting} className="btn-solid-blue" style={{ margin: 0, width: 'auto', padding: '0.6rem 1.2rem', fontSize: '0.9rem', opacity: starting ? 0.7 : 1 }}>
-                  {starting ? 'Iniciando...' : 'Conectar WhatsApp'}
+              </div>
+              <div id="tour-status" style={{ display: 'flex', gap: '0.65rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button onClick={() => setShowPreview(p => !p)} style={{ padding: '0.65rem 0.95rem', borderRadius: '9px', border: '1px solid #00a884', background: showPreview ? '#00a884' : 'transparent', color: showPreview ? '#fff' : '#00a884', cursor: 'pointer', fontSize: '0.84rem', fontWeight: 750, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                  <TestTube2 size={16} /> {showPreview ? 'Cerrar preview' : 'Probar asistente'}
                 </button>
-              )}
+                {isOn ? (
+                  <>
+                    <button onClick={stopBot} style={{ padding: '0.65rem 0.95rem', borderRadius: '9px', border: '1px solid rgba(239,68,68,0.55)', background: 'rgba(239,68,68,0.08)', color: '#f87171', cursor: 'pointer', fontSize: '0.84rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                      <WifiOff size={16} /> Detener
+                    </button>
+                    <button onClick={unlinkWhatsApp} disabled={unlinking} style={{ padding: '0.65rem 0.95rem', borderRadius: '9px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.84rem', fontWeight: 700 }}>
+                      {unlinking ? 'Desvinculando...' : 'Desvincular'}
+                    </button>
+                  </>
+                ) : (
+                  <button onClick={startBot} disabled={starting} className="btn-solid-blue" style={{ margin: 0, width: 'auto', padding: '0.68rem 1rem', fontSize: '0.88rem', opacity: starting ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <Smartphone size={16} /> {starting ? 'Iniciando...' : 'Conectar WhatsApp'}
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Card resumen del bot */}
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>WA</div>
-              <div>
-                <div style={{ fontWeight: 700 }}>{bot.name}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '0.15rem' }}>
-                  <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: isOn ? '#10b981' : starting ? '#f59e0b' : '#6b7280' }} />
-                  <span style={{ fontSize: '0.8rem', color: isOn ? '#10b981' : 'var(--text-secondary)' }}>
-                    {isOn ? 'ON' : starting ? 'Iniciando...' : 'OFF'}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: '0.75rem' }}>
+              <MetricPill icon={<MessageCircle size={16} />} value={(metrics.messagesSent || 0).toLocaleString()} label="Mensajes respondidos" />
+              <MetricPill icon={<Bot size={16} />} value={(metrics.customersHelped || 0).toLocaleString()} label="Chats atendidos" />
+              <MetricPill icon={<CheckCircle2 size={16} />} value={(metrics.weeklySales || 0).toLocaleString()} label="Conversiones" />
+              <div style={{ background: 'rgba(255,255,255,0.045)', border: '1px solid var(--border)', borderRadius: '10px', padding: '0.65rem 0.75rem', minWidth: 190 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center', marginBottom: '0.45rem' }}>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.76rem', fontWeight: 750 }}>Uso mensual</span>
+                  <span style={{ color: 'var(--text-primary)', fontSize: '0.82rem', fontWeight: 850 }}>
+                    {usageUsed.toLocaleString()} / {usageLimit ? usageLimit.toLocaleString() : 'ilimitados'}
                   </span>
                 </div>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              {[
-                { emoji: 'Msj', value: (metrics.messagesSent || 0).toLocaleString(), label: 'mensajes respondidos' },
-                { emoji: 'Chat', value: (metrics.customersHelped || 0).toLocaleString(), label: 'chats atendidos' },
-                { emoji: 'Conv', value: (metrics.weeklySales || 0).toLocaleString(), label: 'conversiones' },
-              ].map((m, i) => (
-                <div key={i} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.4rem 0.75rem', fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <span>{m.emoji}</span>
-                  <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{m.value}</span>
-                  <span>{m.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.035)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.9rem 1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: usageLimit ? '0.65rem' : 0 }}>
-              <div>
-                <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Uso del plan</p>
-                <p style={{ margin: '0.2rem 0 0', fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: 800 }}>Plan {planName}</p>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: 800 }}>
-                  {usageLimit ? `${usageUsed.toLocaleString()} / ${usageLimit.toLocaleString()}` : `${usageUsed.toLocaleString()} / ilimitados`}
-                </p>
-                <p style={{ margin: '0.15rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>mensajes este mes</p>
-              </div>
-            </div>
-            {usageLimit && (
-              <>
-                <div style={{ height: '8px', borderRadius: '999px', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                  <div style={{ width: `${usagePct}%`, height: '100%', borderRadius: '999px', background: usagePct >= 90 ? '#f87171' : usagePct >= 75 ? '#f59e0b' : 'linear-gradient(90deg,#7c3aed,#06b6d4)' }} />
-                </div>
-                <p style={{ margin: '0.55rem 0 0', fontSize: '0.78rem', color: usagePct >= 90 ? '#f87171' : 'var(--text-secondary)' }}>
-                  {Math.max(0, usageLimit - usageUsed).toLocaleString()} mensajes disponibles hasta el proximo reinicio.
-                </p>
-              </>
-            )}
-          </div>
-
-          {/* QR */}
-          {starting && (
-            <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-              {qrData ? (
-                <>
-                  <div style={{ background: 'white', padding: '10px', borderRadius: '12px', border: '4px solid var(--accent)' }}>
-                    <QRCodeSVG value={qrData} size={180} />
+                {usageLimit && (
+                  <div style={{ height: 7, borderRadius: 999, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                    <div style={{ width: `${usagePct}%`, height: '100%', borderRadius: 999, background: usagePct >= 90 ? '#f87171' : usagePct >= 75 ? '#f59e0b' : 'linear-gradient(90deg,#7c3aed,#06b6d4)' }} />
                   </div>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', margin: 0, textAlign: 'center' }}>
-                    Abri WhatsApp - Dispositivos vinculados - Escanear codigo QR
-                  </p>
-                </>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', padding: '0.75rem' }}>
-                  <span style={{ fontSize: '1.4rem' }}>•</span>
-                  <span style={{ fontSize: '0.9rem' }}>Generando codigo QR...</span>
+                )}
+                <p style={{ margin: '0.45rem 0 0', color: usagePct >= 90 ? '#f87171' : 'var(--text-secondary)', fontSize: '0.72rem' }}>
+                  {usageLimit ? `${Math.max(0, usageLimit - usageUsed).toLocaleString()} disponibles` : 'Mensajes sin limite'}
+                </p>
+              </div>
+            </div>
+          </PanelCard>
+
+          {(starting || isOn) && (
+            <PanelCard style={{ marginBottom: '1rem', borderColor: isOn ? 'rgba(16,185,129,0.24)' : 'var(--border)' }}>
+              <SectionHeader
+                icon={isOn ? <Wifi size={18} /> : <Smartphone size={18} />}
+                tone={isOn ? 'green' : 'blue'}
+                title={isOn ? 'WhatsApp conectado' : 'Conectar WhatsApp'}
+                desc={isOn ? 'El asistente esta activo y responde automaticamente.' : 'Escanea el codigo desde WhatsApp para vincular el numero del negocio.'}
+              />
+              {starting && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.85rem', padding: '0.5rem 0 0.2rem' }}>
+                  {qrData ? (
+                    <>
+                      <div style={{ background: 'white', padding: 12, borderRadius: 14, border: '4px solid rgba(124,58,237,0.65)', boxShadow: '0 10px 30px rgba(0,0,0,0.24)' }}>
+                        <QRCodeSVG value={qrData} size={178} />
+                      </div>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem', margin: 0, textAlign: 'center' }}>
+                        WhatsApp &gt; Dispositivos vinculados &gt; Vincular dispositivo.
+                      </p>
+                    </>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--text-secondary)', padding: '0.75rem' }}>
+                      <Clock size={18} />
+                      <span style={{ fontSize: '0.9rem' }}>Generando codigo QR...</span>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
-          {isOn && (
-            <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <span>•</span>
-              <p style={{ margin: 0, color: '#10b981', fontSize: '0.875rem' }}>WhatsApp conectado. El asistente ya responde automaticamente.</p>
-            </div>
+            </PanelCard>
           )}
 
-          {/* -- Comportamiento -- */}
-          <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>•</span>
-            <h3 style={{ flex: 1 }}>Comportamiento Psicologico de la IA</h3>
-            <button onClick={() => setExpandedField('prompt')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}>Expandir</button>
-          </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.6rem' }}>
-            Defini la personalidad de tu asistente: como saluda, que tono usa, si trata de "vos" o "usted", si es formal o relajado. Cuanto mas detallado, mejor va a representar a tu negocio.
-          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(320px,100%),1fr))', gap: '1rem', alignItems: 'start' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
+
+          <PanelCard>
+          <SectionHeader
+            icon={<BrainCircuit size={18} />}
+            tone="violet"
+            title="Personalidad del asistente"
+            desc='Defini como saluda, que tono usa y que reglas debe respetar cuando responde.'
+            action={<button onClick={() => setExpandedField('prompt')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.35rem 0.65rem', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>Expandir <ExternalLink size={13} /></button>}
+          />
           <textarea
             className="prompt-textarea editable"
+            style={{ minHeight: '110px' }}
             value={prompt} onChange={e => setPrompt(e.target.value)}
             placeholder="Describi como debe hablar y comportarse el asistente con tus clientes..."
           />
+          </PanelCard>
 
-          {/* -- Catalogo Google Sheets -- */}
-          <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>•</span>
-            <h3>Conexion Catalogo Activo (Google Sheets)</h3>
-          </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.6rem' }}>
-            Pega el link de tu Google Sheets. La hoja debe ser publica ("cualquiera con el link puede ver").
-          </p>
+          <PanelCard>
+          <SectionHeader
+            icon={<Database size={18} />}
+            tone="blue"
+            title="Catalogo sincronizado"
+            desc='Pega un Google Sheets publico para importar productos, precios y variantes.'
+          />
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
             <input
               className="modal-input" type="url" value={sheetsUrl}
@@ -1971,31 +2035,34 @@ export default function MerchantPanel() {
               {catalog}
             </div>
           )}
+          </PanelCard>
 
-          {/* -- Base de Conocimientos -- */}
-          <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem', color: '#10b981' }}>•</span>
-            <h3 style={{ flex: 1 }}>Base de Conocimientos</h3>
-            <button onClick={() => setExpandedField('kb')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.25rem 0.6rem', fontSize: '0.78rem' }}>Expandir</button>
-          </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem' }}>
-            Todo lo que tu asistente necesita saber para responder correctamente: metodos de pago, zonas de envio, garantias, condiciones especiales. Organiza la info por secciones usando corchetes como <strong>[ENVIO]</strong>, <strong>[PAGOS]</strong>, <strong>[GARANTIA]</strong> para que la IA sepa donde buscar cada dato.
-          </p>
+          <PanelCard>
+          <SectionHeader
+            icon={<Bot size={18} />}
+            tone="green"
+            title="Base de conocimiento"
+            desc='Informacion fija del negocio: envios, pagos, garantias, ubicacion, ventas y condiciones especiales.'
+            action={<button onClick={() => setExpandedField('kb')} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.35rem 0.65rem', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>Expandir <ExternalLink size={13} /></button>}
+          />
           <textarea
             className="prompt-textarea editable"
-            style={{ minHeight: '120px', borderColor: 'rgba(16,185,129,0.3)' }}
+            style={{ minHeight: '150px', borderColor: 'rgba(16,185,129,0.3)' }}
             value={knowledgeBase} onChange={e => setKnowledgeBase(e.target.value)}
             placeholder={`Organiza la info por secciones para que la IA solo lea lo relevante en cada pregunta:\n\n[ENVIO]\nEnvios en 24-48hs. Costo fijo $2.000 a todo el pais.\n\n[PAGOS]\nEfectivo, transferencia (10% OFF) o tarjeta hasta 6 cuotas.\n\n[UBICACION]\nAv. Corrientes 1234, CABA. Lun-Sab 9 a 20hs.\n\n[GARANTIA]\n30 dias para cambios sin cargo.`}
           />
+          </PanelCard>
 
-          {/* -- Tiempo de respuesta -- */}
-          <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>•</span>
-            <h3>Tiempo de espera antes de responder</h3>
           </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem' }}>
-            Si el cliente manda varios mensajes seguidos, el asistente espera este tiempo antes de responder; asi agrupa todos los mensajes y contesta una sola vez.
-          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
+
+          <PanelCard>
+          <SectionHeader
+            icon={<Clock size={18} />}
+            tone="amber"
+            title="Tiempo de respuesta"
+            desc="Agrupa mensajes seguidos antes de contestar para sonar mas natural."
+          />
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
             <input
               type="range" min="0.5" max="60" step="0.5"
@@ -2010,15 +2077,15 @@ export default function MerchantPanel() {
           <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem' }}>
             Recomendado: 2.5s  Minimo: 0.5s  Maximo: 60s
           </p>
+          </PanelCard>
 
-          {/* -- Horario de Atencion -- */}
-          <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>•</span>
-            <h3>Horario de Atencion (Anti-Nocturno)</h3>
-          </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem' }}>
-            Activa esta opcion para que el asistente solo responda dentro de tu horario comercial. Fuera de ese horario, enviara automaticamente el mensaje que escribas abajo.
-          </p>
+          <PanelCard>
+          <SectionHeader
+            icon={<CalendarClock size={18} />}
+            tone="blue"
+            title="Horario de atencion"
+            desc="Define cuando responde el asistente y que mensaje usa fuera de horario."
+          />
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
             <label className="ios-toggle">
               <input type="checkbox" checked={hours.active} onChange={e => setHours(h => ({ ...h, active: e.target.checked }))} />
@@ -2044,16 +2111,16 @@ export default function MerchantPanel() {
                 value={hours.autoReplyMsg} onChange={e => setHours(h => ({ ...h, autoReplyMsg: e.target.value }))} />
             </div>
           )}
+          </PanelCard>
 
-          {/* -- Integracin Telegram -- */}
-          <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem', color: '#38bdf8' }}>•</span>
-            <h3 style={{ color: '#38bdf8' }}>Integracion Telegram Bot</h3>
-          </div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 1rem' }}>
-            Responde a tus clientes por Telegram. Crea un bot con @BotFather y pega el token aqui. Dejalo vacio para desconectar.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
+          <PanelCard>
+          <SectionHeader
+            icon={<Send size={18} />}
+            tone="cyan"
+            title="Telegram Bot"
+            desc="Conecta un bot de Telegram con el token de BotFather."
+          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Bot Token de Telegram</label>
               <input className="modal-input" type="password" placeholder="123456789:AAH..." value={telegramBotToken} onChange={e => setTelegramBotToken(e.target.value)} style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
@@ -2063,15 +2130,18 @@ export default function MerchantPanel() {
               {telegramSaving ? 'Conectando...' : 'Guardar y Conectar'}
             </button>
           </div>
+          </PanelCard>
 
-          {/* -- Celular del Dueno -- */}
-          <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>•</span>
-            <h3 style={{ color: '#8b5cf6' }}>Seguridad: Celular de Administrador</h3>
-          </div>
+          <PanelCard>
+          <SectionHeader
+            icon={<ShieldCheck size={18} />}
+            tone="violet"
+            title="Celular de administrador"
+            desc="Autoriza un numero seguro para dar instrucciones desde WhatsApp."
+          />
           {metrics.adminNumber ? (
             <div style={{ background: 'rgba(16,185,129,0.1)', padding: '10px 15px', borderRadius: '8px', border: '1px solid rgba(16,185,129,0.3)', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: '#10b981' }}>•</span>
+              <CheckCircle2 size={17} color="#10b981" />
               <div>
                 <p style={{ margin: 0, color: '#10b981', fontWeight: 'bold', fontSize: '0.9rem' }}>Numero de contacto seguro vinculado</p>
                 <p style={{ margin: 0, fontSize: '0.82rem', color: '#10b981', opacity: 0.9 }}>+{metrics.adminNumber.replace('@c.us', '')}</p>
@@ -2098,21 +2168,29 @@ export default function MerchantPanel() {
           <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)', opacity: 0.7 }}>
             Sin codigo de pais ni el 15. Ej: <strong>1156781234</strong>
           </p>
+          </PanelCard>
 
           {/* -- Guardar -- */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+          <PanelCard style={{ position: 'sticky', bottom: '1rem', zIndex: 3, background: 'var(--surface)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
+              <Lock size={15} /> Los cambios se aplican al asistente activo.
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             {saveMsg === 'ok' && <span style={{ color: '#10b981', fontSize: '0.875rem' }}>Cambios guardados.</span>}
             {saveMsg === 'err' && <span style={{ color: '#f87171', fontSize: '0.875rem' }}>Error al guardar.</span>}
             <button onClick={save} disabled={saving} className="btn-solid-blue" style={{ margin: 0, width: 'auto', padding: '0.6rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              {saving ? 'Guardando...' : 'Actualizar Cerebro'}
+              <BrainCircuit size={16} /> {saving ? 'Guardando...' : 'Guardar cambios'}
             </button>
+            </div>
           </div>
+          </PanelCard>
 
-          {/* -- Cambiar contrasena  colapsable -- */}
-          <div style={{ marginTop: '1.25rem', borderTop: '1px solid var(--border)', paddingTop: '0.75rem' }}>
+          <PanelCard>
             <button onClick={() => setPwOpen(o => !o)}
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.82rem', padding: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', opacity: 0.7 }}>
-              Cambiar contrasena {pwOpen ? 'Cerrar' : 'Abrir'}
+              style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.9rem', padding: 0, display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 800, width: '100%', justifyContent: 'space-between' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}><KeyRound size={17} color="#a78bfa" /> Seguridad de cuenta</span>
+              <ChevronRight size={16} style={{ transform: pwOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }} />
             </button>
             {pwOpen && (
               <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', maxWidth: '380px' }}>
@@ -2131,15 +2209,15 @@ export default function MerchantPanel() {
                 </button>
               </div>
             )}
-          </div>
+          </PanelCard>
 
-          {/* -- Proximamente: Instagram + Facebook -- */}
-          <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem', color: '#e1306c' }}>•</span>
-            <h3 style={{ color: '#e1306c' }}>Instagram & Facebook</h3>
-          </div>
-          <div style={{ background: 'linear-gradient(135deg, rgba(225,48,108,0.05), rgba(24,119,242,0.05))', border: '1px dashed rgba(225,48,108,0.28)', borderRadius: '14px', padding: '1.25rem 1.5rem', display: 'flex', gap: '1rem', alignItems: 'flex-start', opacity: 0.82 }}>
-            <span style={{ fontSize: '1.5rem', flexShrink: 0, lineHeight: 1, marginTop: '0.05rem' }}>•</span>
+          <PanelCard style={{ background: 'linear-gradient(135deg, rgba(225,48,108,0.06), rgba(24,119,242,0.045))', border: '1px dashed rgba(225,48,108,0.28)', opacity: 0.9 }}>
+            <SectionHeader
+              icon={<PlugZap size={18} />}
+              tone="rose"
+              title="Instagram & Facebook"
+              desc="Canales sociales en preparacion para futuras versiones."
+            />
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                 <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Mensajes de Instagram y Facebook</span>
@@ -2153,6 +2231,9 @@ export default function MerchantPanel() {
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(24,119,242,0.1)', border: '1px solid rgba(24,119,242,0.22)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', color: '#1877f2', fontWeight: 600 }}>Facebook Messenger</span>
               </div>
             </div>
+          </PanelCard>
+
+          </div>
           </div>
 
           </>)}
