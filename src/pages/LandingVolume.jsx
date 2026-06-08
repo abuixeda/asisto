@@ -37,6 +37,7 @@ const FEATURE_STYLES = [
 ];
 
 const PLAN_HIGHLIGHTS = [false, true, false];
+const WHOP_TEST_CHECKOUT_URL = 'https://whop.com/atento-ai/test-atento/';
 
 const LIVE_TOASTS = [
   { name: 'Valentina G.', action: 'activó su bot',              city: 'Córdoba'      },
@@ -742,7 +743,7 @@ export default function LandingVolume() {
                         </li>
                       ))}
                     </ul>
-                    <button onClick={() => scrollTo('cta')} className={highlight ? 'btn-primary' : 'btn-ghost'} style={{ padding: '0.85rem', borderRadius: '10px', fontSize: '0.95rem', fontWeight: 700 }}>{p.cta}</button>
+                    <a href={WHOP_TEST_CHECKOUT_URL} className={highlight ? 'btn-primary' : 'btn-ghost'} style={{ padding: '0.85rem', borderRadius: '10px', fontSize: '0.95rem', fontWeight: 700, textAlign: 'center', textDecoration: 'none' }}>{p.cta}</a>
                   </div>
                 </FadeIn>
               );
