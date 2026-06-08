@@ -10,6 +10,7 @@ import {
   Clock,
   Database,
   ExternalLink,
+  HelpCircle,
   KeyRound,
   Lock,
   MessageCircle,
@@ -1596,6 +1597,7 @@ export default function MerchantPanel() {
   const [telegramBotToken, setTelegramBotToken] = useState('');
   const [telegramSaving, setTelegramSaving] = useState(false);
   const [telegramMsg, setTelegramMsg] = useState(null);
+  const [telegramHelpOpen, setTelegramHelpOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -2009,9 +2011,9 @@ export default function MerchantPanel() {
           />
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
             <input
-              className="modal-input" type="url" value={sheetsUrl}
+              className="modal-input" type="url" name="catalog_sheet_url" autoComplete="off" value={sheetsUrl}
               onChange={e => { setSheetsUrl(e.target.value); setImportMsg(null); }}
-              placeholder="https://docs.google.com/spreadsheets/d/..."
+              placeholder="Pega aca el enlace publico de Google Sheets"
               style={{ flex: 1, marginBottom: 0, background: 'var(--bg-card)' }}
             />
             <button onClick={importSheets} disabled={importing || !sheetsUrl.trim()} className="btn-solid-blue"
@@ -2119,11 +2121,43 @@ export default function MerchantPanel() {
             tone="cyan"
             title="Telegram Bot"
             desc="Conecta un bot de Telegram con el token de BotFather."
+            action={
+              <button
+                type="button"
+                onClick={() => setTelegramHelpOpen(v => !v)}
+                title="Ver instrucciones"
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '10px',
+                  border: '1px solid var(--border)',
+                  background: 'rgba(255,255,255,0.06)',
+                  color: 'var(--text-secondary)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <HelpCircle size={17} />
+              </button>
+            }
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {telegramHelpOpen && (
+              <div style={{ border: '1px solid rgba(34,211,238,0.25)', background: 'rgba(34,211,238,0.08)', borderRadius: '12px', padding: '0.85rem 1rem', color: 'var(--text-secondary)', fontSize: '0.84rem', lineHeight: 1.55 }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Como conectarlo:</strong>
+                <ol style={{ margin: '0.45rem 0 0', paddingLeft: '1.1rem' }}>
+                  <li>Abri Telegram y busca <strong>@BotFather</strong>.</li>
+                  <li>Envia <strong>/newbot</strong>, elegi nombre y usuario para el bot.</li>
+                  <li>Copia el token que te entrega BotFather.</li>
+                  <li>Pegalo aca y toca <strong>Guardar y conectar</strong>.</li>
+                </ol>
+              </div>
+            )}
             <div>
               <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Bot Token de Telegram</label>
-              <input className="modal-input" type="password" placeholder="123456789:AAH..." value={telegramBotToken} onChange={e => setTelegramBotToken(e.target.value)} style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
+              <input className="modal-input" type="password" name="telegram_bot_token" autoComplete="off" placeholder="Pega aca el token de BotFather" value={telegramBotToken} onChange={e => setTelegramBotToken(e.target.value)} style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
             </div>
             {telegramMsg && <p style={{ margin: '0.5rem 0 0', fontSize: '0.875rem', color: telegramMsg.ok ? '#10b981' : '#f87171' }}>{telegramMsg.text}</p>}
             <button onClick={saveTelegramConfig} disabled={telegramSaving} className="btn-solid-blue" style={{ marginTop: '0.5rem', width: 'auto', alignSelf: 'flex-start', padding: '0.6rem 1rem' }}>
@@ -2162,11 +2196,11 @@ export default function MerchantPanel() {
               <option value="51">PE +51</option>
               <option value="1">US +1</option>
             </select>
-            <input className="modal-input" type="tel" value={adminNumber} onChange={e => setAdminNumber(e.target.value)}
-              placeholder="Ej: 1156687137" style={{ flex: 1, marginBottom: 0, background: 'var(--bg-card)' }} />
+            <input className="modal-input" type="tel" name="admin_whatsapp_number" autoComplete="off" value={adminNumber} onChange={e => setAdminNumber(e.target.value)}
+              placeholder="Tu numero local sin prefijo" style={{ flex: 1, marginBottom: 0, background: 'var(--bg-card)' }} />
           </div>
           <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)', opacity: 0.7 }}>
-            Sin codigo de pais ni el 15. Ej: <strong>1156781234</strong>
+            Sin codigo de pais, sin espacios y sin el 15.
           </p>
           </PanelCard>
 
