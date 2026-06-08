@@ -2009,55 +2009,6 @@ export default function MerchantPanel() {
             </div>
           )}
 
-          {/* -- Integracin Meta (Instagram + Facebook) -- */}
-          <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-            <span style={{ fontSize: '1.1rem', color: '#e1306c' }}>•</span>
-            <h3 style={{ color: '#e1306c' }}>Integracion Instagram & Facebook</h3>
-          </div>
-          {metrics.hasSocialFeature ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'rgba(255,255,255,0.02)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-              {(metaPageId || metaIgId) ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '10px', padding: '0.75rem 1rem' }}>
-                  <span style={{ fontSize: '1.2rem' }}>•</span>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', color: '#10b981' }}>Cuenta conectada</p>
-                    {metaPageId && <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-secondary)' }}>Pagina: {metaPageId} {metaIgId && ` IG: ${metaIgId}`}</p>}
-                  </div>
-                  <button onClick={connectMeta} style={{ background: 'transparent', border: '1px solid #4b5563', borderRadius: '8px', color: '#9ca3af', cursor: 'pointer', padding: '0.4rem 0.75rem', fontSize: '0.8rem' }}>
-                    Reconectar
-                  </button>
-                </div>
-              ) : (
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>
-                  Conecta tu cuenta de Facebook para que la IA responda mensajes de Instagram y Facebook automaticamente.
-                </p>
-              )}
-              {metaMsg && <p style={{ margin: 0, fontSize: '0.875rem', color: metaMsg.ok ? '#10b981' : '#f87171' }}>{metaMsg.text}</p>}
-              {!metaPageId && !metaIgId && (
-                <button onClick={connectMeta} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: '#1877f2', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', padding: '0.75rem 1.25rem', fontSize: '0.95rem', fontWeight: 600, alignSelf: 'flex-start' }}>
-                  <span style={{ fontSize: '1.1rem' }}>f</span> Conectar con Facebook
-                </button>
-              )}
-            </div>
-          ) : (
-            <div style={{ background: 'linear-gradient(135deg, rgba(225,48,108,0.06), rgba(24,119,242,0.06))', border: '1px solid rgba(225,48,108,0.18)', borderRadius: '14px', padding: '1.25rem 1.5rem', display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
-              <span style={{ fontSize: '1.8rem', flexShrink: 0, lineHeight: 1, marginTop: '0.1rem' }}>•</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Instagram & Facebook DMs</span>
-                  <span style={{ background: 'linear-gradient(135deg,#e1306c,#1877f2)', color: '#fff', fontSize: '0.63rem', fontWeight: 700, padding: '2px 9px', borderRadius: 20, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>PREMIUM</span>
-                </div>
-                <p style={{ margin: '0 0 0.85rem', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                  Tu asistente puede responder mensajes de Instagram y Facebook Messenger con el mismo conocimiento y personalidad que en WhatsApp. Contacta con soporte para activarlo en tu plan.
-                </p>
-                <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(225,48,108,0.1)', border: '1px solid rgba(225,48,108,0.25)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', color: '#e1306c', fontWeight: 600 }}>Instagram DMs</span>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(24,119,242,0.1)', border: '1px solid rgba(24,119,242,0.25)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', color: '#1877f2', fontWeight: 600 }}>f Facebook Messenger</span>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* -- Integracin Telegram -- */}
           <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
             <span style={{ fontSize: '1.1rem', color: '#38bdf8' }}>•</span>
@@ -2144,6 +2095,28 @@ export default function MerchantPanel() {
                 </button>
               </div>
             )}
+          </div>
+
+          {/* -- Proximamente: Instagram + Facebook -- */}
+          <div className="prompt-header" style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+            <span style={{ fontSize: '1.1rem', color: '#e1306c' }}>•</span>
+            <h3 style={{ color: '#e1306c' }}>Instagram & Facebook</h3>
+          </div>
+          <div style={{ background: 'linear-gradient(135deg, rgba(225,48,108,0.05), rgba(24,119,242,0.05))', border: '1px dashed rgba(225,48,108,0.28)', borderRadius: '14px', padding: '1.25rem 1.5rem', display: 'flex', gap: '1rem', alignItems: 'flex-start', opacity: 0.82 }}>
+            <span style={{ fontSize: '1.5rem', flexShrink: 0, lineHeight: 1, marginTop: '0.05rem' }}>•</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Mensajes de Instagram y Facebook</span>
+                <span style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'var(--text-secondary)', fontSize: '0.63rem', fontWeight: 800, padding: '2px 9px', borderRadius: 20, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>PROXIMAMENTE</span>
+              </div>
+              <p style={{ margin: '0 0 0.85rem', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                Esta integracion estara disponible mas adelante para responder DMs de Instagram y Facebook Messenger desde el mismo asistente. Por ahora Atento opera con WhatsApp y Telegram.
+              </p>
+              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(225,48,108,0.1)', border: '1px solid rgba(225,48,108,0.22)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', color: '#e1306c', fontWeight: 600 }}>Instagram DMs</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(24,119,242,0.1)', border: '1px solid rgba(24,119,242,0.22)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', color: '#1877f2', fontWeight: 600 }}>Facebook Messenger</span>
+              </div>
+            </div>
           </div>
 
           </>)}
