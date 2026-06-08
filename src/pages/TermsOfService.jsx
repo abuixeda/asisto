@@ -67,11 +67,12 @@ export default function TermsOfService() {
           </Section>
 
           <Section title="4. Planes y facturación">
-            <p><strong style={{ color: C.text }}>Período de prueba:</strong> Todos los planes incluyen 7 días de prueba gratuita. No se requiere tarjeta de crédito para comenzar.</p>
-            <p><strong style={{ color: C.text }}>Facturación:</strong> Los planes se facturan mensualmente en USD. El cobro se realiza al inicio de cada período.</p>
-            <p><strong style={{ color: C.text }}>Límites de mensajes:</strong> Los planes Starter y Pro tienen un límite mensual de mensajes. Si superás el límite, te notificaremos antes de interrumpir el servicio. El plan Business incluye mensajes ilimitados.</p>
+            <p><strong style={{ color: C.text }}>Período de prueba:</strong> Todos los planes pagos incluyen 7 días de prueba gratuita. Para iniciar la prueba puede requerirse tarjeta o método de pago válido mediante nuestro procesador de pagos.</p>
+            <p><strong style={{ color: C.text }}>Facturación:</strong> La facturación comienza automáticamente al finalizar el período de prueba, salvo que canceles antes. Los planes se facturan mensualmente en USD y se cobran al inicio de cada período.</p>
+            <p><strong style={{ color: C.text }}>Cancelación durante la prueba:</strong> Podés cancelar antes de que finalicen los 7 días de prueba para evitar el primer cobro.</p>
+            <p><strong style={{ color: C.text }}>Límites de mensajes:</strong> Los planes Starter y Growth tienen un límite mensual de mensajes. Si superás el límite, te notificaremos antes de interrumpir el servicio. El plan Scale incluye mensajes ilimitados según las condiciones comerciales vigentes.</p>
             <p><strong style={{ color: C.text }}>Cambios de plan:</strong> Podés cambiar de plan en cualquier momento desde tu panel. Los cambios se aplican de forma inmediata con ajuste proporcional.</p>
-            <p><strong style={{ color: C.text }}>Reembolsos:</strong> No ofrecemos reembolsos por períodos ya facturados, salvo falla técnica imputable a Atento AI que haya impedido el uso del servicio por más de 48 horas continuas.</p>
+            <p><strong style={{ color: C.text }}>Reembolsos:</strong> Una vez finalizada la prueba gratuita y procesado el cobro del plan, no ofrecemos reembolsos por períodos ya facturados. Las excepciones aplican únicamente cuando lo exija la ley, exista un cobro duplicado o error de procesamiento comprobado, o una falla técnica imputable a Atento AI impida el uso sustancial del servicio por más de 48 horas continuas.</p>
           </Section>
 
           <Section title="5. Uso aceptable">
@@ -115,14 +116,14 @@ export default function TermsOfService() {
           </Section>
 
           <Section title="9. Cancelación">
-            <p><strong style={{ color: C.text }}>Por tu parte:</strong> Podés cancelar en cualquier momento desde tu panel de control. La cancelación es efectiva al final del período ya abonado. No hay penalidades ni períodos mínimos de permanencia.</p>
+            <p><strong style={{ color: C.text }}>Por tu parte:</strong> Podés cancelar en cualquier momento desde tu panel de control. La cancelación evita futuras renovaciones, pero no genera reembolso del período ya abonado. No hay penalidades ni períodos mínimos de permanencia.</p>
             <p><strong style={{ color: C.text }}>Por nuestra parte:</strong> Podemos suspender o cancelar tu cuenta si:</p>
             <ul>
               <li>Incumplís estos Términos</li>
               <li>No se procesa el pago luego de 7 días de gracia</li>
               <li>Detectamos uso fraudulento o actividad que ponga en riesgo la plataforma</li>
             </ul>
-            <p>En caso de cancelación por nuestra parte por causas no imputables a vos, reembolsaremos el proporcional del período no utilizado.</p>
+            <p>En caso de cancelación por nuestra parte por causas no imputables a vos, podremos otorgar un crédito, extensión de servicio o reembolso proporcional del período no utilizado, según corresponda y conforme a la normativa aplicable.</p>
           </Section>
 
           <Section title="10. Limitación de responsabilidad">
