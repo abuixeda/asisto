@@ -1721,6 +1721,17 @@ export default function MerchantPanel() {
 
   const metrics = (() => { try { return JSON.parse(bot.metrics || '{}'); } catch { return {}; } })();
   const isOn = bot.status === 'ON';
+  const planLimits = { starter: 1500, growth: 5000, scale: null };
+  const usage = bot.usage || {
+    plan: bot.plan || 'starter',
+    used: bot.monthlyMessages || 0,
+    limit: planLimits[bot.plan || 'starter'] ?? 1500,
+    unlimited: (bot.plan || 'starter') === 'scale'
+  };
+  const usageLimit = usage.limit;
+  const usageUsed = usage.used || 0;
+  const usagePct = usageLimit ? Math.min(100, Math.round((usageUsed / usageLimit) * 100)) : 0;
+  const planName = (usage.plan || 'starter').charAt(0).toUpperCase() + (usage.plan || 'starter').slice(1);
 
   const expandedValue = expandedField === 'prompt' ? prompt : knowledgeBase;
   const expandedSetter = expandedField === 'prompt' ? setPrompt : setKnowledgeBase;
@@ -1855,6 +1866,31 @@ export default function MerchantPanel() {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.035)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.9rem 1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: usageLimit ? '0.65rem' : 0 }}>
+              <div>
+                <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Uso del plan</p>
+                <p style={{ margin: '0.2rem 0 0', fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: 800 }}>Plan {planName}</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-primary)', fontWeight: 800 }}>
+                  {usageLimit ? `${usageUsed.toLocaleString()} / ${usageLimit.toLocaleString()}` : `${usageUsed.toLocaleString()} / ilimitados`}
+                </p>
+                <p style={{ margin: '0.15rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>mensajes este mes</p>
+              </div>
+            </div>
+            {usageLimit && (
+              <>
+                <div style={{ height: '8px', borderRadius: '999px', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                  <div style={{ width: `${usagePct}%`, height: '100%', borderRadius: '999px', background: usagePct >= 90 ? '#f87171' : usagePct >= 75 ? '#f59e0b' : 'linear-gradient(90deg,#7c3aed,#06b6d4)' }} />
+                </div>
+                <p style={{ margin: '0.55rem 0 0', fontSize: '0.78rem', color: usagePct >= 90 ? '#f87171' : 'var(--text-secondary)' }}>
+                  {Math.max(0, usageLimit - usageUsed).toLocaleString()} mensajes disponibles hasta el proximo reinicio.
+                </p>
+              </>
+            )}
           </div>
 
           {/* QR */}
