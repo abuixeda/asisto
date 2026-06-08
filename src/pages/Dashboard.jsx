@@ -777,8 +777,8 @@ function AdminCampaignsPanel({ bots }) {
                         <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>
                           Link de Google Sheets <span style={{ opacity: 0.6 }}>(debe ser público — "cualquiera con el link puede ver")</span>
                         </label>
-                        <input className="modal-input" value={sheetsUrl} onChange={e => setSheetsUrl(e.target.value)}
-                          placeholder="https://docs.google.com/spreadsheets/d/..." style={{ marginBottom: '0.4rem', background: 'var(--surface-2)' }} />
+                        <input className="modal-input" name="campaign_sheet_url" autoComplete="off" value={sheetsUrl} onChange={e => setSheetsUrl(e.target.value)}
+                          placeholder="Pega aca el enlace publico de Google Sheets" style={{ marginBottom: '0.4rem', background: 'var(--surface-2)' }} />
                         <p style={{ margin: '0 0 0.6rem', fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                           Columnas esperadas: <strong>teléfono, nombre, negocio, ciudad, url</strong>. La columna <strong>url</strong> puede ser el sitio web o Google Maps — la IA lo analiza antes de escribir el mensaje.
                         </p>
@@ -2932,7 +2932,7 @@ function Dashboard() {
                       <option value="34">🇪🇸 +34</option>
                       <option value="1">🇺🇸 +1</option>
                     </select>
-                    <input className="modal-input" placeholder="Ej: 1156687137" style={{flex:1}} value={adminPhoneToVerify[bot.id] || ''} onChange={e => setAdminPhoneToVerify({...adminPhoneToVerify, [bot.id]: e.target.value})} />
+                    <input className="modal-input" name="admin_whatsapp_number" autoComplete="off" placeholder="Numero local sin prefijo" style={{flex:1}} value={adminPhoneToVerify[bot.id] || ''} onChange={e => setAdminPhoneToVerify({...adminPhoneToVerify, [bot.id]: e.target.value})} />
                     <button className="btn-solid-blue" style={{background:'#7c3aed', width:'auto', padding:'0.6rem 1rem', marginTop:0}} onClick={() => handleSendMFA(bot.id)}>Validar Nro</button>
                   </div>
                   {isVerifyingMFA[bot.id] && (

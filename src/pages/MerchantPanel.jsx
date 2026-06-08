@@ -355,8 +355,8 @@ function CampaignPanel({ botId, token, api }) {
                   <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>
                     Link de Google Sheets <span style={{ opacity: 0.6 }}>(debe ser pblico  "cualquiera con el link puede ver")</span>
                   </label>
-                  <input className="modal-input" value={sheetsUrl} onChange={e => setSheetsUrl(e.target.value)}
-                    placeholder="https://docs.google.com/spreadsheets/d/..." style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
+                  <input className="modal-input" name="campaign_sheet_url" autoComplete="off" value={sheetsUrl} onChange={e => setSheetsUrl(e.target.value)}
+                    placeholder="Pega aca el enlace publico de Google Sheets" style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
                   <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                     Columnas recomendadas: <strong>telefono, nombre, negocio, ciudad, url</strong> (con o sin encabezados). La columna <strong>url</strong> puede ser el sitio web o link de Google Maps del negocio  la IA lo analizar antes de escribir el mensaje.
                   </p>
