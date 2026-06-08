@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const API = 'https://asisto-backend-production.up.railway.app';
@@ -15,6 +15,10 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+
+  useEffect(() => {
+    if (selectedPlan) localStorage.setItem('atento_selected_plan', selectedPlan);
+  }, [selectedPlan]);
 
   async function handleRegister(e) {
     e.preventDefault();
@@ -40,7 +44,12 @@ export default function Register() {
       localStorage.setItem('merchant_token', data.token);
       localStorage.setItem('merchant_bot_id', data.botId);
       localStorage.setItem('atento_token', data.token);
+      if (data.user) localStorage.setItem('atento_user', JSON.stringify(data.user));
       if (data.whopPaymentApplied) localStorage.setItem('atento_payment_confirmed', 'whop');
+      if (selectedPlan) {
+        nav(`/mi-panel?checkout=${selectedPlan}`);
+        return;
+      }
       setStep(2);
     } catch (err) {
       console.error('[Register] fetch error:', err, '| API URL:', API);
@@ -130,7 +139,7 @@ export default function Register() {
             </form>
 
             <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              Ya tenes cuenta? <a href={cameFromPayment ? '/login?payment=success' : '/login'} style={{ color: 'var(--accent)', textDecoration: 'none' }}>Ingresar</a>
+              Ya tenes cuenta? <a href={cameFromPayment ? '/login?payment=success' : selectedPlan ? `/login?plan=${selectedPlan}` : '/login'} style={{ color: 'var(--accent)', textDecoration: 'none' }}>Ingresar</a>
             </p>
           </>
         )}

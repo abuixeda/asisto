@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const API = 'https://asisto-backend-production.up.railway.app';
@@ -6,11 +6,16 @@ const API = 'https://asisto-backend-production.up.railway.app';
 export default function Login() {
   const [params] = useSearchParams();
   const cameFromPayment = params.get('payment') === 'success';
+  const selectedPlan = params.get('plan');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+
+  useEffect(() => {
+    if (selectedPlan) localStorage.setItem('atento_selected_plan', selectedPlan);
+  }, [selectedPlan]);
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -33,7 +38,7 @@ export default function Login() {
       if (data.user.role === 'admin') {
         nav('/admin');
       } else {
-        nav(data.whopPaymentApplied ? '/mi-panel?payment=success' : '/mi-panel');
+        nav(data.whopPaymentApplied ? '/mi-panel?payment=success' : selectedPlan ? `/mi-panel?checkout=${selectedPlan}` : '/mi-panel');
       }
     } catch {
       setError('No se pudo conectar con el servidor.');

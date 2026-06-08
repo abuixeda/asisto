@@ -5,11 +5,122 @@ import { Moon, Sun } from 'lucide-react';
 
 const API = 'https://asisto-backend-production.up.railway.app';
 
+const WHOP_PLAN_IDS = {
+  test: 'plan_IGDxDefJVieN5',
+  starter: 'plan_v5NUICSwihOKZ',
+  growth: 'plan_074m3NxwBdu3r',
+  scale: 'plan_b3RCl3tcxlikv',
+};
+
+const PAYMENT_PLANS = [
+  { key: 'test', name: 'TEST ATENTO', price: 'USD 1', desc: 'Producto temporal para probar la pasarela.', features: ['Pago de prueba', 'Activacion por webhook', 'Checkout embebido'] },
+  { key: 'starter', name: 'Starter', price: 'USD 59/mes', desc: 'Para empezar con un asistente en WhatsApp.', features: ['1.500 mensajes/mes', 'WhatsApp + Telegram', 'Catalogo sincronizado'] },
+  { key: 'growth', name: 'Growth', price: 'USD 99/mes', desc: 'Para negocios con mas volumen y automatizaciones.', features: ['5.000 mensajes/mes', 'Horario anti-nocturno', 'Base de conocimiento avanzada'] },
+  { key: 'scale', name: 'Scale', price: 'USD 179/mes', desc: 'Para operar con mas capacidad y soporte directo.', features: ['Mensajes ilimitados', '2 bots independientes', 'Soporte directo por WhatsApp'] },
+];
+
 function authFetch(url, options = {}, token) {
   return fetch(url, {
     ...options,
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...options.headers }
   });
+}
+
+function WhopCheckoutModal({ checkout, userEmail, onClose }) {
+  useEffect(() => {
+    if (!checkout) return;
+    const existing = document.getElementById('whop-checkout-loader');
+    existing?.remove();
+    const script = document.createElement('script');
+    script.id = 'whop-checkout-loader';
+    script.src = 'https://js.whop.com/static/checkout/loader.js';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+  }, [checkout]);
+
+  if (!checkout) return null;
+
+  const returnUrl = `${window.location.origin}/mi-panel?payment=success`;
+
+  return (
+    <div role="dialog" aria-modal="true" style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(3,7,18,0.82)', backdropFilter: 'blur(12px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+      <div style={{ width: 'min(100%, 860px)', maxHeight: '92vh', overflow: 'auto', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '18px', boxShadow: '0 30px 90px rgba(0,0,0,0.55)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', padding: '1rem 1.2rem', borderBottom: '1px solid var(--border)' }}>
+          <div>
+            <div style={{ color: 'var(--text-primary)', fontWeight: 900, fontSize: '1.05rem' }}>Finalizar compra en Atento</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: '0.12rem' }}>{checkout.name} · pago seguro procesado por Whop</div>
+          </div>
+          <button onClick={onClose} aria-label="Cerrar checkout" style={{ width: 38, height: 38, borderRadius: '10px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.05)', color: 'var(--text-primary)', cursor: 'pointer' }}>x</button>
+        </div>
+        <div style={{ margin: '1rem 1.2rem 0', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', borderRadius: '12px', padding: '0.85rem 1rem', color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.5 }}>
+          Para acreditar el pago automaticamente, usa en Whop el mismo email de tu cuenta Atento: <strong style={{ color: 'var(--text-primary)' }}>{userEmail || 'tu email de Atento'}</strong>.
+        </div>
+        <div style={{ padding: '1.2rem', minHeight: '520px' }}>
+          <div
+            key={checkout.planId}
+            data-whop-checkout-plan-id={checkout.planId}
+            data-whop-checkout-return-url={returnUrl}
+            data-whop-checkout-theme="dark"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BillingPanel({ bot, token, onCheckout }) {
+  const [subscription, setSubscription] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await authFetch(`${API}/api/payments/subscription`, {}, token);
+        const data = await res.json();
+        if (!cancelled) setSubscription(data);
+      } catch {
+        if (!cancelled) setSubscription(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [token]);
+
+  const active = subscription?.billingStatus === 'active' || bot?.billingStatus === 'active';
+  const currentPlan = subscription?.plan || bot?.plan;
+
+  return (
+    <div>
+      <div style={{ background: active ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', border: `1px solid ${active ? 'rgba(16,185,129,0.25)' : 'rgba(245,158,11,0.25)'}`, borderRadius: '14px', padding: '1rem 1.25rem', marginBottom: '1.25rem' }}>
+        <div style={{ color: active ? '#10b981' : '#f59e0b', fontWeight: 800, marginBottom: '0.25rem' }}>{active ? 'Plan activo' : 'Activacion pendiente'}</div>
+        <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          {active ? `Tu cuenta esta activa${currentPlan ? ` en el plan ${currentPlan}` : ''}.` : 'Elegí un plan para activar tu asistente. El pago se abre dentro de Atento.'}
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1rem' }}>
+        {PAYMENT_PLANS.map(plan => (
+          <div key={plan.key} style={{ background: 'var(--card-bg)', border: `1px solid ${currentPlan === plan.key ? '#10b981' : 'var(--border)'}`, borderRadius: '14px', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+            <div>
+              <div style={{ fontWeight: 900, fontSize: '1.05rem', color: 'var(--text-primary)' }}>{plan.name}</div>
+              <div style={{ fontWeight: 800, fontSize: '1.3rem', color: 'var(--accent)', marginTop: '0.25rem' }}>{plan.price}</div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.55, margin: '0.5rem 0 0' }}>{plan.desc}</p>
+            </div>
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.35rem', color: 'var(--text-secondary)', fontSize: '0.82rem', flex: 1 }}>
+              {plan.features.map(feature => <li key={feature}>✓ {feature}</li>)}
+            </ul>
+            <button className="btn-solid-blue" disabled={loading} onClick={() => onCheckout({ ...plan, planId: WHOP_PLAN_IDS[plan.key] })} style={{ marginTop: '0.25rem', padding: '0.75rem', fontSize: '0.9rem' }}>
+              {currentPlan === plan.key && active ? 'Plan actual' : 'Pagar dentro de Atento'}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // --- CampaignPanel ------------------------------------------------------------
@@ -1481,6 +1592,9 @@ export default function MerchantPanel() {
   const nav = useNavigate();
   const token = localStorage.getItem('merchant_token');
   const botId = localStorage.getItem('merchant_bot_id');
+  const storedUser = (() => {
+    try { return JSON.parse(localStorage.getItem('atento_user') || '{}'); } catch { return {}; }
+  })();
 
   const [bot, setBot] = useState(null);
   const [prompt, setPrompt] = useState('');
@@ -1502,7 +1616,9 @@ export default function MerchantPanel() {
   const [pwOpen, setPwOpen] = useState(false);
   const [expandedField, setExpandedField] = useState(null); // 'prompt' | 'kb'
   const [responseDelay, setResponseDelay] = useState(2.5);
-  const [activeTab, setActiveTab] = useState('config'); // 'config' | 'campaigns'
+  const [activeTab, setActiveTab] = useState('config'); // 'config' | 'campaigns' | 'turnos' | 'billing'
+  const [checkout, setCheckout] = useState(null);
+  const [paymentMsg, setPaymentMsg] = useState(null);
   const [showTour, setShowTour] = useState(() => !localStorage.getItem('atento_tour_done'));
   const [showPreview, setShowPreview] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('atento_theme') || 'dark');
@@ -1537,6 +1653,24 @@ export default function MerchantPanel() {
       const msgs = { acceso_denegado: 'Cancelaste el acceso.', sesion_expirada: 'La sesion expiro, intenta de nuevo.', sin_paginas: 'No se encontraron paginas de Facebook en tu cuenta.', error_interno: 'Error interno, contacta soporte.' };
       setMetaMsg({ ok: false, text: `? ${msgs[err] || err}` });
       window.history.replaceState({}, '', '/mi-panel');
+    } else if (params.get('payment') === 'success') {
+      setPaymentMsg({ ok: true, text: 'Pago recibido. Si usaste el mismo email de Atento en Whop, tu plan se activara automaticamente en unos segundos.' });
+      setActiveTab('billing');
+      window.history.replaceState({}, '', '/mi-panel');
+    } else if (params.get('checkout')) {
+      const planKey = params.get('checkout');
+      const plan = PAYMENT_PLANS.find(p => p.key === planKey);
+      if (plan && WHOP_PLAN_IDS[plan.key]) {
+        setActiveTab('billing');
+        setCheckout({ ...plan, planId: WHOP_PLAN_IDS[plan.key] });
+      }
+      window.history.replaceState({}, '', '/mi-panel');
+    } else {
+      const storedPlan = localStorage.getItem('atento_selected_plan');
+      const plan = PAYMENT_PLANS.find(p => p.key === storedPlan);
+      if (plan && WHOP_PLAN_IDS[plan.key]) {
+        setActiveTab('billing');
+      }
     }
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, []);
@@ -1738,6 +1872,7 @@ export default function MerchantPanel() {
     <>
       {showTour && <TourOverlay steps={TOUR_STEPS} onFinish={() => setShowTour(false)} setActiveTab={setActiveTab} />}
       {showPreview && <BotPreviewChat botId={botId} token={token} botName={bot?.name} currentPrompt={prompt} currentKB={knowledgeBase} onClose={() => setShowPreview(false)} />}
+      <WhopCheckoutModal checkout={checkout} userEmail={storedUser.email} onClose={() => setCheckout(null)} />
 
       {/* Modal expandido */}
       {expandedField && (
@@ -1766,6 +1901,7 @@ export default function MerchantPanel() {
           <nav className="sidebar-nav" id="tour-tabs">
             <span className="sidebar-nav-section">Principal</span>
             <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => setActiveTab('config')}>Configuracion</div>
+            <div className={`sidebar-nav-item${activeTab === 'billing' ? ' active' : ''}`} onClick={() => setActiveTab('billing')}>Plan y pagos</div>
             <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => setActiveTab('campaigns')}>Campanas</div>
             <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => setActiveTab('turnos')}>Turnos</div>
           </nav>
@@ -1796,6 +1932,16 @@ export default function MerchantPanel() {
           <div style={{ padding: '1.75rem 2rem' }}>
             {activeTab === 'campaigns' && <div id="tour-campaigns-area"><CampaignPanel botId={botId} token={token} api={API} /></div>}
             {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} /></div>}
+            {activeTab === 'billing' && (
+              <div>
+                {paymentMsg && (
+                  <div style={{ background: paymentMsg.ok ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${paymentMsg.ok ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}`, borderRadius: '14px', padding: '1rem 1.25rem', marginBottom: '1.25rem', color: paymentMsg.ok ? '#10b981' : '#ef4444', fontWeight: 700 }}>
+                    {paymentMsg.text}
+                  </div>
+                )}
+                <BillingPanel bot={bot} token={token} onCheckout={(plan) => { localStorage.setItem('atento_selected_plan', plan.key); setCheckout(plan); }} />
+              </div>
+            )}
 
           {activeTab === 'config' && (<>
 
