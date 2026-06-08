@@ -466,7 +466,7 @@ function CampaignPanel({ botId, token, api }) {
   );
 }
 // --- BotPreviewChat -----------------------------------------------------------
-function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClose }) {
+function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClose, embedded = false }) {
   const [messages, setMessages] = useState([
     { role: 'model', text: 'Hola! Soy el asistente virtual. En que te puedo ayudar?' }
   ]);
@@ -505,15 +505,24 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
 
   return (
     <div style={{
-      position: 'fixed', top: 0, right: 0, bottom: 0, width: '340px',
-      zIndex: 9998, display: 'flex', flexDirection: 'column',
-      filter: 'drop-shadow(-8px 0 32px rgba(0,0,0,0.5))',
+      position: embedded ? 'relative' : 'fixed',
+      top: embedded ? 'auto' : 0,
+      right: embedded ? 'auto' : 0,
+      bottom: embedded ? 'auto' : 0,
+      width: embedded ? '100%' : '340px',
+      maxWidth: embedded ? '460px' : 'none',
+      height: embedded ? '520px' : 'auto',
+      zIndex: embedded ? 'auto' : 9998,
+      display: 'flex',
+      flexDirection: 'column',
+      filter: embedded ? 'none' : 'drop-shadow(-8px 0 32px rgba(0,0,0,0.5))',
+      margin: embedded ? '0 auto' : 0,
     }}>
       {/* Phone frame */}
       <div style={{
-        margin: '16px 16px 16px 0',
+        margin: embedded ? 0 : '16px 16px 16px 0',
         flex: 1, display: 'flex', flexDirection: 'column',
-        background: '#111b21', borderRadius: '36px',
+        background: '#111b21', borderRadius: embedded ? '24px' : '36px',
         border: '8px solid #1a1a2e', overflow: 'hidden',
         boxShadow: '0 0 0 2px #0d0f18',
       }}>
@@ -524,7 +533,7 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
 
         {/* WA Header */}
         <div style={{ background: '#1f2c34', padding: '8px 14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#aebac1', cursor: 'pointer', fontSize: '1.1rem', padding: 0, lineHeight: 1 }}>Cerrar</button>
+          {!embedded && <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#aebac1', cursor: 'pointer', fontSize: '1.1rem', padding: 0, lineHeight: 1 }}>Cerrar</button>}
           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: '0.9rem', flexShrink: 0 }}>
             {(botName || 'B').charAt(0).toUpperCase()}
           </div>
@@ -580,12 +589,12 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
               padding: '8px 14px', color: '#e9edef', fontSize: '0.82rem', outline: 'none',
             }}
           />
-          <button onClick={sendMessage} disabled={loading || !input.trim()} style={{
+          <button onClick={sendMessage} disabled={loading || !input.trim()} title="Enviar mensaje" style={{
             width: '36px', height: '36px', borderRadius: '50%', border: 'none',
             background: loading || !input.trim() ? '#2a3942' : '#00a884',
             color: '#fff', cursor: loading || !input.trim() ? 'default' : 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0,
-          }}>Cerrar</button>
+          }}><Send size={16} /></button>
         </div>
 
         {/* Home bar */}
@@ -1584,8 +1593,8 @@ export default function MerchantPanel() {
   const [responseDelay, setResponseDelay] = useState(2.5);
   const [activeTab, setActiveTab] = useState('config'); // 'config' | 'campaigns'
   const [showTour, setShowTour] = useState(() => !localStorage.getItem('atento_tour_done'));
-  const [showPreview, setShowPreview] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('atento_theme') || 'dark');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const pollRef = useRef(null);
 
   // Meta Config (Instagram/Facebook)
@@ -1829,7 +1838,6 @@ export default function MerchantPanel() {
   return (
     <>
       {showTour && <TourOverlay steps={TOUR_STEPS} onFinish={() => setShowTour(false)} setActiveTab={setActiveTab} />}
-      {showPreview && <BotPreviewChat botId={botId} token={token} botName={bot?.name} currentPrompt={prompt} currentKB={knowledgeBase} onClose={() => setShowPreview(false)} />}
 
       {/* Modal expandido */}
       {expandedField && (
@@ -1849,17 +1857,18 @@ export default function MerchantPanel() {
         </div>
       )}
       <div className="app-shell">
+        <div className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`} onClick={() => setSidebarOpen(false)} />
         {/* -- Sidebar -- */}
-        <aside className="sidebar">
+        <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
           <div className="sidebar-logo">
             <div className="sidebar-logo-icon"><img src="/atento-logo.png" alt="Atento AI" /></div>
             Atento AI
           </div>
           <nav className="sidebar-nav" id="tour-tabs">
             <span className="sidebar-nav-section">Principal</span>
-            <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => setActiveTab('config')}><Settings size={16} /> Configuracion</div>
-            <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => setActiveTab('campaigns')}><Send size={16} /> Campanas</div>
-            <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => setActiveTab('turnos')}><CalendarClock size={16} /> Turnos</div>
+            <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => { setActiveTab('config'); setSidebarOpen(false); }}><Settings size={16} /> Configuracion</div>
+            <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => { setActiveTab('campaigns'); setSidebarOpen(false); }}><Send size={16} /> Campanas</div>
+            <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => { setActiveTab('turnos'); setSidebarOpen(false); }}><CalendarClock size={16} /> Turnos</div>
           </nav>
           <div className="sidebar-footer">
             <div className="sidebar-user">
@@ -1885,7 +1894,14 @@ export default function MerchantPanel() {
 
         {/* -- Main -- */}
         <main className="main-content" style={{ overflow: 'auto' }}>
-          <div style={{ padding: '1.75rem 2rem' }}>
+          <div style={{ padding: 'clamp(1rem, 3vw, 2rem)' }}>
+            <button className="hamburger-btn" onClick={() => setSidebarOpen(o => !o)} aria-label="Menu" style={{ marginBottom: '1rem' }}>
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="2" y1="4.5" x2="16" y2="4.5" />
+                <line x1="2" y1="9" x2="16" y2="9" />
+                <line x1="2" y1="13.5" x2="16" y2="13.5" />
+              </svg>
+            </button>
             {activeTab === 'campaigns' && <div id="tour-campaigns-area"><CampaignPanel botId={botId} token={token} api={API} /></div>}
             {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} /></div>}
 
@@ -1910,9 +1926,6 @@ export default function MerchantPanel() {
                 </div>
               </div>
               <div id="tour-status" style={{ display: 'flex', gap: '0.65rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                <button onClick={() => setShowPreview(p => !p)} style={{ padding: '0.65rem 0.95rem', borderRadius: '9px', border: '1px solid #00a884', background: showPreview ? '#00a884' : 'transparent', color: showPreview ? '#fff' : '#00a884', cursor: 'pointer', fontSize: '0.84rem', fontWeight: 750, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-                  <TestTube2 size={16} /> {showPreview ? 'Cerrar preview' : 'Probar asistente'}
-                </button>
                 {isOn ? (
                   <>
                     <button onClick={stopBot} style={{ padding: '0.65rem 0.95rem', borderRadius: '9px', border: '1px solid rgba(239,68,68,0.55)', background: 'rgba(239,68,68,0.08)', color: '#f87171', cursor: 'pointer', fontSize: '0.84rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
@@ -2053,6 +2066,23 @@ export default function MerchantPanel() {
             value={knowledgeBase} onChange={e => setKnowledgeBase(e.target.value)}
             placeholder={`Organiza la info por secciones para que la IA solo lea lo relevante en cada pregunta:\n\n[ENVIO]\nEnvios en 24-48hs. Costo fijo $2.000 a todo el pais.\n\n[PAGOS]\nEfectivo, transferencia (10% OFF) o tarjeta hasta 6 cuotas.\n\n[UBICACION]\nAv. Corrientes 1234, CABA. Lun-Sab 9 a 20hs.\n\n[GARANTIA]\n30 dias para cambios sin cargo.`}
           />
+          </PanelCard>
+
+          <PanelCard id="tour-preview-area">
+            <SectionHeader
+              icon={<TestTube2 size={18} />}
+              tone="cyan"
+              title="Probar asistente"
+              desc="Simula una conversacion real con el conocimiento y la personalidad que acabas de configurar."
+            />
+            <BotPreviewChat
+              botId={botId}
+              token={token}
+              botName={bot?.name}
+              currentPrompt={prompt}
+              currentKB={knowledgeBase}
+              embedded
+            />
           </PanelCard>
 
           </div>
