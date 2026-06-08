@@ -721,6 +721,16 @@ export default function LandingVolume() {
             <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.7rem)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '0.6rem' }}>{t('pricing.title')} <GradText>{t('pricing.titleHighlight')}</GradText></h2>
             <p style={{ color: C.textSec, fontSize: '1.05rem' }}>{t('pricing.trialInfo')}</p>
           </FadeIn>
+          <FadeIn delay={0.03} style={{ margin: '-1.5rem auto 2rem', maxWidth: '560px' }}>
+            <div style={{ background: 'rgba(0,212,255,0.06)', border: `1px solid ${C.cyan}`, borderRadius: '14px', padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ color: C.cyan, fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>TEST ATENTO</div>
+                <div style={{ color: C.text, fontWeight: 800, fontSize: '1.25rem' }}>USD 1</div>
+                <div style={{ color: C.textSec, fontSize: '0.84rem', marginTop: '0.15rem' }}>Producto temporal para probar la pasarela de pagos.</div>
+              </div>
+              <a href={WHOP_TEST_CHECKOUT_URL} className="btn-primary" style={{ padding: '0.75rem 1.1rem', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 800, textAlign: 'center', textDecoration: 'none', whiteSpace: 'nowrap' }}>Probar pago</a>
+            </div>
+          </FadeIn>
           <div className="plan-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(265px,1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
             {plans.map((p, i) => {
               const highlight = PLAN_HIGHLIGHTS[i] || false;
