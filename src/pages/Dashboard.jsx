@@ -198,7 +198,7 @@ const LS_PLANS = [
     variantId: import.meta.env.VITE_LS_VARIANT_SCALE || '',
     name: 'Plan Scale', price: '$179', currency: 'USD', period: 'mes',
     key: 'scale',
-    features: ['Todo lo de Growth', 'Mensajes ilimitados', 'Instagram DMs', 'Soporte directo WhatsApp', 'Multi-idioma'],
+    features: ['Todo lo de Growth', '20.000 mensajes/mes', 'Instagram DMs', 'Soporte directo WhatsApp', 'Multi-idioma'],
   },
 ];
 

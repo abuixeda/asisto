@@ -1721,7 +1721,7 @@ export default function MerchantPanel() {
 
   const metrics = (() => { try { return JSON.parse(bot.metrics || '{}'); } catch { return {}; } })();
   const isOn = bot.status === 'ON';
-  const planLimits = { starter: 1500, growth: 5000, scale: null };
+  const planLimits = { starter: 1500, growth: 5000, scale: 20000 };
   const usage = bot.usage || {
     plan: bot.plan || 'starter',
     used: bot.monthlyMessages || 0,

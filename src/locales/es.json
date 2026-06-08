@@ -29,7 +29,7 @@
     "placeholder": "Escribí tu consulta...",
     "greeting": "¡Hola! Soy Atento, el asistente virtual de Atento AI. Preguntame cómo funciono, los precios o cómo podés probarme gratis 🚀",
     "responses": {
-      "price": "Tenemos 3 planes: Starter ($59/mes, 1.500 mensajes), Growth ($99/mes, 5.000 mensajes) y Scale ($179/mes, ilimitado + 2 bots). ¡Todos incluyen 7 días de prueba gratis! ¿Te gustaría saber qué incluye cada uno?",
+      "price": "Tenemos 3 planes: Starter ($59/mes, 1.500 mensajes), Growth ($99/mes, 5.000 mensajes) y Scale ($179/mes, 20.000 mensajes + 2 bots). ¡Todos incluyen 7 días de prueba gratis! ¿Te gustaría saber qué incluye cada uno?",
       "how": "Me conecto a tu WhatsApp y respondo automáticamente a tus clientes las 24 horas. Aprendo de tu negocio para responder como si fueras vos. 😎",
       "features": "Puedo contestar dudas, leer catálogos en tiempo real, agendar citas y hasta cerrar ventas mientras vos dormís.",
       "setup": "Es súper fácil: te creás la cuenta, escaneás un código QR con tu WhatsApp y listo, ¡ya estoy funcionando en 5 minutos! ⏱️",
@@ -111,7 +111,7 @@
     "plans": [
       { "name": "Starter", "price": 59, "oldPrice": 99, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["1.500 mensajes/mes", "WhatsApp + Telegram", "Catálogo sincronizado", "Panel de control", "Soporte por email"], "cta": "Empezar gratis" },
       { "name": "Growth", "price": 99, "oldPrice": 150, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["5.000 mensajes/mes", "WhatsApp + Telegram", "Instagram (próx.) + Facebook (próx.)", "Horario anti-nocturno", "Base de conocimientos avanzada"], "cta": "Empezar gratis" },
-      { "name": "Scale", "price": 179, "oldPrice": 220, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["Mensajes ilimitados", "Todos los canales", "2 bots independientes", "Soporte directo WhatsApp", "Multi-idioma"], "cta": "Empezar gratis" }
+      { "name": "Scale", "price": 179, "oldPrice": 220, "desc": "Precio lanzamiento. Congelado de por vida.", "features": ["20.000 mensajes/mes", "Todos los canales", "2 bots independientes", "Soporte directo WhatsApp", "Multi-idioma"], "cta": "Empezar gratis" }
     ]
   },
   "faq": {

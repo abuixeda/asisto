@@ -600,7 +600,7 @@ function ShopifyPanel() {
   const statusColors = { confirmed: '#10b981', completed: '#3b82f6', cancelled: '#ef4444' };
   const statusLabels = { confirmed: 'Confirmado', completed: 'Completado', cancelled: 'Cancelado' };
 
-  const planLimits = { starter: 1500, growth: 5000, scale: null };
+  const planLimits = { starter: 1500, growth: 5000, scale: 20000 };
   const planLimit = planLimits[bot?.plan] ?? 1500;
   const msgUsed = bot?.monthlyMessages || 0;
   const msgPct = planLimit ? Math.min(100, Math.round((msgUsed / planLimit) * 100)) : 0;
