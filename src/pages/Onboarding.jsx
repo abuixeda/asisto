@@ -6,45 +6,59 @@ const API = 'https://asisto-backend-production.up.railway.app';
 
 const SLIDES = [
   {
-    icon: '??',
+    icon: 'AI',
     color: '#7c3aed',
-    title: 'Bienvenido a Atento!',
-    desc: 'Acabs de crear tu asistente virtual con inteligencia artificial. A partir de ahora va a atender a tus clientes automticamente, las 24 horas, los 7 das de la semana.',
-    cta: 'Empezar tour ?',
+    title: 'Bienvenido a Atento AI',
+    desc: 'Acabas de crear tu asistente virtual. Desde el panel vas a entrenarlo, conectarlo a WhatsApp y medir como responde a tus clientes.',
+    cta: 'Empezar tour',
   },
   {
-    icon: '??',
+    icon: '24',
     color: '#3b82f6',
     title: 'Responde por vos',
-    desc: 'Tus clientes te escriben por WhatsApp o Instagram y el bot les responde al instante. Consultas de precio, disponibilidad, horarios... todo sin que vos tengas que estar presente.',
-    cta: 'Siguiente ?',
+    desc: 'Tus clientes escriben por WhatsApp y el bot responde consultas de precios, disponibilidad, horarios, envios y condiciones sin que tengas que estar conectado todo el dia.',
+    cta: 'Siguiente',
   },
   {
-    icon: '??',
+    icon: 'KB',
     color: '#8b5cf6',
     title: 'Conoce tu negocio',
-    desc: 'El bot aprende sobre tu negocio: catlogo, precios, polticas, preguntas frecuentes. Vos lo entrens desde el panel y l responde como si fuera un empleado que conoce todo.',
-    cta: 'Siguiente ?',
+    desc: 'Carga la personalidad, la base de conocimiento y el catalogo desde Google Sheets. Cuanto mejor este esa informacion, mejor va a vender y responder.',
+    cta: 'Siguiente',
   },
   {
-    icon: '??',
+    icon: 'TEST',
+    color: '#06b6d4',
+    title: 'Proba antes de activar',
+    desc: 'En el panel tenes una seccion para hablar con el asistente de prueba. Asi podes ajustar respuestas antes de conectarlo al WhatsApp real del negocio.',
+    cta: 'Siguiente',
+  },
+  {
+    icon: 'CHAT',
+    color: '#10b981',
+    title: 'Revisa chats y metricas',
+    desc: 'Vas a poder ver los chats que contesta el bot, medir clientes atendidos, horarios pico, canales, temas frecuentes y uso mensual por plan.',
+    cta: 'Siguiente',
+  },
+  {
+    icon: 'CAL',
     color: '#10b981',
     title: 'Toma turnos solo',
-    desc: 'Si ds turnos (mdico, peluquera, esttica, etc.), el bot puede reservarlos automticamente segn tu disponibilidad, recordarle al cliente y avisarte cuando hay una reserva nueva.',
-    cta: 'Siguiente ?',
+    desc: 'Si tu negocio trabaja con turnos, podes configurar servicios, horarios y capacidad para que el asistente reserve automaticamente.',
+    cta: 'Siguiente',
   },
   {
-    icon: '??',
+    icon: 'BULK',
     color: '#f59e0b',
-    title: 'Tu panel de control',
-    desc: 'Desde el panel pods ver todas las conversaciones, revisar mtricas, lanzar campaas de mensajes masivos y ajustar la configuracin del bot cuando quieras.',
-    cta: 'Siguiente ?',
+    title: 'Campanas y seguimiento',
+    desc: 'Tambien podes lanzar campanas de mensajes, importar leads y controlar el uso mensual segun el plan contratado.',
+    cta: 'Siguiente',
   },
   {
-    icon: '??',
+    icon: 'QR',
     color: '#06b6d4',
-    title: 'Conect tu WhatsApp',
-    desc: 'El ltimo paso: escane el cdigo QR con tu celular para activar el bot en tu nmero de WhatsApp. Solo tarda unos segundos.',
+    title: 'Conecta tu WhatsApp',
+    desc: 'El ultimo paso es escanear el codigo QR con WhatsApp para vincular el numero del negocio. Si preferis, tambien podes hacerlo despues desde el panel.',
     cta: null, // handled separately (QR step)
   },
 ];
@@ -135,16 +149,16 @@ export default function Onboarding() {
           Atento AI
         </div>
         <button onClick={() => nav('/mi-panel')} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem' }}>
-          Saltar ?
+          Saltar
         </button>
       </div>
 
-      {/* Contrasea temporal */}
+      {/* Contrasena temporal */}
       {tempPwd && (
         <div style={{ margin: '0 2rem', background: 'rgba(16,185,129,0.1)', border: '1px solid #10b981', borderRadius: '12px', padding: '1rem 1.25rem', display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-          <span style={{ fontSize: '1.5rem', flexShrink: 0 }}>??</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: 900, color: '#10b981', border: '1px solid rgba(16,185,129,0.35)', borderRadius: 8, padding: '0.35rem 0.45rem', flexShrink: 0 }}>KEY</span>
           <div>
-            <div style={{ fontWeight: 700, color: '#10b981', marginBottom: '0.25rem' }}>Guard tu contrasea  solo se muestra esta vez</div>
+            <div style={{ fontWeight: 700, color: '#10b981', marginBottom: '0.25rem' }}>Guarda tu contrasena temporal. Solo se muestra esta vez.</div>
             <div style={{ fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: '2px', color: '#fff', userSelect: 'all' }}>{tempPwd}</div>
           </div>
         </div>
@@ -153,13 +167,16 @@ export default function Onboarding() {
       {/* Slide principal */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2rem', transition: 'opacity 0.2s', opacity: animating ? 0 : 1 }}>
 
-        {/* cono */}
+        {/* Icono */}
         <div style={{
           width: '110px', height: '110px', borderRadius: '32px',
           background: `linear-gradient(135deg, ${s.color}33, ${s.color}11)`,
           border: `2px solid ${s.color}44`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '3.5rem', marginBottom: '2rem',
+          fontSize: s.icon.length > 3 ? '1.35rem' : '2rem', marginBottom: '2rem',
+          fontWeight: 900,
+          letterSpacing: 0,
+          color: s.color,
           boxShadow: `0 0 40px ${s.color}22`,
           transition: 'all 0.2s',
         }}>
@@ -176,15 +193,15 @@ export default function Onboarding() {
           </p>
         </div>
 
-        {/* QR (ltimo slide) */}
+        {/* QR (ultimo slide) */}
         {isLastSlide && (
           <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
             {botStatus === 'ON' ? (
               <div>
-                <div style={{ fontSize: '3.5rem', marginBottom: '0.75rem' }}>?</div>
+                <div style={{ fontSize: '2rem', fontWeight: 900, color: '#10b981', marginBottom: '0.75rem' }}>OK</div>
                 <p style={{ color: '#10b981', fontWeight: 700, fontSize: '1.1rem', margin: '0 0 1.5rem' }}>WhatsApp conectado!</p>
                 <button onClick={() => nav('/mi-panel')} style={{ background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', border: 'none', borderRadius: '12px', color: '#fff', cursor: 'pointer', padding: '1rem 2.5rem', fontSize: '1.05rem', fontWeight: 700 }}>
-                  Ir a mi panel ?
+                  Ir a mi panel
                 </button>
               </div>
             ) : qrData ? (
@@ -196,14 +213,14 @@ export default function Onboarding() {
               </div>
             ) : (
               <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>?</div>
-                <p style={{ margin: 0 }}>Generando cdigo QR...</p>
+                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: s.color, marginBottom: '0.5rem' }}>QR</div>
+                <p style={{ margin: 0 }}>Generando codigo QR...</p>
               </div>
             )}
           </div>
         )}
 
-        {/* CTA button (slides que no son el ltimo o el ltimo sin QR listo) */}
+        {/* CTA button (slides que no son el ultimo o el ultimo sin QR listo) */}
         {!isLastSlide && (
           <button onClick={next} style={{
             background: `linear-gradient(135deg, ${s.color}, ${s.color}bb)`,
@@ -217,10 +234,10 @@ export default function Onboarding() {
           </button>
         )}
 
-        {/* Botn ir al panel sin conectar (ltimo slide) */}
+        {/* Boton ir al panel sin conectar (ultimo slide) */}
         {isLastSlide && botStatus !== 'ON' && (
           <button onClick={() => nav('/mi-panel')} style={{ marginTop: '1.25rem', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.875rem', textDecoration: 'underline' }}>
-            Conectar WhatsApp despus
+            Conectar WhatsApp despues
           </button>
         )}
       </div>

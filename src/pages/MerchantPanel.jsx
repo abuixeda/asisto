@@ -2148,12 +2148,22 @@ export default function MerchantPanel() {
   const expandedTitle = expandedField === 'prompt' ? 'Comportamiento Psicologico' : 'Base de Conocimientos';
 
   const TOUR_STEPS = [
-    { id: 'tour-tabs',           tab: 'config',    title: 'Las 3 secciones del panel',  desc: 'Todo el panel se organiza en 3 pestanas. Cada una tiene una funcion distinta. El tour te va a mostrar para que sirve cada una.' },
-    { id: 'tour-config-area',    tab: 'config',    title: 'Configuracion del asistente',       desc: 'Aca definis como habla tu asistente: su nombre, su personalidad y las instrucciones de como debe responder. Tambien cargas la base de conocimiento con info de tu negocio, catalogo, horarios y FAQ.' },
-    { id: 'tour-status',         tab: 'config',    title: 'Conectar y activar el asistente',   desc: 'Con este boton inicias o pausas tu asistente. Cuando esta activo, va a responder automaticamente todos los mensajes de tus clientes en WhatsApp.' },
-    { id: 'tour-campaigns-area', tab: 'campaigns', title: 'Campanas de mensajeria',      desc: 'Desde aca podes enviar mensajes masivos a una lista de clientes. Cargas los contactos (manual, CSV o Google Sheets) y el asistente manda el mensaje automaticamente.' },
-    { id: 'tour-turnos-area',    tab: 'turnos',    title: 'Gestion de turnos',           desc: 'Si tu negocio da turnos (medico, peluqueria, estetica, etc.), aca configuras los servicios, horarios y capacidad. El asistente los reserva solo y manda recordatorios.' },
+    { id: 'tour-tabs',           tab: 'config',    title: 'Menu principal',              desc: 'El panel se organiza por secciones: configuracion, chats, metricas, campanas y turnos. Desde aca cambias rapido de area.' },
+    { id: 'tour-config-area',    tab: 'config',    title: 'Configuracion del asistente', desc: 'Aca definis como habla tu asistente, cargas la base de conocimiento, conectas catalogo y preparas las reglas principales del negocio.' },
+    { id: 'tour-status',         tab: 'config',    title: 'WhatsApp y estado',           desc: 'Con este boton conectas WhatsApp por QR, pausas el asistente o lo vuelves a activar cuando quieras.' },
+    { id: 'tour-preview-area',   tab: 'config',    title: 'Probar asistente',            desc: 'Usa este chat para probar respuestas antes de dejarlo contestando clientes reales. Sirve para ajustar personalidad, precios y condiciones.' },
+    { id: 'tour-chats-area',     tab: 'chats',     title: 'Chats respondidos',           desc: 'Aca ves las conversaciones que esta contestando el bot, con historial de mensajes y canal de origen.' },
+    { id: 'tour-metrics-area',   tab: 'metrics',   title: 'Metricas del asistente',      desc: 'Aca controlas clientes atendidos, tasa de respuesta, horarios pico, canales, temas frecuentes y uso mensual del plan.' },
+    { id: 'tour-campaigns-area', tab: 'campaigns', title: 'Campanas de mensajeria',      desc: 'Desde aca podes enviar mensajes masivos a una lista de clientes. Cargas contactos manualmente, por CSV o Google Sheets.' },
+    { id: 'tour-turnos-area',    tab: 'turnos',    title: 'Gestion de turnos',           desc: 'Si tu negocio da turnos, aca configuras servicios, horarios y capacidad para que el asistente pueda reservar automaticamente.' },
   ];
+
+  function replayTour() {
+    localStorage.removeItem('atento_tour_done');
+    setActiveTab('config');
+    setSidebarOpen(false);
+    setShowTour(true);
+  }
 
   return (
     <>
@@ -2209,6 +2219,13 @@ export default function MerchantPanel() {
                 {theme === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} color="#818cf8" />}
                 <span>{theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}</span>
               </button>
+              <button
+                onClick={replayTour}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', width: '100%', background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.55rem 0.85rem', cursor: 'pointer', color: 'var(--text-2)', fontSize: '0.82rem', fontWeight: 500, transition: 'all 0.15s', textAlign: 'left' }}
+              >
+                <HelpCircle size={15} color="#60a5fa" />
+                <span>Ver tour</span>
+              </button>
               <button onClick={logout} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', width: '100%', background: 'transparent', border: '1px solid var(--danger-border)', borderRadius: '8px', padding: '0.55rem 0.85rem', cursor: 'pointer', color: 'var(--danger)', fontSize: '0.82rem', fontWeight: 500, transition: 'all 0.15s', textAlign: 'left' }}>Cerrar sesion</button>
             </div>
           </div>
@@ -2225,8 +2242,8 @@ export default function MerchantPanel() {
               </svg>
             </button>
             {activeTab === 'campaigns' && <div id="tour-campaigns-area"><CampaignPanel botId={botId} token={token} api={API} /></div>}
-            {activeTab === 'chats' && <MerchantChatsPanel botId={botId} token={token} api={API} />}
-            {activeTab === 'metrics' && <MerchantMetricsPanel botId={botId} token={token} api={API} bot={bot} />}
+            {activeTab === 'chats' && <div id="tour-chats-area"><MerchantChatsPanel botId={botId} token={token} api={API} /></div>}
+            {activeTab === 'metrics' && <div id="tour-metrics-area"><MerchantMetricsPanel botId={botId} token={token} api={API} bot={bot} /></div>}
             {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} /></div>}
 
           {activeTab === 'config' && (<>
