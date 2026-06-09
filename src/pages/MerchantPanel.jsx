@@ -606,6 +606,177 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
   );
 }
 
+function MerchantChatsPanel({ botId, token, api }) {
+  const [threads, setThreads] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const fmt = (ts) => {
+    if (!ts) return '';
+    const d = new Date(ts * 1000);
+    return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }) + ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const displayClient = (clientNumber = '') => {
+    if (clientNumber.startsWith('tg_')) return `Telegram ${clientNumber.replace('tg_', '')}`;
+    if (clientNumber.startsWith('ig_')) return `Instagram ${clientNumber.replace('ig_', '')}`;
+    if (clientNumber.startsWith('fb_')) return `Facebook ${clientNumber.replace('fb_', '')}`;
+    return `+${clientNumber.replace(/@[\w.]+$/, '')}`;
+  };
+
+  const channelLabel = (clientNumber = '') => {
+    if (clientNumber.startsWith('tg_')) return 'Telegram';
+    if (clientNumber.startsWith('ig_')) return 'Instagram';
+    if (clientNumber.startsWith('fb_')) return 'Facebook';
+    return 'WhatsApp';
+  };
+
+  async function loadChats() {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ bot_id: botId, limit: '250' });
+      if (search.trim()) params.set('client', search.trim());
+      const res = await authFetch(`${api}/api/merchant/conversations?${params}`, {}, token);
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : [];
+      setThreads(list);
+      setSelected(prev => {
+        if (prev && list.some(t => t.client_number === prev.client_number)) {
+          return list.find(t => t.client_number === prev.client_number);
+        }
+        return list[0] || null;
+      });
+    } catch {
+      setThreads([]);
+      setSelected(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadChats();
+  }, [botId, search]);
+
+  const lastMessage = selected?.messages?.[selected.messages.length - 1];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <PanelCard>
+        <SectionHeader
+          icon={<MessageCircle size={18} />}
+          tone="blue"
+          title="Chats atendidos por el bot"
+          desc="Historial de conversaciones que el asistente esta respondiendo en tus canales conectados."
+          action={
+            <button onClick={loadChats} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}>
+              Actualizar
+            </button>
+          }
+        />
+        <input
+          className="modal-input"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Buscar por numero o ID del cliente"
+          style={{ marginBottom: 0, background: 'var(--bg-card)' }}
+        />
+      </PanelCard>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '1rem', alignItems: 'start' }}>
+        <PanelCard style={{ minHeight: '420px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+            <strong style={{ fontSize: '0.95rem' }}>Conversaciones</strong>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>{threads.length} chats</span>
+          </div>
+          {loading && <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', margin: 0 }}>Cargando chats...</p>}
+          {!loading && threads.length === 0 && (
+            <div style={{ border: '1px dashed var(--border)', borderRadius: '12px', padding: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.86rem', textAlign: 'center' }}>
+              Todavia no hay conversaciones registradas.
+            </div>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', maxHeight: '620px', overflowY: 'auto' }}>
+            {threads.map(thread => {
+              const active = selected?.client_number === thread.client_number;
+              const msg = thread.messages?.[thread.messages.length - 1];
+              return (
+                <button
+                  key={thread.client_number}
+                  onClick={() => setSelected(thread)}
+                  style={{
+                    textAlign: 'left',
+                    border: `1px solid ${active ? 'rgba(124,58,237,0.55)' : 'var(--border)'}`,
+                    background: active ? 'rgba(124,58,237,0.12)' : 'rgba(255,255,255,0.035)',
+                    borderRadius: '12px',
+                    padding: '0.85rem',
+                    color: 'var(--text-primary)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.35rem'
+                  }}
+                >
+                  <span style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center' }}>
+                    <strong style={{ fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayClient(thread.client_number)}</strong>
+                    <span style={{ fontSize: '0.68rem', color: '#60a5fa', border: '1px solid rgba(96,165,250,0.28)', borderRadius: 99, padding: '2px 7px', flexShrink: 0 }}>{channelLabel(thread.client_number)}</span>
+                  </span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {msg?.content || 'Sin mensajes'}
+                  </span>
+                  <span style={{ color: 'var(--text-3)', fontSize: '0.72rem' }}>{fmt(thread.last_at)}</span>
+                </button>
+              );
+            })}
+          </div>
+        </PanelCard>
+
+        <PanelCard style={{ minHeight: '420px' }}>
+          {selected ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{displayClient(selected.client_number)}</h2>
+                  <p style={{ margin: '0.2rem 0 0', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
+                    {channelLabel(selected.client_number)} · Ultimo mensaje {fmt(selected.last_at)}
+                  </p>
+                </div>
+                <span style={{ background: 'rgba(16,185,129,0.1)', color: '#34d399', border: '1px solid rgba(16,185,129,0.24)', borderRadius: 99, padding: '4px 10px', fontSize: '0.76rem', fontWeight: 800 }}>
+                  {selected.messages.length} mensajes
+                </span>
+              </div>
+              <div style={{ background: 'rgba(11,20,26,0.75)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1rem', minHeight: '330px', maxHeight: '620px', overflowY: 'auto' }}>
+                {selected.messages.map(message => {
+                  const fromUser = message.role === 'user';
+                  return (
+                    <div key={message.id} style={{ display: 'flex', justifyContent: fromUser ? 'flex-start' : 'flex-end', marginBottom: '0.65rem' }}>
+                      <div style={{ maxWidth: '82%', background: fromUser ? '#202c33' : '#005c4b', color: '#e9edef', borderRadius: fromUser ? '13px 13px 13px 3px' : '13px 13px 3px 13px', padding: '0.65rem 0.8rem', fontSize: '0.86rem', lineHeight: 1.55, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                        {message.content}
+                        <div style={{ color: '#aebac1', fontSize: '0.65rem', marginTop: '0.35rem', textAlign: 'right' }}>
+                          {fromUser ? 'Cliente' : 'Bot'} · {fmt(message.created_at)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {lastMessage && (
+                <p style={{ margin: '0.75rem 0 0', color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
+                  Vista de solo lectura. El bot sigue respondiendo automaticamente desde WhatsApp/Telegram.
+                </p>
+              )}
+            </>
+          ) : (
+            <div style={{ minHeight: '330px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', textAlign: 'center', fontSize: '0.9rem' }}>
+              Selecciona un chat para ver el historial.
+            </div>
+          )}
+        </PanelCard>
+      </div>
+    </div>
+  );
+}
+
 // --- TourOverlay -------------------------------------------------------------
 function TourOverlay({ steps, onFinish, setActiveTab }) {
   const [step, setStep] = useState(0);
@@ -1591,7 +1762,7 @@ export default function MerchantPanel() {
   const [pwOpen, setPwOpen] = useState(false);
   const [expandedField, setExpandedField] = useState(null); // 'prompt' | 'kb'
   const [responseDelay, setResponseDelay] = useState(2.5);
-  const [activeTab, setActiveTab] = useState('config'); // 'config' | 'campaigns'
+  const [activeTab, setActiveTab] = useState('config'); // 'config' | 'chats' | 'campaigns' | 'turnos'
   const [showTour, setShowTour] = useState(() => !localStorage.getItem('atento_tour_done'));
   const [theme, setTheme] = useState(() => localStorage.getItem('atento_theme') || 'dark');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -1867,6 +2038,7 @@ export default function MerchantPanel() {
           <nav className="sidebar-nav" id="tour-tabs">
             <span className="sidebar-nav-section">Principal</span>
             <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => { setActiveTab('config'); setSidebarOpen(false); }}><Settings size={16} /> Configuracion</div>
+            <div className={`sidebar-nav-item${activeTab === 'chats' ? ' active' : ''}`} onClick={() => { setActiveTab('chats'); setSidebarOpen(false); }}><MessageCircle size={16} /> Chats</div>
             <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => { setActiveTab('campaigns'); setSidebarOpen(false); }}><Send size={16} /> Campanas</div>
             <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => { setActiveTab('turnos'); setSidebarOpen(false); }}><CalendarClock size={16} /> Turnos</div>
           </nav>
@@ -1903,6 +2075,7 @@ export default function MerchantPanel() {
               </svg>
             </button>
             {activeTab === 'campaigns' && <div id="tour-campaigns-area"><CampaignPanel botId={botId} token={token} api={API} /></div>}
+            {activeTab === 'chats' && <MerchantChatsPanel botId={botId} token={token} api={API} />}
             {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} /></div>}
 
           {activeTab === 'config' && (<>
