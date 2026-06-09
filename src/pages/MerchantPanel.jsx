@@ -238,7 +238,7 @@ function CampaignPanel({ botId, token, api }) {
 
   return (
     <div>
-      {/* Modal nueva campaa */}
+      {/* Modal nueva campana */}
       {showNewModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.5rem', width: '100%', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -342,7 +342,7 @@ function CampaignPanel({ botId, token, api }) {
                   </label>
                   <textarea className="prompt-textarea editable" style={{ minHeight: '90px' }}
                     value={leadsText} onChange={e => setLeadsText(e.target.value)}
-                    placeholder={'5491112345678,Juan,Panadera,CABA,https://maps.app.goo.gl/xyz\n5491198765432,Mara,Ferretera,Crdoba,'} />
+                    placeholder={'5491112345678,Juan,Panaderia,CABA,https://maps.app.goo.gl/xyz\n5491198765432,Maria,Ferreteria,Cordoba,'} />
                   <button onClick={importLeads} disabled={importingLeads || !leadsText.trim()} className="btn-solid-blue"
                     style={{ margin: '0.5rem 0 0', width: 'auto', padding: '0.5rem 1rem', opacity: (importingLeads || !leadsText.trim()) ? 0.6 : 1 }}>
                     {importingLeads ? 'Importando...' : 'Importar'}
@@ -371,7 +371,7 @@ function CampaignPanel({ botId, token, api }) {
             </div>
             {leads.length > 0 && (
               <div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{leads.length} leads en esta campaa</div>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>{leads.length} leads en esta campana</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '280px', overflowY: 'auto' }}>
                   {leads.map(lead => (
                     <div key={lead.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.5rem 0.75rem' }}>
@@ -389,19 +389,19 @@ function CampaignPanel({ botId, token, api }) {
                 </div>
               </div>
             )}
-            {leads.length === 0 && <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>Sin leads todava. Import contactos arriba.</p>}
+            {leads.length === 0 && <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>Sin leads todavia. Importa contactos arriba.</p>}
           </div>
         </div>
       )}
 
-      {/* Header campaa */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+      {/* Header campana */}
+      <div id="tour-campaigns-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
         <div>
-          <h3 style={{ margin: '0 0 0.2rem', fontSize: '1.1rem', fontWeight: 700 }}>Campanas de mensajeria saliente</h3>
-          <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>Envi mensajes masivos personalizados a tus contactos de forma automtica.</p>
+          <h3 style={{ margin: '0 0 0.2rem', fontSize: '1.1rem', fontWeight: 700 }}>Campañas de mensajería saliente</h3>
+          <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)' }}>Enviá mensajes masivos personalizados a tus contactos de forma automática.</p>
         </div>
         <button onClick={() => { setShowNewModal(true); setCampaignMsg(null); }} className="btn-solid-blue" style={{ margin: 0, width: 'auto', padding: '0.6rem 1rem', fontSize: '0.875rem' }}>
-          + Nueva campaa
+          + Nueva campaña
         </button>
       </div>
 
@@ -410,7 +410,7 @@ function CampaignPanel({ botId, token, api }) {
       {!loading && campaigns.length === 0 && (
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--border)', borderRadius: '12px', padding: '2rem', textAlign: 'center' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>WA</div>
-          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>No tens campanas todava. Cre una para empezar a enviar mensajes masivos.</p>
+          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '0.9rem' }}>No tenés campañas todavía. Creá una para empezar a enviar mensajes masivos.</p>
         </div>
       )}
 
@@ -495,7 +495,7 @@ function BotPreviewChat({ botId, token, botName, currentPrompt, currentKB, onClo
       const d = await res.json();
       setMessages(prev => [...prev, { role: 'model', text: d.reply || d.error || 'Sin respuesta.' }]);
     } catch {
-      setMessages(prev => [...prev, { role: 'model', text: 'Error al conectar con el bot.' }]);
+      setMessages(prev => [...prev, { role: 'model', text: 'Error al conectar con el asistente.' }]);
     } finally {
       setLoading(false);
     }
@@ -663,11 +663,11 @@ function MerchantChatsPanel({ botId, token, api }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      <PanelCard>
+      <PanelCard id="tour-chats-header">
         <SectionHeader
           icon={<MessageCircle size={18} />}
           tone="blue"
-          title="Chats atendidos por el bot"
+          title="Chats atendidos por el asistente"
           desc="Historial de conversaciones que el asistente esta respondiendo en tus canales conectados."
           action={
             <button onClick={loadChats} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}>
@@ -738,7 +738,7 @@ function MerchantChatsPanel({ botId, token, api }) {
                 <div>
                   <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{displayClient(selected.client_number)}</h2>
                   <p style={{ margin: '0.2rem 0 0', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
-                    {channelLabel(selected.client_number)} · Ultimo mensaje {fmt(selected.last_at)}
+                    {channelLabel(selected.client_number)} - Ultimo mensaje {fmt(selected.last_at)}
                   </p>
                 </div>
                 <span style={{ background: 'rgba(16,185,129,0.1)', color: '#34d399', border: '1px solid rgba(16,185,129,0.24)', borderRadius: 99, padding: '4px 10px', fontSize: '0.76rem', fontWeight: 800 }}>
@@ -753,7 +753,7 @@ function MerchantChatsPanel({ botId, token, api }) {
                       <div style={{ maxWidth: '82%', background: fromUser ? '#202c33' : '#005c4b', color: '#e9edef', borderRadius: fromUser ? '13px 13px 13px 3px' : '13px 13px 3px 13px', padding: '0.65rem 0.8rem', fontSize: '0.86rem', lineHeight: 1.55, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                         {message.content}
                         <div style={{ color: '#aebac1', fontSize: '0.65rem', marginTop: '0.35rem', textAlign: 'right' }}>
-                          {fromUser ? 'Cliente' : 'Bot'} · {fmt(message.created_at)}
+                          {fromUser ? 'Cliente' : 'Asistente'} - {fmt(message.created_at)}
                         </div>
                       </div>
                     </div>
@@ -762,7 +762,7 @@ function MerchantChatsPanel({ botId, token, api }) {
               </div>
               {lastMessage && (
                 <p style={{ margin: '0.75rem 0 0', color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
-                  Vista de solo lectura. El bot sigue respondiendo automaticamente desde WhatsApp/Telegram.
+                  Vista de solo lectura. El asistente sigue respondiendo automaticamente desde WhatsApp/Telegram.
                 </p>
               )}
             </>
@@ -838,17 +838,17 @@ function MerchantMetricsPanel({ botId, token, api, bot }) {
 
   if (loading) {
     return (
-      <PanelCard>
-        <SectionHeader icon={<PlugZap size={18} />} tone="violet" title="Metricas del asistente" desc="Cargando actividad del bot..." />
-        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Cargando metricas...</p>
+      <PanelCard id="tour-metrics-header">
+        <SectionHeader icon={<PlugZap size={18} />} tone="violet" title="Métricas del asistente" desc="Cargando actividad del asistente..." />
+        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Cargando métricas...</p>
       </PanelCard>
     );
   }
 
   if (!data) {
     return (
-      <PanelCard>
-        <SectionHeader icon={<PlugZap size={18} />} tone="violet" title="Metricas del asistente" desc="No se pudieron cargar los datos." />
+      <PanelCard id="tour-metrics-header">
+        <SectionHeader icon={<PlugZap size={18} />} tone="violet" title="Métricas del asistente" desc="No se pudieron cargar los datos." />
         <button onClick={loadMetrics} className="btn-solid-blue" style={{ width: 'auto', margin: 0, padding: '0.6rem 1rem' }}>Reintentar</button>
       </PanelCard>
     );
@@ -856,12 +856,12 @@ function MerchantMetricsPanel({ botId, token, api, bot }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      <PanelCard>
+      <PanelCard id="tour-metrics-header">
         <SectionHeader
           icon={<PlugZap size={18} />}
           tone="violet"
-          title="Metricas del asistente"
-          desc="Rendimiento, actividad y temas mas consultados por tus clientes."
+          title="Métricas del asistente"
+          desc="Rendimiento, actividad y temas más consultados por tus clientes."
           action={<button onClick={loadMetrics} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}>Actualizar</button>}
         />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '1rem' }}>
@@ -874,7 +874,7 @@ function MerchantMetricsPanel({ botId, token, api, bot }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '1rem' }}>
         <PanelCard>
-          <SectionHeader icon={<Clock size={18} />} tone="amber" title="Horario pico" desc="Momentos con mas consultas en los ultimos 7 dias." />
+          <SectionHeader icon={<Clock size={18} />} tone="amber" title="Horario pico" desc="Momentos con más consultas en los últimos 7 días." />
           <div style={{ display: 'flex', alignItems: 'end', gap: 4, height: 120, padding: '0.5rem 0 0.25rem' }}>
             {peakHours.map((h, idx) => (
               <div key={h.hour} title={`${h.hour}:00 - ${h.count} mensajes`} style={{ flex: 1, minWidth: 3, height: `${Math.max(5, ((h.count || 0) / maxPeak) * 100)}%`, background: (idx % 6 === 0 || h.hour === peak.hour) ? 'linear-gradient(180deg,#a78bfa,#3b82f6)' : 'rgba(124,58,237,0.32)', borderRadius: '5px 5px 2px 2px' }} />
@@ -886,14 +886,14 @@ function MerchantMetricsPanel({ botId, token, api, bot }) {
         </PanelCard>
 
         <PanelCard>
-          <SectionHeader icon={<MessageCircle size={18} />} tone="blue" title="Canales" desc="Distribucion de mensajes recibidos en los ultimos 30 dias." />
+          <SectionHeader icon={<MessageCircle size={18} />} tone="blue" title="Canales" desc="Distribución de mensajes recibidos en los últimos 30 días." />
           <MiniBarList items={data.socialBreakdown || []} />
         </PanelCard>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '1rem' }}>
         <PanelCard>
-          <SectionHeader icon={<Bot size={18} />} tone="green" title="Clientes" desc="Nuevos contra recurrentes en los ultimos 30 dias." />
+          <SectionHeader icon={<Bot size={18} />} tone="green" title="Clientes" desc="Nuevos contra recurrentes en los últimos 30 días." />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
             {[
               ['Nuevos', data.newClients || 0, '#818cf8'],
@@ -909,8 +909,8 @@ function MerchantMetricsPanel({ botId, token, api, bot }) {
         </PanelCard>
 
         <PanelCard>
-          <SectionHeader icon={<PlugZap size={18} />} tone="violet" title="Temas frecuentes" desc="Palabras que mas aparecen en las consultas de clientes." />
-          <MiniBarList items={topKeywords} labelKey="word" empty="Todavia no hay suficientes mensajes para detectar temas." />
+          <SectionHeader icon={<PlugZap size={18} />} tone="violet" title="Temas frecuentes" desc="Palabras que más aparecen en las consultas de clientes." />
+          <MiniBarList items={topKeywords} labelKey="word" empty="Todavía no hay suficientes mensajes para detectar temas." />
         </PanelCard>
       </div>
 
@@ -2148,13 +2148,13 @@ export default function MerchantPanel() {
   const expandedTitle = expandedField === 'prompt' ? 'Comportamiento Psicologico' : 'Base de Conocimientos';
 
   const TOUR_STEPS = [
-    { id: 'tour-tabs',           tab: 'config',    title: 'Menu principal',              desc: 'El panel se organiza por secciones: configuracion, chats, metricas, campanas y turnos. Desde aca cambias rapido de area.' },
-    { id: 'tour-config-area',    tab: 'config',    title: 'Configuracion del asistente', desc: 'Aca definis como habla tu asistente, cargas la base de conocimiento, conectas catalogo y preparas las reglas principales del negocio.' },
+    { id: 'tour-tabs',           tab: 'config',    title: 'Menú principal',              desc: 'El panel se organiza por secciones: configuración, chats, métricas, campañas y turnos. Desde acá cambiás rápido de área.' },
+    { id: 'tour-config-area',    tab: 'config',    title: 'Configuración del asistente', desc: 'Acá definís cómo habla tu asistente, cargás la base de conocimiento, conectás catálogo y preparás las reglas principales del negocio.' },
     { id: 'tour-status',         tab: 'config',    title: 'WhatsApp y estado',           desc: 'Con este boton conectas WhatsApp por QR, pausas el asistente o lo vuelves a activar cuando quieras.' },
     { id: 'tour-preview-area',   tab: 'config',    title: 'Probar asistente',            desc: 'Usa este chat para probar respuestas antes de dejarlo contestando clientes reales. Sirve para ajustar personalidad, precios y condiciones.' },
-    { id: 'tour-chats-area',     tab: 'chats',     title: 'Chats respondidos',           desc: 'Aca ves las conversaciones que esta contestando el bot, con historial de mensajes y canal de origen.' },
-    { id: 'tour-metrics-area',   tab: 'metrics',   title: 'Metricas del asistente',      desc: 'Aca controlas clientes atendidos, tasa de respuesta, horarios pico, canales, temas frecuentes y uso mensual del plan.' },
-    { id: 'tour-campaigns-area', tab: 'campaigns', title: 'Campanas de mensajeria',      desc: 'Desde aca podes enviar mensajes masivos a una lista de clientes. Cargas contactos manualmente, por CSV o Google Sheets.' },
+    { id: 'tour-chats-header',   tab: 'chats',     title: 'Chats respondidos',           desc: 'Acá ves las conversaciones que está contestando el asistente, con historial de mensajes y canal de origen.' },
+    { id: 'tour-metrics-header', tab: 'metrics',   title: 'Métricas del asistente',      desc: 'Acá controlás clientes atendidos, tasa de respuesta, horarios pico, canales, temas frecuentes y uso mensual del plan.' },
+    { id: 'tour-campaigns-header', tab: 'campaigns', title: 'Campañas de mensajería',    desc: 'Desde acá podés enviar mensajes masivos a una lista de clientes. Cargás contactos manualmente, por CSV o Google Sheets.' },
     { id: 'tour-turnos-area',    tab: 'turnos',    title: 'Gestion de turnos',           desc: 'Si tu negocio da turnos, aca configuras servicios, horarios y capacidad para que el asistente pueda reservar automaticamente.' },
   ];
 
@@ -2196,10 +2196,10 @@ export default function MerchantPanel() {
           </div>
           <nav className="sidebar-nav" id="tour-tabs">
             <span className="sidebar-nav-section">Principal</span>
-            <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => { setActiveTab('config'); setSidebarOpen(false); }}><Settings size={16} /> Configuracion</div>
+            <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => { setActiveTab('config'); setSidebarOpen(false); }}><Settings size={16} /> Configuración</div>
             <div className={`sidebar-nav-item${activeTab === 'chats' ? ' active' : ''}`} onClick={() => { setActiveTab('chats'); setSidebarOpen(false); }}><MessageCircle size={16} /> Chats</div>
-            <div className={`sidebar-nav-item${activeTab === 'metrics' ? ' active' : ''}`} onClick={() => { setActiveTab('metrics'); setSidebarOpen(false); }}><PlugZap size={16} /> Metricas</div>
-            <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => { setActiveTab('campaigns'); setSidebarOpen(false); }}><Send size={16} /> Campanas</div>
+            <div className={`sidebar-nav-item${activeTab === 'metrics' ? ' active' : ''}`} onClick={() => { setActiveTab('metrics'); setSidebarOpen(false); }}><PlugZap size={16} /> Métricas</div>
+            <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => { setActiveTab('campaigns'); setSidebarOpen(false); }}><Send size={16} /> Campañas</div>
             <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => { setActiveTab('turnos'); setSidebarOpen(false); }}><CalendarClock size={16} /> Turnos</div>
           </nav>
           <div className="sidebar-footer">
@@ -2241,14 +2241,14 @@ export default function MerchantPanel() {
                 <line x1="2" y1="13.5" x2="16" y2="13.5" />
               </svg>
             </button>
-            {activeTab === 'campaigns' && <div id="tour-campaigns-area"><CampaignPanel botId={botId} token={token} api={API} /></div>}
-            {activeTab === 'chats' && <div id="tour-chats-area"><MerchantChatsPanel botId={botId} token={token} api={API} /></div>}
-            {activeTab === 'metrics' && <div id="tour-metrics-area"><MerchantMetricsPanel botId={botId} token={token} api={API} bot={bot} /></div>}
+            {activeTab === 'campaigns' && <CampaignPanel botId={botId} token={token} api={API} />}
+            {activeTab === 'chats' && <MerchantChatsPanel botId={botId} token={token} api={API} />}
+            {activeTab === 'metrics' && <MerchantMetricsPanel botId={botId} token={token} api={API} bot={bot} />}
             {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} /></div>}
 
           {activeTab === 'config' && (<>
 
-          <PanelCard id="tour-config-area" style={{ marginBottom: '1rem', padding: '1.25rem 1.35rem' }}>
+          <PanelCard style={{ marginBottom: '1rem', padding: '1.25rem 1.35rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
                 <IconBox tone={isOn ? 'green' : starting ? 'amber' : 'blue'}>
@@ -2340,7 +2340,7 @@ export default function MerchantPanel() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(320px,100%),1fr))', gap: '1rem', alignItems: 'start' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
 
-          <PanelCard>
+          <PanelCard id="tour-config-area">
           <SectionHeader
             icon={<BrainCircuit size={18} />}
             tone="violet"
@@ -2490,8 +2490,8 @@ export default function MerchantPanel() {
           <SectionHeader
             icon={<Send size={18} />}
             tone="cyan"
-            title="Telegram Bot"
-            desc="Conecta un bot de Telegram con el token de BotFather."
+            title="Conexion con Telegram"
+            desc="Conecta tu asistente a Telegram usando el token de BotFather."
             action={
               <button
                 type="button"
@@ -2520,14 +2520,14 @@ export default function MerchantPanel() {
                 <strong style={{ color: 'var(--text-primary)' }}>Como conectarlo:</strong>
                 <ol style={{ margin: '0.45rem 0 0', paddingLeft: '1.1rem' }}>
                   <li>Abri Telegram y busca <strong>@BotFather</strong>.</li>
-                  <li>Envia <strong>/newbot</strong>, elegi nombre y usuario para el bot.</li>
+                  <li>Envia <strong>/newbot</strong>, elegi nombre y usuario para el asistente.</li>
                   <li>Copia el token que te entrega BotFather.</li>
                   <li>Pegalo aca y toca <strong>Guardar y conectar</strong>.</li>
                 </ol>
               </div>
             )}
             <div>
-              <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Bot Token de Telegram</label>
+              <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Token de Telegram</label>
               <input className="modal-input" type="password" name="telegram_bot_token" autoComplete="off" placeholder="Pega aca el token de BotFather" value={telegramBotToken} onChange={e => setTelegramBotToken(e.target.value)} style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
             </div>
             {telegramMsg && <p style={{ margin: '0.5rem 0 0', fontSize: '0.875rem', color: telegramMsg.ok ? '#10b981' : '#f87171' }}>{telegramMsg.text}</p>}
