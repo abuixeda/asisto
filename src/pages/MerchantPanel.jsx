@@ -777,6 +777,155 @@ function MerchantChatsPanel({ botId, token, api }) {
   );
 }
 
+function MerchantMetricsPanel({ botId, token, api, bot }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  async function loadMetrics() {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ bot_id: botId });
+      const res = await authFetch(`${api}/api/analytics/user?${params}`, {}, token);
+      const payload = await res.json();
+      setData(res.ok ? payload : null);
+    } catch {
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadMetrics();
+  }, [botId]);
+
+  const botMetrics = (() => {
+    try { return typeof bot?.metrics === 'string' ? JSON.parse(bot.metrics || '{}') : (bot?.metrics || {}); } catch { return {}; }
+  })();
+
+  const MetricCard = ({ icon, value, label, tone = 'blue' }) => (
+    <PanelCard style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      <IconBox tone={tone}>{icon}</IconBox>
+      <div>
+        <div style={{ fontSize: '1.6rem', fontWeight: 850, color: 'var(--text-primary)', lineHeight: 1 }}>{value}</div>
+        <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)', marginTop: '0.3rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+      </div>
+    </PanelCard>
+  );
+
+  const MiniBarList = ({ items, valueKey = 'count', labelKey = 'label', colorKey = 'color', empty = 'Sin datos aun.' }) => {
+    const max = Math.max(...(items || []).map(i => i[valueKey] || 0), 1);
+    if (!items || items.length === 0) return <p style={{ color: 'var(--text-secondary)', fontSize: '0.86rem', margin: 0 }}>{empty}</p>;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+        {items.map((item, idx) => (
+          <div key={`${item[labelKey]}-${idx}`} style={{ display: 'grid', gridTemplateColumns: 'minmax(90px, 0.8fr) 1fr auto', gap: '0.75rem', alignItems: 'center' }}>
+            <span style={{ color: 'var(--text-primary)', fontSize: '0.84rem', fontWeight: 650, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item[labelKey]}</span>
+            <div style={{ height: 8, background: 'var(--surface-3)', borderRadius: 99, overflow: 'hidden' }}>
+              <div style={{ width: `${((item[valueKey] || 0) / max) * 100}%`, height: '100%', background: item[colorKey] || 'linear-gradient(135deg,#7c3aed,#3b82f6)', borderRadius: 99 }} />
+            </div>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', minWidth: 34, textAlign: 'right' }}>{item[valueKey] || 0}</span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const peakHours = data?.peakHours || [];
+  const maxPeak = Math.max(...peakHours.map(h => h.count || 0), 1);
+  const peak = peakHours.reduce((best, h) => (h.count || 0) > (best.count || 0) ? h : best, { hour: '--', count: 0 });
+  const topKeywords = data?.topKeywords || [];
+
+  if (loading) {
+    return (
+      <PanelCard>
+        <SectionHeader icon={<PlugZap size={18} />} tone="violet" title="Metricas del asistente" desc="Cargando actividad del bot..." />
+        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Cargando metricas...</p>
+      </PanelCard>
+    );
+  }
+
+  if (!data) {
+    return (
+      <PanelCard>
+        <SectionHeader icon={<PlugZap size={18} />} tone="violet" title="Metricas del asistente" desc="No se pudieron cargar los datos." />
+        <button onClick={loadMetrics} className="btn-solid-blue" style={{ width: 'auto', margin: 0, padding: '0.6rem 1rem' }}>Reintentar</button>
+      </PanelCard>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <PanelCard>
+        <SectionHeader
+          icon={<PlugZap size={18} />}
+          tone="violet"
+          title="Metricas del asistente"
+          desc="Rendimiento, actividad y temas mas consultados por tus clientes."
+          action={<button onClick={loadMetrics} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}>Actualizar</button>}
+        />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '1rem' }}>
+          <MetricCard icon={<MessageCircle size={18} />} value={data.todayClients || 0} label="Clientes hoy" tone="blue" />
+          <MetricCard icon={<Bot size={18} />} value={data.weekClients || 0} label="Clientes semana" tone="green" />
+          <MetricCard icon={<CheckCircle2 size={18} />} value={`${data.responseRate || 0}%`} label="Tasa respuesta" tone="cyan" />
+          <MetricCard icon={<Clock size={18} />} value={data.avgLength || 0} label="Msgs por chat" tone="amber" />
+        </div>
+      </PanelCard>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '1rem' }}>
+        <PanelCard>
+          <SectionHeader icon={<Clock size={18} />} tone="amber" title="Horario pico" desc="Momentos con mas consultas en los ultimos 7 dias." />
+          <div style={{ display: 'flex', alignItems: 'end', gap: 4, height: 120, padding: '0.5rem 0 0.25rem' }}>
+            {peakHours.map((h, idx) => (
+              <div key={h.hour} title={`${h.hour}:00 - ${h.count} mensajes`} style={{ flex: 1, minWidth: 3, height: `${Math.max(5, ((h.count || 0) / maxPeak) * 100)}%`, background: (idx % 6 === 0 || h.hour === peak.hour) ? 'linear-gradient(180deg,#a78bfa,#3b82f6)' : 'rgba(124,58,237,0.32)', borderRadius: '5px 5px 2px 2px' }} />
+            ))}
+          </div>
+          <p style={{ margin: '0.6rem 0 0', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
+            Pico actual: <strong style={{ color: 'var(--text-primary)' }}>{peak.hour}:00</strong> con {peak.count || 0} mensajes.
+          </p>
+        </PanelCard>
+
+        <PanelCard>
+          <SectionHeader icon={<MessageCircle size={18} />} tone="blue" title="Canales" desc="Distribucion de mensajes recibidos en los ultimos 30 dias." />
+          <MiniBarList items={data.socialBreakdown || []} />
+        </PanelCard>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '1rem' }}>
+        <PanelCard>
+          <SectionHeader icon={<Bot size={18} />} tone="green" title="Clientes" desc="Nuevos contra recurrentes en los ultimos 30 dias." />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+            {[
+              ['Nuevos', data.newClients || 0, '#818cf8'],
+              ['Recurrentes', data.returningClients || 0, '#f59e0b'],
+              ['Total 30d', (data.newClients || 0) + (data.returningClients || 0), '#34d399'],
+            ].map(([label, value, color]) => (
+              <div key={label} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', borderRadius: '12px', padding: '0.9rem' }}>
+                <div style={{ color, fontWeight: 850, fontSize: '1.35rem', lineHeight: 1 }}>{value}</div>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '0.73rem', marginTop: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        </PanelCard>
+
+        <PanelCard>
+          <SectionHeader icon={<PlugZap size={18} />} tone="violet" title="Temas frecuentes" desc="Palabras que mas aparecen en las consultas de clientes." />
+          <MiniBarList items={topKeywords} labelKey="word" empty="Todavia no hay suficientes mensajes para detectar temas." />
+        </PanelCard>
+      </div>
+
+      <PanelCard>
+        <SectionHeader icon={<CheckCircle2 size={18} />} tone="cyan" title="Resumen acumulado" desc="Datos totales guardados por el asistente." />
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <MetricPill icon={<MessageCircle size={16} />} value={(botMetrics.messagesSent || 0).toLocaleString()} label="Mensajes respondidos" />
+          <MetricPill icon={<Bot size={16} />} value={(botMetrics.customersHelped || 0).toLocaleString()} label="Chats atendidos" />
+          <MetricPill icon={<CheckCircle2 size={16} />} value={(botMetrics.weeklySales || 0).toLocaleString()} label="Conversiones" />
+        </div>
+      </PanelCard>
+    </div>
+  );
+}
+
 // --- TourOverlay -------------------------------------------------------------
 function TourOverlay({ steps, onFinish, setActiveTab }) {
   const [step, setStep] = useState(0);
@@ -1762,7 +1911,7 @@ export default function MerchantPanel() {
   const [pwOpen, setPwOpen] = useState(false);
   const [expandedField, setExpandedField] = useState(null); // 'prompt' | 'kb'
   const [responseDelay, setResponseDelay] = useState(2.5);
-  const [activeTab, setActiveTab] = useState('config'); // 'config' | 'chats' | 'campaigns' | 'turnos'
+  const [activeTab, setActiveTab] = useState('config'); // 'config' | 'chats' | 'metrics' | 'campaigns' | 'turnos'
   const [showTour, setShowTour] = useState(() => !localStorage.getItem('atento_tour_done'));
   const [theme, setTheme] = useState(() => localStorage.getItem('atento_theme') || 'dark');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -2039,6 +2188,7 @@ export default function MerchantPanel() {
             <span className="sidebar-nav-section">Principal</span>
             <div className={`sidebar-nav-item${activeTab === 'config' ? ' active' : ''}`} onClick={() => { setActiveTab('config'); setSidebarOpen(false); }}><Settings size={16} /> Configuracion</div>
             <div className={`sidebar-nav-item${activeTab === 'chats' ? ' active' : ''}`} onClick={() => { setActiveTab('chats'); setSidebarOpen(false); }}><MessageCircle size={16} /> Chats</div>
+            <div className={`sidebar-nav-item${activeTab === 'metrics' ? ' active' : ''}`} onClick={() => { setActiveTab('metrics'); setSidebarOpen(false); }}><PlugZap size={16} /> Metricas</div>
             <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => { setActiveTab('campaigns'); setSidebarOpen(false); }}><Send size={16} /> Campanas</div>
             <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => { setActiveTab('turnos'); setSidebarOpen(false); }}><CalendarClock size={16} /> Turnos</div>
           </nav>
@@ -2076,6 +2226,7 @@ export default function MerchantPanel() {
             </button>
             {activeTab === 'campaigns' && <div id="tour-campaigns-area"><CampaignPanel botId={botId} token={token} api={API} /></div>}
             {activeTab === 'chats' && <MerchantChatsPanel botId={botId} token={token} api={API} />}
+            {activeTab === 'metrics' && <MerchantMetricsPanel botId={botId} token={token} api={API} bot={bot} />}
             {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} /></div>}
 
           {activeTab === 'config' && (<>
