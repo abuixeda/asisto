@@ -43,6 +43,8 @@ const cardStyle = {
   boxShadow: '0 12px 30px rgba(0,0,0,0.10)'
 };
 
+const CAMPAIGN_MIN_DELAY_SECONDS = 5;
+
 function IconBox({ children, tone = 'violet' }) {
   const tones = {
     violet: ['rgba(124,58,237,0.16)', '#a78bfa'],
@@ -111,6 +113,8 @@ function CampaignPanel({ botId, token, api }) {
   const statusColors = { draft: '#64748b', running: '#10b981', paused: '#f59e0b', completed: '#3b82f6' };
   const statusLabels = { draft: 'Borrador', running: 'Activa', paused: 'Pausada', completed: 'Completada' };
 
+  const normalizeDelay = value => Math.max(CAMPAIGN_MIN_DELAY_SECONDS, Number(value) || CAMPAIGN_MIN_DELAY_SECONDS);
+
   async function loadCampaigns() {
     setLoading(true);
     try {
@@ -125,12 +129,12 @@ function CampaignPanel({ botId, token, api }) {
 
   async function createCampaign() {
     if (!newCampaign.name) { setCampaignMsg({ ok: false, text: 'El nombre es requerido.' }); return; }
-    if (newCampaign.use_ai && !newCampaign.campaign_goal) { setCampaignMsg({ ok: false, text: 'Describi el objetivo de la campana para el modo IA.' }); return; }
-    if (!newCampaign.use_ai && !newCampaign.message_template) { setCampaignMsg({ ok: false, text: 'Escrib el mensaje a enviar.' }); return; }
+    if (newCampaign.use_ai && !newCampaign.campaign_goal) { setCampaignMsg({ ok: false, text: 'Describí el objetivo de la campaña para el modo IA.' }); return; }
+    if (!newCampaign.use_ai && !newCampaign.message_template) { setCampaignMsg({ ok: false, text: 'Escribí el mensaje a enviar.' }); return; }
     setSaving(true); setCampaignMsg(null);
     try {
       const res = await authFetch(`${api}/api/bots/${botId}/campaigns`, {
-        method: 'POST', body: JSON.stringify(newCampaign)
+        method: 'POST', body: JSON.stringify({ ...newCampaign, delay_seconds: normalizeDelay(newCampaign.delay_seconds) })
       }, token);
       if (res.ok) {
         setShowNewModal(false);
@@ -145,7 +149,7 @@ function CampaignPanel({ botId, token, api }) {
   }
 
   async function deleteCampaign(cid) {
-    if (!confirm('Eliminar esta campana y todos sus leads?')) return;
+    if (!confirm('Eliminar esta campaña y todos sus leads?')) return;
     await authFetch(`${api}/api/bots/${botId}/campaigns/${cid}`, { method: 'DELETE' }, token);
     loadCampaigns();
   }
@@ -243,11 +247,11 @@ function CampaignPanel({ botId, token, api }) {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: '16px', padding: '1.5rem', width: '100%', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Nueva campana</span>
+              <span style={{ fontWeight: 700, fontSize: '1.05rem' }}>Nueva campaña</span>
               <button onClick={() => { setShowNewModal(false); setCampaignMsg(null); }} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.3rem 0.7rem' }}>Cerrar</button>
             </div>
             <div>
-              <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Nombre de la campana</label>
+              <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Nombre de la campaña</label>
               <input className="modal-input" value={newCampaign.name} onChange={e => setNewCampaign(p => ({ ...p, name: e.target.value }))} placeholder="Ej: Promo Mayo 2026" style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
             </div>
             {/* Toggle modo IA */}
@@ -277,7 +281,7 @@ function CampaignPanel({ botId, token, api }) {
             {newCampaign.use_ai && (
               <div>
                 <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>
-                  Objetivo de la campana <span style={{ opacity: 0.6 }}>(que queres lograr con cada mensaje)</span>
+                  Objetivo de la campaña <span style={{ opacity: 0.6 }}>(qué querés lograr con cada mensaje)</span>
                 </label>
                 <textarea className="prompt-textarea editable" style={{ minHeight: '90px' }}
                   value={newCampaign.campaign_goal}
@@ -300,16 +304,19 @@ function CampaignPanel({ botId, token, api }) {
             )}
 
             <div>
-              <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Delay entre mensajes (segundos)</label>
-              <input className="modal-input" type="number" min="10" max="3600" value={newCampaign.delay_seconds}
-                onChange={e => setNewCampaign(p => ({ ...p, delay_seconds: Number(e.target.value) }))}
+              <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Espera entre mensajes (segundos)</label>
+              <input className="modal-input" type="number" min={CAMPAIGN_MIN_DELAY_SECONDS} max="3600" value={newCampaign.delay_seconds}
+                onChange={e => setNewCampaign(p => ({ ...p, delay_seconds: normalizeDelay(e.target.value) }))}
                 style={{ marginBottom: 0, background: 'var(--bg-card)', width: '120px' }} />
+              <p style={{ margin: '0.35rem 0 0', color: 'var(--text-secondary)', fontSize: '0.75rem', lineHeight: 1.45 }}>
+                Mínimo {CAMPAIGN_MIN_DELAY_SECONDS}s para reducir riesgo de bloqueo por actividad tipo spam.
+              </p>
             </div>
             {campaignMsg && <p style={{ margin: 0, fontSize: '0.875rem', color: campaignMsg.ok ? '#10b981' : '#f87171' }}>{campaignMsg.text}</p>}
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
               <button onClick={() => { setShowNewModal(false); setCampaignMsg(null); }} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.6rem 1rem' }}>Cancelar</button>
               <button onClick={createCampaign} disabled={saving} className="btn-solid-blue" style={{ margin: 0, width: 'auto', padding: '0.6rem 1.25rem' }}>
-                {saving ? 'Creando...' : 'Crear campana'}
+                {saving ? 'Creando...' : 'Crear campaña'}
               </button>
             </div>
           </div>
