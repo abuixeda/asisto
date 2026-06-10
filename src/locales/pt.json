@@ -379,5 +379,41 @@
     "title": "Experimente agora, sem se registrar",
     "desc": "Escreva como se fosse um cliente. Veja como ele responde.",
     "tryIt": "Gostou? Começar grátis"
+  },
+  "platformAvailability": {
+    "label": "Tamb?m dispon?vel com",
+    "storeLink": {
+      "name": "Shopify / Tienda Nube / web",
+      "sub": "Cole o link da sua loja e o Atento l? o cat?logo quando estiver p?blico"
+    },
+    "googleSheets": {
+      "name": "Google Sheets",
+      "sub": "Cat?logo a partir da sua planilha p?blica"
+    },
+    "badges": {
+      "soon": "Em breve",
+      "now": "Dispon?vel"
+    }
+  },
+  "stats": {
+    "messages": "10.000+ mensagens respondidas esta semana",
+    "satisfaction": "4,9/5 de satisfa??o m?dia",
+    "businesses": "340+ neg?cios ativos"
+  },
+  "dashboardDemo": {
+    "metrics": {
+      "today": "Consultas hoje",
+      "responseRate": "Taxa de resposta",
+      "assistedSales": "Vendas assistidas",
+      "optimal": "?timo",
+      "salesDelta": "+6 vs ontem"
+    },
+    "liveConversation": "Conversa ao vivo",
+    "conversation": {
+      "client1": "Ol?, voc?s t?m t?nis Nike no tamanho 42?",
+      "bot1": "Sim! Temos Air Max em preto e branco no tamanho 42. $94.900. Tem interesse?",
+      "client2": "O branco, quero reservar",
+      "bot2": "Perfeito! Vou te enviar o link de pagamento agora mesmo."
+    }
   }
 }

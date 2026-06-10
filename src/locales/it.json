@@ -379,5 +379,41 @@
     "title": "Provalo ora, senza registrarti",
     "desc": "Scrivigli come se fossi un cliente. Guarda come risponde.",
     "tryIt": "Ti è piaciuto? Inizia gratis"
+  },
+  "platformAvailability": {
+    "label": "Disponibile anche con",
+    "storeLink": {
+      "name": "Shopify / Tienda Nube / web",
+      "sub": "Incolla il link del tuo negozio e Atento legge il catalogo se ? pubblico"
+    },
+    "googleSheets": {
+      "name": "Google Sheets",
+      "sub": "Catalogo dal tuo foglio pubblico"
+    },
+    "badges": {
+      "soon": "Prossimamente",
+      "now": "Disponibile"
+    }
+  },
+  "stats": {
+    "messages": "10.000+ messaggi risposti questa settimana",
+    "satisfaction": "4,9/5 soddisfazione media",
+    "businesses": "340+ attivit? attive"
+  },
+  "dashboardDemo": {
+    "metrics": {
+      "today": "Richieste oggi",
+      "responseRate": "Tasso di risposta",
+      "assistedSales": "Vendite assistite",
+      "optimal": "ottimo",
+      "salesDelta": "+6 rispetto a ieri"
+    },
+    "liveConversation": "Conversazione live",
+    "conversation": {
+      "client1": "Ciao, avete scarpe Nike taglia 42?",
+      "bot1": "S?! Abbiamo Air Max bianche e nere taglia 42. $94.900. Ti interessano?",
+      "client2": "Quelle bianche, le prenoto",
+      "bot2": "Perfetto! Ti mando subito il link di pagamento."
+    }
   }
 }

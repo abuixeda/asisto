@@ -382,5 +382,41 @@
     "title": "Try it now, without registering",
     "desc": "Message it as if you were a customer. See how it responds.",
     "tryIt": "Liked it? Start for free"
+  },
+  "platformAvailability": {
+    "label": "Also available with",
+    "storeLink": {
+      "name": "Shopify / Tienda Nube / web",
+      "sub": "Paste your store link and Atento reads the catalog when it is public"
+    },
+    "googleSheets": {
+      "name": "Google Sheets",
+      "sub": "Catalog from your public spreadsheet"
+    },
+    "badges": {
+      "soon": "Coming soon",
+      "now": "Available"
+    }
+  },
+  "stats": {
+    "messages": "10,000+ messages answered this week",
+    "satisfaction": "4.9/5 average satisfaction",
+    "businesses": "340+ active businesses"
+  },
+  "dashboardDemo": {
+    "metrics": {
+      "today": "Inquiries today",
+      "responseRate": "Response rate",
+      "assistedSales": "Assisted sales",
+      "optimal": "optimal",
+      "salesDelta": "+6 vs yesterday"
+    },
+    "liveConversation": "Live conversation",
+    "conversation": {
+      "client1": "Hi, do you have Nike sneakers in size 42?",
+      "bot1": "Yes! We have Air Max in black and white, size 42. $94.900. Interested?",
+      "client2": "The white ones, reserve them for me",
+      "bot2": "Perfect! I?ll send you the payment link right now."
+    }
   }
 }

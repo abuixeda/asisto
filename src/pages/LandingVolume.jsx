@@ -264,16 +264,17 @@ function DemoChat() {
 
 /* ─── Product Demo browser ────────────────────────────── */
 function ProductDemo() {
+  const { t } = useTranslation();
   const METRICS = [
-    { label: 'Consultas hoy',     val: '247', delta: '+18%', color: C.pink },
-    { label: 'Tasa de respuesta', val: '99.8%', delta: 'óptimo', color: C.cyan },
-    { label: 'Ventas asistidas',  val: '34',  delta: '+6 vs ayer', color: '#a855f7' },
+    { label: t('dashboardDemo.metrics.today'), val: '247', delta: '+18%', color: C.pink },
+    { label: t('dashboardDemo.metrics.responseRate'), val: '99.8%', delta: t('dashboardDemo.metrics.optimal'), color: C.cyan },
+    { label: t('dashboardDemo.metrics.assistedSales'), val: '34', delta: t('dashboardDemo.metrics.salesDelta'), color: '#a855f7' },
   ];
   const CONV = [
-    { from: 'client', text: 'Hola, tienen zapatillas Nike en el 42?' },
-    { from: 'bot',    text: 'Sí! Tenemos Air Max en blanco y negro en el 42. $94.900. ¿Te interesa?' },
-    { from: 'client', text: 'El blanco, lo reservo' },
-    { from: 'bot',    text: '¡Perfecto! 🎉 Te mando el link de pago ahora mismo.' },
+    { from: 'client', text: t('dashboardDemo.conversation.client1') },
+    { from: 'bot',    text: t('dashboardDemo.conversation.bot1') },
+    { from: 'client', text: t('dashboardDemo.conversation.client2') },
+    { from: 'bot',    text: t('dashboardDemo.conversation.bot2') },
   ];
   const [shown, setShown] = useState(0);
   const [ref, inView] = useInView(0.2);
@@ -304,7 +305,7 @@ function ProductDemo() {
         </div>
         <div style={{ background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '12px', overflow: 'hidden' }}>
           <div style={{ background: C.bgCard2, padding: '0.7rem 1rem', fontSize: '0.73rem', color: C.textSec, fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: `1px solid ${C.border}` }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, display: 'inline-block', boxShadow: `0 0 6px ${C.green}` }} /> Conversación en vivo
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, display: 'inline-block', boxShadow: `0 0 6px ${C.green}` }} /> {t('dashboardDemo.liveConversation')}
           </div>
           <div style={{ padding: '0.85rem', background: '#0b141a', display: 'flex', flexDirection: 'column', gap: '7px', minHeight: '120px' }}>
             {CONV.slice(0, shown).map((m, i) => (

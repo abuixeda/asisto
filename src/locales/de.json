@@ -379,5 +379,41 @@
     "title": "Probieren Sie es jetzt aus, ohne sich anzumelden",
     "desc": "Schreiben Sie ihm, als wären Sie ein Kunde. Sehen Sie, wie er antwortet.",
     "tryIt": "Gefallen? Kostenlos starten"
+  },
+  "platformAvailability": {
+    "label": "Auch verf?gbar mit",
+    "storeLink": {
+      "name": "Shopify / Tienda Nube / Web",
+      "sub": "F?gen Sie Ihren Shop-Link ein und Atento liest den Katalog, wenn er ?ffentlich ist"
+    },
+    "googleSheets": {
+      "name": "Google Sheets",
+      "sub": "Katalog aus Ihrer ?ffentlichen Tabelle"
+    },
+    "badges": {
+      "soon": "Demn?chst",
+      "now": "Verf?gbar"
+    }
+  },
+  "stats": {
+    "messages": "10.000+ Nachrichten diese Woche beantwortet",
+    "satisfaction": "4,9/5 durchschnittliche Zufriedenheit",
+    "businesses": "340+ aktive Unternehmen"
+  },
+  "dashboardDemo": {
+    "metrics": {
+      "today": "Anfragen heute",
+      "responseRate": "Antwortrate",
+      "assistedSales": "Unterst?tzte Verk?ufe",
+      "optimal": "optimal",
+      "salesDelta": "+6 vs gestern"
+    },
+    "liveConversation": "Live-Gespr?ch",
+    "conversation": {
+      "client1": "Hallo, haben Sie Nike-Sneaker in Gr??e 42?",
+      "bot1": "Ja! Wir haben Air Max in Schwarz und Wei? in Gr??e 42. $94.900. Interessiert?",
+      "client2": "Die wei?en, bitte reservieren",
+      "bot2": "Perfekt! Ich sende Ihnen sofort den Zahlungslink."
+    }
   }
 }
