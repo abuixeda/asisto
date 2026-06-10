@@ -45,6 +45,27 @@ const cardStyle = {
 
 const CAMPAIGN_MIN_DELAY_SECONDS = 5;
 
+const DEFAULT_HUMAN_HANDOFF = {
+  enabled: true,
+  triggers: {
+    paymentRisk: true,
+    angryCustomer: true,
+    explicitRequest: true,
+    unknownAnswer: true,
+    highValue: false,
+  },
+  customRule: '',
+  waitingMessage: 'Dame un momento, lo consulto con una persona del equipo y te respondo por acá.'
+};
+
+const HANDOFF_TRIGGER_LABELS = [
+  { key: 'paymentRisk', title: 'Pago o cierre importante', desc: 'Deriva cuando el cliente está por pagar, manda un comprobante dudoso o la venta necesita confirmación.' },
+  { key: 'angryCustomer', title: 'Cliente molesto', desc: 'Deriva reclamos, enojo, amenazas de devolución o situaciones sensibles.' },
+  { key: 'explicitRequest', title: 'Pide hablar con una persona', desc: 'Deriva si el cliente pide vendedor, asesor, encargado o atención humana.' },
+  { key: 'unknownAnswer', title: 'Falta información', desc: 'Deriva cuando el asistente no tiene datos suficientes para responder con seguridad.' },
+  { key: 'highValue', title: 'Oportunidad mayorista', desc: 'Deriva compras grandes, pedidos mayoristas o negociaciones de alto valor.' },
+];
+
 function IconBox({ children, tone = 'violet' }) {
   const tones = {
     violet: ['rgba(124,58,237,0.16)', '#a78bfa'],
@@ -1918,6 +1939,7 @@ export default function MerchantPanel() {
   const [pwOpen, setPwOpen] = useState(false);
   const [expandedField, setExpandedField] = useState(null); // 'prompt' | 'kb'
   const [responseDelay, setResponseDelay] = useState(2.5);
+  const [humanHandoff, setHumanHandoff] = useState(DEFAULT_HUMAN_HANDOFF);
   const [activeTab, setActiveTab] = useState('config'); // 'config' | 'chats' | 'metrics' | 'campaigns' | 'turnos'
   const [showTour, setShowTour] = useState(() => !localStorage.getItem('atento_tour_done'));
   const [theme, setTheme] = useState(() => localStorage.getItem('atento_theme') || 'dark');
@@ -1969,6 +1991,13 @@ export default function MerchantPanel() {
       if (m.workingHours) setHours(m.workingHours);
       if (m.adminNumber) setAdminNumber(m.adminNumber.replace('@c.us', ''));
       if (m.responseDelay !== undefined) setResponseDelay(m.responseDelay);
+      if (m.humanHandoff) {
+        setHumanHandoff({
+          ...DEFAULT_HUMAN_HANDOFF,
+          ...m.humanHandoff,
+          triggers: { ...DEFAULT_HUMAN_HANDOFF.triggers, ...(m.humanHandoff.triggers || {}) }
+        });
+      }
       const kb = data.knowledgeBase || '';
       setKnowledgeBase(kb);
       const catMatch = kb.match(/\[CATALOGO\]([\s\S]*?)(?=\n\[|$)/i);
@@ -2012,7 +2041,7 @@ export default function MerchantPanel() {
     try {
       const res = await authFetch(`${API}/api/bots/${botId}/prompt`, {
         method: 'PUT',
-        body: JSON.stringify({ prompt, workingHours: hours, knowledgeBase, adminNumber, responseDelay })
+        body: JSON.stringify({ prompt, workingHours: hours, knowledgeBase, adminNumber, responseDelay, humanHandoff })
       }, token);
       if (res.ok) setSaveMsg('ok');
       else setSaveMsg('err');
@@ -2491,6 +2520,87 @@ export default function MerchantPanel() {
                 value={hours.autoReplyMsg} onChange={e => setHours(h => ({ ...h, autoReplyMsg: e.target.value }))} />
             </div>
           )}
+          </PanelCard>
+
+          <PanelCard>
+          <SectionHeader
+            icon={<ShieldCheck size={18} />}
+            tone="green"
+            title="Intervención humana"
+            desc="Define cuándo el asistente debe pausar la conversación y pedirle ayuda al dueño antes de seguir."
+            action={
+              <label className="ios-toggle" title="Activar intervención humana">
+                <input
+                  type="checkbox"
+                  checked={humanHandoff.enabled}
+                  onChange={e => setHumanHandoff(h => ({ ...h, enabled: e.target.checked }))}
+                />
+                <span className="slider"></span>
+              </label>
+            }
+          />
+          <div style={{ opacity: humanHandoff.enabled ? 1 : 0.55, transition: 'opacity 0.15s' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: '0.65rem', marginBottom: '0.85rem' }}>
+              {HANDOFF_TRIGGER_LABELS.map(item => {
+                const checked = !!humanHandoff.triggers[item.key];
+                return (
+                  <button
+                    key={item.key}
+                    type="button"
+                    disabled={!humanHandoff.enabled}
+                    onClick={() => setHumanHandoff(h => ({
+                      ...h,
+                      triggers: { ...h.triggers, [item.key]: !h.triggers[item.key] }
+                    }))}
+                    style={{
+                      textAlign: 'left',
+                      border: `1px solid ${checked ? 'rgba(16,185,129,0.42)' : 'var(--border)'}`,
+                      background: checked ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.035)',
+                      borderRadius: '12px',
+                      padding: '0.75rem',
+                      color: 'var(--text-primary)',
+                      cursor: humanHandoff.enabled ? 'pointer' : 'not-allowed',
+                      minHeight: 104
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.35rem', fontWeight: 800, fontSize: '0.86rem' }}>
+                      <span style={{ width: 18, height: 18, borderRadius: 6, border: `1px solid ${checked ? '#10b981' : 'var(--border)'}`, background: checked ? '#10b981' : 'transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.72rem', flexShrink: 0 }}>
+                        {checked ? '✓' : ''}
+                      </span>
+                      {item.title}
+                    </div>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.78rem', lineHeight: 1.45 }}>{item.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+
+            <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Mensaje de espera para el cliente</label>
+            <textarea
+              className="prompt-textarea editable"
+              disabled={!humanHandoff.enabled}
+              style={{ minHeight: '68px', marginBottom: '0.75rem' }}
+              value={humanHandoff.waitingMessage}
+              onChange={e => setHumanHandoff(h => ({ ...h, waitingMessage: e.target.value }))}
+              placeholder="Ej: Dame un momento, lo consulto con una persona del equipo y te respondo por acá."
+            />
+
+            <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Regla personalizada</label>
+            <textarea
+              className="prompt-textarea editable"
+              disabled={!humanHandoff.enabled}
+              style={{ minHeight: '82px', marginBottom: 0 }}
+              value={humanHandoff.customRule}
+              onChange={e => setHumanHandoff(h => ({ ...h, customRule: e.target.value }))}
+              placeholder="Ej: Derivar siempre que el cliente pida descuento mayor al 15%, quiera retirar hoy o consulte por una compra mayorista."
+            />
+
+            {!metrics.adminNumber && (
+              <p style={{ margin: '0.75rem 0 0', color: '#f59e0b', fontSize: '0.8rem', lineHeight: 1.45 }}>
+                Para que la derivación llegue por WhatsApp, configurá abajo el celular de administrador.
+              </p>
+            )}
+          </div>
           </PanelCard>
 
           <PanelCard>
