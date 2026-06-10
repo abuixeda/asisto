@@ -226,6 +226,7 @@
   },
   "platformAvailability": {
     "label": "También disponible en",
+    "storeLink": { "name": "Shopify / Tienda Nube / web", "sub": "Pegás el link de tu tienda y Atento lee el catálogo si está publicado" },
     "shopify": { "name": "Shopify", "sub": "Pegás el link de tu tienda y Atento lee tus productos" },
     "tiendaNube": { "name": "Tienda Nube", "sub": "Pegás el link de tu tienda y Atento aprende tu catálogo" },
     "googleSheets": { "name": "Google Sheets", "sub": "Catálogo desde tu planilla pública" },

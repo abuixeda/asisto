@@ -570,8 +570,7 @@ export default function LandingVolume() {
           <div style={{ fontSize: '0.72rem', color: C.textMuted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.5rem', fontWeight: 700 }}>{t('platformAvailability.label')}</div>
           <div className="platform-grid" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             {[
-              { emoji: '🛍️', name: t('platformAvailability.shopify.name'), sub: t('platformAvailability.shopify.sub'), soon: false },
-              { emoji: '☁️', name: t('platformAvailability.tiendaNube.name'), sub: t('platformAvailability.tiendaNube.sub'), soon: false },
+              { emoji: '🛍️', name: t('platformAvailability.storeLink.name'), sub: t('platformAvailability.storeLink.sub'), soon: false },
               { emoji: '📊', name: t('platformAvailability.googleSheets.name'), sub: t('platformAvailability.googleSheets.sub'), soon: false },
             ].map((p, i) => (
               <div key={i} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '0.85rem', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '0.9rem 1.35rem', textAlign: 'left' }}>
