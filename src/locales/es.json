@@ -43,14 +43,16 @@
     }
   },
   "brands": [
-    { "icon": "👕", "name": "Indumentaria CABA" },
-    { "icon": "📱", "name": "Electrónica Rosario" },
-    { "icon": "💎", "name": "Joyería online" },
-    { "icon": "🔧", "name": "Ferretería mayorista" },
-    { "icon": "💄", "name": "Cosméticos MdP" },
-    { "icon": "💪", "name": "Suplementos" },
-    { "icon": "🛋️", "name": "Mueblería Córdoba" },
-    { "icon": "📚", "name": "Librería online" }
+    { "icon": "👕", "name": "Tiendas de ropa" },
+    { "icon": "📦", "name": "Mayoristas" },
+    { "icon": "💄", "name": "Cosmética y belleza" },
+    { "icon": "🔧", "name": "Ferreterías" },
+    { "icon": "💪", "name": "Gimnasios y suplementos" },
+    { "icon": "🍽️", "name": "Restaurantes" },
+    { "icon": "🏥", "name": "Clínicas y turnos" },
+    { "icon": "🏠", "name": "Inmobiliarias" },
+    { "icon": "🚗", "name": "Repuestos y talleres" },
+    { "icon": "📚", "name": "Cursos y servicios" }
   ],
   "features": {
     "title": "Todo lo que necesitás,",
@@ -224,9 +226,9 @@
   },
   "platformAvailability": {
     "label": "También disponible en",
-    "shopify": { "name": "Shopify App Store", "sub": "Instalación con 1 click" },
-    "tiendaNube": { "name": "Tienda Nube", "sub": "Integración nativa LATAM" },
-    "googleSheets": { "name": "Google Sheets", "sub": "Catálogo desde tu planilla" },
+    "shopify": { "name": "Shopify", "sub": "Pegás el link de tu tienda y Atento lee tus productos" },
+    "tiendaNube": { "name": "Tienda Nube", "sub": "Pegás el link de tu tienda y Atento aprende tu catálogo" },
+    "googleSheets": { "name": "Google Sheets", "sub": "Catálogo desde tu planilla pública" },
     "badges": { "soon": "Próximamente", "now": "Disponible" }
   },
   "stats": {

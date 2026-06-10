@@ -38,7 +38,6 @@ const FEATURE_STYLES = [
 
 const PLAN_HIGHLIGHTS = [false, true, false];
 const WHOP_PLAN_IDS = {
-  test: 'plan_IGDxDefJVieN5',
   starter: 'plan_v5NUICSwihOKZ',
   growth: 'plan_074m3NxwBdu3r',
   scale: 'plan_b3RCl3tcxlikv',
@@ -571,8 +570,8 @@ export default function LandingVolume() {
           <div style={{ fontSize: '0.72rem', color: C.textMuted, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.5rem', fontWeight: 700 }}>{t('platformAvailability.label')}</div>
           <div className="platform-grid" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             {[
-              { emoji: '🛍️', name: t('platformAvailability.shopify.name'), sub: t('platformAvailability.shopify.sub'), soon: true },
-              { emoji: '☁️', name: t('platformAvailability.tiendaNube.name'), sub: t('platformAvailability.tiendaNube.sub'), soon: true },
+              { emoji: '🛍️', name: t('platformAvailability.shopify.name'), sub: t('platformAvailability.shopify.sub'), soon: false },
+              { emoji: '☁️', name: t('platformAvailability.tiendaNube.name'), sub: t('platformAvailability.tiendaNube.sub'), soon: false },
               { emoji: '📊', name: t('platformAvailability.googleSheets.name'), sub: t('platformAvailability.googleSheets.sub'), soon: false },
             ].map((p, i) => (
               <div key={i} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '0.85rem', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '0.9rem 1.35rem', textAlign: 'left' }}>
@@ -776,16 +775,6 @@ export default function LandingVolume() {
             <h2 style={{ fontSize: 'clamp(1.8rem,3vw,2.7rem)', fontWeight: 900, letterSpacing: '-0.04em', marginBottom: '0.6rem' }}>{t('pricing.title')} <GradText>{t('pricing.titleHighlight')}</GradText></h2>
             <p style={{ color: C.textSec, fontSize: '1.05rem' }}>{t('pricing.trialInfo')}</p>
           </FadeIn>
-          <FadeIn delay={0.03} style={{ margin: '-1.5rem auto 2rem', maxWidth: '560px' }}>
-            <div style={{ background: 'rgba(0,212,255,0.06)', border: `1px solid ${C.cyan}`, borderRadius: '14px', padding: '1.1rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ color: C.cyan, fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>TEST ATENTO</div>
-                <div style={{ color: C.text, fontWeight: 800, fontSize: '1.25rem' }}>USD 1</div>
-                <div style={{ color: C.textSec, fontSize: '0.84rem', marginTop: '0.15rem' }}>Producto temporal para probar la pasarela de pagos.</div>
-              </div>
-              <button onClick={() => setCheckout({ key: 'test', name: 'TEST ATENTO', planId: WHOP_PLAN_IDS.test })} className="btn-primary" style={{ padding: '0.75rem 1.1rem', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 800, textAlign: 'center', textDecoration: 'none', whiteSpace: 'nowrap' }}>Probar pago</button>
-            </div>
-          </FadeIn>
           <div className="plan-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(265px,1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
             {plans.map((p, i) => {
               const highlight = PLAN_HIGHLIGHTS[i] || false;
@@ -810,7 +799,7 @@ export default function LandingVolume() {
                     </ul>
                     <button
                       onClick={() => {
-                        const planKey = ['starter', 'growth', 'scale'][idx] || 'starter';
+                        const planKey = ['starter', 'growth', 'scale'][i] || 'starter';
                         setCheckout({ key: planKey, name: p.name, planId: WHOP_PLAN_IDS[planKey] });
                       }}
                       className={highlight ? 'btn-primary' : 'btn-ghost'}
