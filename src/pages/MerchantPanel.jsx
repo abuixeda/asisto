@@ -55,6 +55,7 @@ const DEFAULT_HUMAN_HANDOFF = {
     highValue: false,
   },
   customRule: '',
+  customRuleTitle: '',
   waitingMessage: 'Dame un momento, lo consulto con una persona del equipo y te respondo por acá.'
 };
 
@@ -2751,7 +2752,7 @@ export default function MerchantPanel() {
             }
           />
           <div style={{ opacity: humanHandoff.enabled ? 1 : 0.55, transition: 'opacity 0.15s' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.65rem', marginBottom: '0.85rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.45rem', marginBottom: '0.85rem' }}>
               {HANDOFF_TRIGGER_LABELS.map(item => {
                 const checked = !!humanHandoff.triggers[item.key];
                 return (
@@ -2767,20 +2768,20 @@ export default function MerchantPanel() {
                       textAlign: 'left',
                       border: `1px solid ${checked ? 'rgba(16,185,129,0.42)' : 'var(--border)'}`,
                       background: checked ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.035)',
-                      borderRadius: '12px',
-                      padding: '0.75rem',
+                      borderRadius: '10px',
+                      padding: '0.5rem 0.6rem',
                       color: 'var(--text-primary)',
                       cursor: humanHandoff.enabled ? 'pointer' : 'not-allowed',
                       minHeight: 0
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.35rem', fontWeight: 800, fontSize: '0.86rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.16rem', fontWeight: 800, fontSize: '0.82rem' }}>
                       <span style={{ width: 18, height: 18, borderRadius: 6, border: `1px solid ${checked ? '#10b981' : 'var(--border)'}`, background: checked ? '#10b981' : 'transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.72rem', flexShrink: 0 }}>
-                        {checked ? '✓' : ''}
+                        {checked ? <CheckCircle2 size={13} /> : ''}
                       </span>
                       {item.title}
                     </div>
-                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.78rem', lineHeight: 1.45 }}>{item.desc}</p>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.72rem', lineHeight: 1.32 }}>{item.desc}</p>
                   </button>
                 );
               })}
@@ -2796,15 +2797,69 @@ export default function MerchantPanel() {
               placeholder="Ej: Dame un momento, lo consulto con una persona del equipo y te respondo por acá."
             />
 
-            <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Regla personalizada</label>
-            <textarea
-              className="prompt-textarea editable"
-              disabled={!humanHandoff.enabled}
-              style={{ minHeight: '82px', marginBottom: 0 }}
-              value={humanHandoff.customRule}
-              onChange={e => setHumanHandoff(h => ({ ...h, customRule: e.target.value }))}
-              placeholder="Ej: Derivar siempre que el cliente pida descuento mayor al 15%, quiera retirar hoy o consulte por una compra mayorista."
-            />
+            <div style={{ marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', marginBottom: '0.45rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>Condición personalizada</label>
+              </div>
+
+              {(humanHandoff.customRule || humanHandoff.customRuleTitle) ? (
+                <div style={{ border: '1px solid rgba(16,185,129,0.28)', background: 'rgba(16,185,129,0.07)', borderRadius: '10px', padding: '0.6rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <span style={{ width: 18, height: 18, borderRadius: 6, background: '#10b981', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 }}>
+                      <CheckCircle2 size={13} />
+                    </span>
+                    <input
+                      className="modal-input"
+                      disabled={!humanHandoff.enabled}
+                      value={humanHandoff.customRuleTitle || ''}
+                      onChange={e => setHumanHandoff(h => ({ ...h, customRuleTitle: e.target.value }))}
+                      placeholder="Título de la condición"
+                      style={{ marginBottom: 0, background: 'var(--bg-card)', fontWeight: 800, padding: '0.55rem 0.65rem', minHeight: '36px' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setHumanHandoff(h => ({ ...h, customRuleTitle: '', customRule: '' }))}
+                      style={{ border: '1px solid rgba(239,68,68,0.32)', background: 'rgba(239,68,68,0.08)', color: '#f87171', borderRadius: '8px', padding: '0.42rem 0.6rem', cursor: 'pointer', fontSize: '0.76rem', flexShrink: 0 }}
+                    >
+                      Quitar
+                    </button>
+                  </div>
+                  <textarea
+                    className="prompt-textarea editable"
+                    disabled={!humanHandoff.enabled}
+                    style={{ minHeight: '62px', marginBottom: 0 }}
+                    value={humanHandoff.customRule}
+                    onChange={e => setHumanHandoff(h => ({ ...h, customRule: e.target.value }))}
+                    placeholder="Descripción. Ej: Derivar siempre que el cliente pida descuento mayor al 15%, quiera retirar hoy o consulte por una compra mayorista."
+                  />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  disabled={!humanHandoff.enabled}
+                  onClick={() => setHumanHandoff(h => ({ ...h, customRuleTitle: 'Condición personalizada' }))}
+                  style={{
+                    width: '100%',
+                    border: '1px dashed rgba(16,185,129,0.42)',
+                    background: 'rgba(16,185,129,0.055)',
+                    borderRadius: '10px',
+                    padding: '0.65rem 0.75rem',
+                    color: 'var(--text-primary)',
+                    cursor: humanHandoff.enabled ? 'pointer' : 'not-allowed',
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.65rem'
+                  }}
+                >
+                  <span style={{ width: 24, height: 24, borderRadius: 8, background: 'rgba(16,185,129,0.18)', color: '#34d399', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, flexShrink: 0 }}>+</span>
+                  <span>
+                    <strong style={{ display: 'block', fontSize: '0.84rem' }}>Agregar condición personalizada</strong>
+                    <small style={{ display: 'block', color: 'var(--text-secondary)', marginTop: '0.12rem', fontSize: '0.73rem' }}>Creá una regla propia con título y descripción.</small>
+                  </span>
+                </button>
+              )}
+            </div>
 
             {!metrics.adminNumber && (
               <p style={{ margin: '0.75rem 0 0', color: '#f59e0b', fontSize: '0.8rem', lineHeight: 1.45 }}>
