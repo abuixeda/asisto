@@ -26,8 +26,8 @@
   "demo": {
     "online": "● online now",
     "title": "Demo — Atento AI",
-    "placeholder": "Type your query...",
-    "greeting": "Hi! I'm Atento, Atento AI's virtual assistant. Ask me how I work, about pricing, or how you can try me for free 🚀",
+    "placeholder": "Ask anything about Atento...",
+    "greeting": "Hi! I'm Atento, Atento AI's virtual assistant. Ask me anything about how Atento works, plans, the free trial, or how to set it up for your business 🚀",
     "responses": {
       "price": "We have 3 plans: Starter ($59/month, 1,500 messages), Growth ($99/month, 5,000 messages) and Scale ($179/month, 20,000 messages + 2 bots). All include a 7-day free trial! Would you like to know what each one includes?",
       "how": "I connect to your WhatsApp and automatically reply to your customers 24 hours a day. I learn about your business to respond as if it were you. 😎",
@@ -35,7 +35,7 @@
       "setup": "It's super easy: create your account, scan a QR code with your WhatsApp, and that's it, I'm already working in 5 minutes! ⏱️",
       "free": "Yes, we have a 7-day free trial. You can test how I respond to your customers without any commitment. Want the link to get started?",
       "human": "If a query is too complex, I'll flag it in the panel for a human to respond. I never leave the customer hanging!",
-      "default": "Hi! I'm Atento AI. You can ask me about our plans, how the bot works, or about the 7-day free trial. 😊"
+      "default": "Hi! I'm Atento AI. You can ask me about our plans, how the assistant works, the 7-day free trial, or how it connects to your business. 😊"
     },
     "errors": {
       "network": "Oops, I had a little connection issue 😅",
@@ -152,20 +152,20 @@
       },
       {
         "n": "2",
-        "title": "Configure the bot",
+        "title": "Configure the assistant",
         "desc": "Tell it how to speak: tone, name, language, what it can and can't say.",
         "icon": "🧠"
       },
       {
         "n": "3",
         "title": "Connect your catalog",
-        "desc": "Paste your store link or Google Sheets and the bot learns it automatically.",
+        "desc": "Paste your store link or Google Sheets and the assistant learns it automatically.",
         "icon": "⚡"
       },
       {
         "n": "4",
         "title": "Scan the WhatsApp QR",
-        "desc": "Link your number and you're done. The bot starts replying in seconds.",
+        "desc": "Link your number and you're done. The assistant starts replying in seconds.",
         "icon": "📱"
       }
     ]
@@ -279,7 +279,7 @@
       },
       {
         "q": "How quickly can I get it running?",
-        "a": "In under 10 minutes. The guided setup walks you through every step until the bot is live."
+        "a": "In under 10 minutes. The guided setup walks you through every step until the assistant is live."
       }
     ]
   },
@@ -375,12 +375,12 @@
   "dashboard": {
     "label": "DASHBOARD",
     "title": "Your business in real-time",
-    "desc": "Metrics, conversations, and bot behavior from a simple and clear panel."
+    "desc": "Metrics, conversations, and assistant behavior from a simple and clear panel."
   },
   "liveDemo": {
     "label": "Live demo",
     "title": "Try it now, without registering",
-    "desc": "Message it as if you were a customer. See how it responds.",
+    "desc": "Ask anything about Atento: plans, features, setup, or how to try it for free.",
     "tryIt": "Liked it? Start for free"
   },
   "platformAvailability": {
