@@ -23,8 +23,8 @@
   "demo": {
     "online": "● online jetzt",
     "title": "Demo — Atento AI",
-    "placeholder": "Schreib deine Anfrage...",
-    "greeting": "Hallo! Ich bin Atento, der virtuelle Assistent von Atento AI. Frag mich, wie ich funktioniere, nach den Preisen oder wie du mich kostenlos ausprobieren kannst 🚀",
+    "placeholder": "Frag etwas über Atento...",
+    "greeting": "Hallo! Ich bin Atento, der virtuelle Assistent von Atento AI. Frag mich alles über Atento: Pakete, Funktionen, Einrichtung oder kostenlose Testversion 🚀",
     "responses": {
       "price": "Wir haben 3 Pakete: Starter (59 $/Monat), Growth (99 $/Monat) und Scale (179 $/Monat). Alle beinhalten 7 Tage kostenlose Testversion! Möchtest du wissen, was jedes einzelne beinhaltet?",
       "how": "Ich verbinde mich mit deinem WhatsApp und antworte automatisch auf deine Kundenanfragen – rund um die Uhr. Ich lerne von deinem Geschäft, um so zu antworten, als wärst du es. 😎",
@@ -32,7 +32,7 @@
       "setup": "Es ist super einfach: Du erstellst das Konto, scannst einen QR-Code mit deinem WhatsApp und fertig, ich bin in 5 Minuten einsatzbereit! ⏱️",
       "free": "Ja, wir haben eine kostenlose 7-tägige Testversion. Du kannst ausprobieren, wie ich auf deine Kunden antworte, ganz unverbindlich. Möchtest du den Link, um loszulegen?",
       "human": "Wenn eine Anfrage zu komplex ist, markiere ich sie im Panel, damit ein Mensch antworten kann. Ich lasse den Kunden niemals im Stich!",
-      "default": "Hallo! Ich bin Atento AI. Du kannst mich nach unseren Paketen, wie der Bot funktioniert, oder nach der 7-tägigen kostenlosen Testversion fragen. 😊"
+      "default": "Hallo! Ich bin Atento AI. Du kannst mich nach den Paketen, Funktionen, der Einrichtung oder der 7-tägigen kostenlosen Testversion fragen. 😊"
     },
     "errors": {
       "network": "Oh, ich hatte ein kleines Verbindungsproblem 😅",
@@ -106,7 +106,7 @@
       {
         "icon": "🎛️",
         "title": "Volle Kontrolle über Ihr Panel",
-        "desc": "Ändern Sie das Bot-Verhalten, aktualisieren Sie den Katalog und überprüfen Sie Metriken in einem einfachen Dashboard."
+        "desc": "Ändern Sie das Verhalten des Assistenten, aktualisieren Sie den Katalog und überprüfen Sie Metriken in einem einfachen Dashboard."
       }
     ]
   },
@@ -149,20 +149,20 @@
       },
       {
         "n": "2",
-        "title": "Bot konfigurieren",
+        "title": "Assistent konfigurieren",
         "desc": "Sagen Sie ihm, wie er sprechen soll: Ton, Name, Sprache, was er sagen darf und was nicht.",
         "icon": "🧠"
       },
       {
         "n": "3",
         "title": "Katalog verbinden",
-        "desc": "Shop-Link oder Google Sheets einfügen und der Bot lernt ihn automatisch.",
+        "desc": "Shop-Link oder Google Sheets einfügen und der Assistent lernt den Katalog automatisch.",
         "icon": "⚡"
       },
       {
         "n": "4",
         "title": "WhatsApp QR scannen",
-        "desc": "Verknüpfen Sie Ihre Nummer und fertig. Der Bot beginnt in Sekunden zu antworten.",
+        "desc": "Verknüpfen Sie Ihre Nummer und fertig. Der Assistent beginnt in Sekunden zu antworten.",
         "icon": "📱"
       }
     ]
@@ -276,7 +276,7 @@
       },
       {
         "q": "Wie schnell kann ich loslegen?",
-        "a": "In weniger als 10 Minuten. Die geführte Einrichtung führt Sie Schritt für Schritt, bis der Bot live ist."
+        "a": "In weniger als 10 Minuten. Die geführte Einrichtung führt Sie Schritt für Schritt, bis der Assistent live ist."
       }
     ]
   },
@@ -372,12 +372,12 @@
   "dashboard": {
     "label": "BEDIENFELD",
     "title": "Ihr Geschäft in Echtzeit",
-    "desc": "Metriken, Gespräche und Bot-Verhalten von einem einfachen und übersichtlichen Panel aus."
+    "desc": "Metriken, Gespräche und Verhalten des Assistenten von einem einfachen und übersichtlichen Panel aus."
   },
   "liveDemo": {
     "label": "Live-Demo",
     "title": "Probieren Sie es jetzt aus, ohne sich anzumelden",
-    "desc": "Schreiben Sie ihm, als wären Sie ein Kunde. Sehen Sie, wie er antwortet.",
+    "desc": "Fragen Sie Atento nach Paketen, Funktionen, Einrichtung oder wie Sie es kostenlos testen können.",
     "tryIt": "Gefallen? Kostenlos starten"
   },
   "platformAvailability": {
