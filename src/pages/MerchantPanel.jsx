@@ -66,6 +66,12 @@ const HANDOFF_TRIGGER_LABELS = [
   { key: 'highValue', title: 'Oportunidad mayorista', desc: 'Deriva compras grandes, pedidos mayoristas o negociaciones de alto valor.' },
 ];
 
+const CONFIG_SECTIONS = [
+  { id: 'assistant', label: 'Asistente', desc: 'Personalidad, tiempos, prueba e intervención humana.' },
+  { id: 'knowledge', label: 'Conocimientos', desc: 'Base, catálogo, tienda online y horarios.' },
+  { id: 'connections', label: 'Conexiones', desc: 'Canales, administrador y seguridad.' },
+];
+
 function IconBox({ children, tone = 'violet' }) {
   const tones = {
     violet: ['rgba(124,58,237,0.16)', '#a78bfa'],
@@ -2082,6 +2088,7 @@ export default function MerchantPanel() {
   const [responseDelay, setResponseDelay] = useState(2.5);
   const [humanHandoff, setHumanHandoff] = useState(DEFAULT_HUMAN_HANDOFF);
   const [activeTab, setActiveTab] = useState('config'); // 'config' | 'chats' | 'metrics' | 'campaigns' | 'turnos'
+  const [configSection, setConfigSection] = useState('assistant');
   const [showTour, setShowTour] = useState(() => !localStorage.getItem('atento_tour_done'));
   const [theme, setTheme] = useState(() => localStorage.getItem('atento_theme') || 'dark');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -2514,10 +2521,37 @@ export default function MerchantPanel() {
             </PanelCard>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(320px,100%),1fr))', gap: '1rem', alignItems: 'start' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
+          <PanelCard style={{ marginBottom: '1rem', padding: '0.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(210px,100%),1fr))', gap: '0.55rem' }}>
+              {CONFIG_SECTIONS.map(section => {
+                const active = configSection === section.id;
+                return (
+                  <button
+                    key={section.id}
+                    type="button"
+                    onClick={() => setConfigSection(section.id)}
+                    style={{
+                      textAlign: 'left',
+                      border: `1px solid ${active ? 'rgba(124,58,237,0.55)' : 'var(--border)'}`,
+                      background: active ? 'rgba(124,58,237,0.14)' : 'rgba(255,255,255,0.035)',
+                      color: 'var(--text-primary)',
+                      borderRadius: '10px',
+                      padding: '0.75rem 0.85rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <span style={{ display: 'block', fontWeight: 850, fontSize: '0.88rem', marginBottom: '0.18rem' }}>{section.label}</span>
+                    <span style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.74rem', lineHeight: 1.35 }}>{section.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </PanelCard>
 
-          <PanelCard id="tour-config-area">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(320px,100%),1fr))', gap: '1rem', alignItems: 'start' }}>
+          <div style={{ display: configSection === 'connections' ? 'none' : 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
+
+          {configSection === 'assistant' && <PanelCard id="tour-config-area">
           <SectionHeader
             icon={<BrainCircuit size={18} />}
             tone="violet"
@@ -2531,9 +2565,9 @@ export default function MerchantPanel() {
             value={prompt} onChange={e => setPrompt(e.target.value)}
             placeholder="Describi como debe hablar y comportarse el asistente con tus clientes..."
           />
-          </PanelCard>
+          </PanelCard>}
 
-          <PanelCard>
+          {configSection === 'knowledge' && <PanelCard>
           <SectionHeader
             icon={<Database size={18} />}
             tone="blue"
@@ -2568,9 +2602,9 @@ export default function MerchantPanel() {
               {catalog}
             </div>
           )}
-          </PanelCard>
+          </PanelCard>}
 
-          <PanelCard>
+          {configSection === 'knowledge' && <PanelCard>
           <SectionHeader
             icon={<Bot size={18} />}
             tone="green"
@@ -2584,9 +2618,9 @@ export default function MerchantPanel() {
             value={knowledgeBase} onChange={e => setKnowledgeBase(e.target.value)}
             placeholder={`Organiza la info por secciones para que la IA solo lea lo relevante en cada pregunta:\n\n[ENVIO]\nEnvios en 24-48hs. Costo fijo $2.000 a todo el pais.\n\n[PAGOS]\nEfectivo, transferencia (10% OFF) o tarjeta hasta 6 cuotas.\n\n[UBICACION]\nAv. Corrientes 1234, CABA. Lun-Sab 9 a 20hs.\n\n[GARANTIA]\n30 dias para cambios sin cargo.`}
           />
-          </PanelCard>
+          </PanelCard>}
 
-          <PanelCard id="tour-preview-area">
+          {configSection === 'assistant' && <PanelCard id="tour-preview-area">
             <SectionHeader
               icon={<TestTube2 size={18} />}
               tone="cyan"
@@ -2601,12 +2635,12 @@ export default function MerchantPanel() {
               currentKB={knowledgeBase}
               embedded
             />
-          </PanelCard>
+          </PanelCard>}
 
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
 
-          <PanelCard>
+          {configSection === 'assistant' && <PanelCard>
           <SectionHeader
             icon={<Clock size={18} />}
             tone="amber"
@@ -2627,9 +2661,9 @@ export default function MerchantPanel() {
           <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem' }}>
             Recomendado: 2.5s  Minimo: 0.5s  Maximo: 60s
           </p>
-          </PanelCard>
+          </PanelCard>}
 
-          <PanelCard>
+          {configSection === 'knowledge' && <PanelCard>
           <SectionHeader
             icon={<CalendarClock size={18} />}
             tone="blue"
@@ -2661,9 +2695,9 @@ export default function MerchantPanel() {
                 value={hours.autoReplyMsg} onChange={e => setHours(h => ({ ...h, autoReplyMsg: e.target.value }))} />
             </div>
           )}
-          </PanelCard>
+          </PanelCard>}
 
-          <PanelCard>
+          {configSection === 'assistant' && <PanelCard>
           <SectionHeader
             icon={<ShieldCheck size={18} />}
             tone="green"
@@ -2742,9 +2776,9 @@ export default function MerchantPanel() {
               </p>
             )}
           </div>
-          </PanelCard>
+          </PanelCard>}
 
-          <PanelCard>
+          {configSection === 'connections' && <PanelCard>
           <SectionHeader
             icon={<Send size={18} />}
             tone="cyan"
@@ -2793,9 +2827,9 @@ export default function MerchantPanel() {
               {telegramSaving ? 'Conectando...' : 'Guardar y Conectar'}
             </button>
           </div>
-          </PanelCard>
+          </PanelCard>}
 
-          <PanelCard>
+          {configSection === 'connections' && <PanelCard>
           <SectionHeader
             icon={<ShieldCheck size={18} />}
             tone="violet"
@@ -2831,7 +2865,7 @@ export default function MerchantPanel() {
           <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)', opacity: 0.7 }}>
             Sin codigo de pais, sin espacios y sin el 15.
           </p>
-          </PanelCard>
+          </PanelCard>}
 
           {/* -- Guardar -- */}
           <PanelCard style={{ position: 'sticky', bottom: '1rem', zIndex: 3, background: 'var(--surface)' }}>
@@ -2849,7 +2883,7 @@ export default function MerchantPanel() {
           </div>
           </PanelCard>
 
-          <PanelCard>
+          {configSection === 'connections' && <PanelCard>
             <button onClick={() => setPwOpen(o => !o)}
               style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', fontSize: '0.9rem', padding: 0, display: 'flex', alignItems: 'center', gap: '0.6rem', fontWeight: 800, width: '100%', justifyContent: 'space-between' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}><KeyRound size={17} color="#a78bfa" /> Seguridad de cuenta</span>
@@ -2872,9 +2906,9 @@ export default function MerchantPanel() {
                 </button>
               </div>
             )}
-          </PanelCard>
+          </PanelCard>}
 
-          <PanelCard style={{ background: 'linear-gradient(135deg, rgba(225,48,108,0.06), rgba(24,119,242,0.045))', border: '1px dashed rgba(225,48,108,0.28)', opacity: 0.9 }}>
+          {configSection === 'connections' && <PanelCard style={{ background: 'linear-gradient(135deg, rgba(225,48,108,0.06), rgba(24,119,242,0.045))', border: '1px dashed rgba(225,48,108,0.28)', opacity: 0.9 }}>
             <SectionHeader
               icon={<PlugZap size={18} />}
               tone="rose"
@@ -2894,7 +2928,7 @@ export default function MerchantPanel() {
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(24,119,242,0.1)', border: '1px solid rgba(24,119,242,0.22)', borderRadius: '20px', padding: '4px 12px', fontSize: '0.78rem', color: '#1877f2', fontWeight: 600 }}>Facebook Messenger</span>
               </div>
             </div>
-          </PanelCard>
+          </PanelCard>}
 
           </div>
           </div>
