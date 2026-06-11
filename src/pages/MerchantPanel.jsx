@@ -67,9 +67,9 @@ const HANDOFF_TRIGGER_LABELS = [
 ];
 
 const CONFIG_SECTIONS = [
-  { id: 'assistant', label: 'Asistente', desc: 'Personalidad, tiempos, prueba e intervención humana.' },
-  { id: 'knowledge', label: 'Conocimientos', desc: 'Base, catálogo, tienda online y horarios.' },
-  { id: 'connections', label: 'Conexiones', desc: 'Canales, administrador y seguridad.' },
+  { id: 'assistant', label: 'Asistente', desc: 'Personalidad, tiempos, prueba e intervención humana.', color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)' },
+  { id: 'knowledge', label: 'Conocimientos', desc: 'Base, catálogo, tienda online y horarios.', color: '#06b6d4', bg: 'rgba(6,182,212,0.13)' },
+  { id: 'connections', label: 'Conexiones', desc: 'Canales, administrador y seguridad.', color: '#10b981', bg: 'rgba(16,185,129,0.13)' },
 ];
 
 function IconBox({ children, tone = 'violet' }) {
@@ -2532,15 +2532,16 @@ export default function MerchantPanel() {
                     onClick={() => setConfigSection(section.id)}
                     style={{
                       textAlign: 'left',
-                      border: `1px solid ${active ? 'rgba(124,58,237,0.55)' : 'var(--border)'}`,
-                      background: active ? 'rgba(124,58,237,0.14)' : 'rgba(255,255,255,0.035)',
+                      border: `1px solid ${active ? section.color : 'var(--border)'}`,
+                      background: active ? section.bg : 'rgba(255,255,255,0.035)',
                       color: 'var(--text-primary)',
                       borderRadius: '10px',
                       padding: '0.75rem 0.85rem',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      boxShadow: active ? `0 0 0 1px ${section.color}22, 0 10px 24px ${section.color}18` : 'none'
                     }}
                   >
-                    <span style={{ display: 'block', fontWeight: 850, fontSize: '0.88rem', marginBottom: '0.18rem' }}>{section.label}</span>
+                    <span style={{ display: 'block', fontWeight: 850, fontSize: '0.88rem', marginBottom: '0.18rem', color: active ? section.color : 'var(--text-primary)' }}>{section.label}</span>
                     <span style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.74rem', lineHeight: 1.35 }}>{section.desc}</span>
                   </button>
                 );
@@ -2548,7 +2549,7 @@ export default function MerchantPanel() {
             </div>
           </PanelCard>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(320px,100%),1fr))', gap: '1rem', alignItems: 'start' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '920px', margin: '0 auto', alignItems: 'stretch' }}>
           <div style={{ display: configSection === 'connections' ? 'none' : 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
 
           {configSection === 'assistant' && <PanelCard id="tour-config-area">
@@ -2715,7 +2716,7 @@ export default function MerchantPanel() {
             }
           />
           <div style={{ opacity: humanHandoff.enabled ? 1 : 0.55, transition: 'opacity 0.15s' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: '0.65rem', marginBottom: '0.85rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.65rem', marginBottom: '0.85rem' }}>
               {HANDOFF_TRIGGER_LABELS.map(item => {
                 const checked = !!humanHandoff.triggers[item.key];
                 return (
@@ -2735,7 +2736,7 @@ export default function MerchantPanel() {
                       padding: '0.75rem',
                       color: 'var(--text-primary)',
                       cursor: humanHandoff.enabled ? 'pointer' : 'not-allowed',
-                      minHeight: 104
+                      minHeight: 0
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.35rem', fontWeight: 800, fontSize: '0.86rem' }}>
