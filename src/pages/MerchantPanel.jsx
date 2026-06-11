@@ -2066,7 +2066,7 @@ function WidgetPanel({ botId, token, api }) {
 
 function PaymentRemindersPanel({ botId, token, api }) {
   const [debtors, setDebtors] = useState([]);
-  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', note: '' });
+  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'daily', maxReminders: '0', note: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -2098,6 +2098,8 @@ function PaymentRemindersPanel({ botId, token, api }) {
       phone: form.phone.replace(/[^\d]/g, ''),
       amount: form.amount,
       dueDate: form.dueDate,
+      reminderFrequency: form.reminderFrequency,
+      maxReminders: Number(form.maxReminders) || 0,
       note: form.note.trim()
     };
     if (!payload.name || !payload.phone || !payload.amount) {
@@ -2113,7 +2115,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
       }, token);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'No se pudo cargar el recordatorio.');
-      setForm({ name: '', phone: '', amount: '', dueDate: '', note: '' });
+      setForm({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'daily', maxReminders: '0', note: '' });
       setMsg({ ok: true, text: 'Recordatorio cargado. Atento enviará el aviso automático a las 10:00 AM.' });
       await loadDebtors();
     } catch (err) {
@@ -2148,6 +2150,11 @@ function PaymentRemindersPanel({ botId, token, api }) {
     fontSize: '0.9rem',
     boxSizing: 'border-box'
   };
+  const frequencyLabel = {
+    daily: 'Diario',
+    weekly: 'Semanal',
+    monthly: 'Mensual'
+  };
 
   const renderDebtor = (d) => (
     <PanelCard key={d.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', alignItems: 'center', padding: '1rem' }}>
@@ -2162,6 +2169,9 @@ function PaymentRemindersPanel({ botId, token, api }) {
           +{d.phone} · ${Number(d.amount || 0).toLocaleString('es-AR')}
         </div>
         {d.dueDate && <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginTop: '0.22rem' }}>Vencimiento: {d.dueDate}</div>}
+        <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginTop: '0.22rem' }}>
+          Frecuencia: {frequencyLabel[d.reminderFrequency] || 'Diario'} · Avisos: {Number(d.remindersSent || 0)}{Number(d.maxReminders || 0) > 0 ? `/${d.maxReminders}` : ' / sin límite'}
+        </div>
         {d.note && <div style={{ color: 'var(--text-3)', fontSize: '0.78rem', marginTop: '0.22rem' }}>{d.note}</div>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -2183,7 +2193,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
         icon={<CircleDollarSign size={18} />}
         tone="amber"
         title="Recordatorios de pago"
-        desc="Agendá clientes con pagos pendientes para que Atento les recuerde automáticamente por WhatsApp."
+        desc="Agendá pagos pendientes y definí si Atento debe recordar de forma diaria, semanal o mensual."
         action={<button onClick={loadDebtors} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.45rem 0.75rem', fontSize: '0.8rem' }}>Actualizar</button>}
       />
 
@@ -2207,7 +2217,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
           <IconBox tone="amber"><CircleDollarSign size={19} /></IconBox>
           <div>
             <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 850 }}>Nuevo pago pendiente</h2>
-            <p style={{ margin: '0.2rem 0 0', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>El recordatorio automático se envía todos los días a las 10:00 AM mientras siga pendiente.</p>
+            <p style={{ margin: '0.2rem 0 0', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>Elegí desde qué fecha empieza, cada cuánto se repite y cuántos avisos debe enviar.</p>
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '0.75rem' }}>
@@ -2215,6 +2225,12 @@ function PaymentRemindersPanel({ botId, token, api }) {
           <input style={inputStyle} inputMode="tel" placeholder="WhatsApp: 5491122334455" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
           <input style={inputStyle} inputMode="decimal" type="number" placeholder="Monto" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
           <input style={inputStyle} type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+          <select style={inputStyle} value={form.reminderFrequency} onChange={e => setForm(f => ({ ...f, reminderFrequency: e.target.value }))}>
+            <option value="daily">Recordar diariamente</option>
+            <option value="weekly">Recordar semanalmente</option>
+            <option value="monthly">Recordar mensualmente</option>
+          </select>
+          <input style={inputStyle} inputMode="numeric" type="number" min="0" max="60" placeholder="Cantidad de avisos/cuotas (0 = sin límite)" value={form.maxReminders} onChange={e => setForm(f => ({ ...f, maxReminders: e.target.value }))} />
         </div>
         <textarea style={{ ...inputStyle, minHeight: 78, marginTop: '0.75rem', resize: 'vertical' }} placeholder="Nota opcional: concepto, cuota, pedido o detalle interno" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
         {msg && (
