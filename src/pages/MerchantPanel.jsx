@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -7,6 +7,7 @@ import {
   CalendarClock,
   CheckCircle2,
   ChevronRight,
+  CircleDollarSign,
   Clock,
   Database,
   ExternalLink,
@@ -22,6 +23,7 @@ import {
   Smartphone,
   Sun,
   TestTube2,
+  Trash2,
   Wifi,
   WifiOff,
 } from 'lucide-react';
@@ -2062,6 +2064,190 @@ function WidgetPanel({ botId, token, api }) {
 
 // -----------------------------------------------------------------------------
 
+function PaymentRemindersPanel({ botId, token, api }) {
+  const [debtors, setDebtors] = useState([]);
+  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', note: '' });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  const loadDebtors = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await authFetch(`${api}/api/bots/${botId}/debtors`, {}, token);
+      const data = await res.json();
+      setDebtors(Array.isArray(data) ? data : []);
+    } catch {
+      setMsg({ ok: false, text: 'No se pudieron cargar los recordatorios.' });
+    } finally {
+      setLoading(false);
+    }
+  }, [api, botId, token]);
+
+  useEffect(() => {
+    loadDebtors();
+  }, [loadDebtors]);
+
+  const pending = debtors.filter(d => d.status === 'pending');
+  const paid = debtors.filter(d => d.status === 'paid');
+  const pendingTotal = pending.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
+
+  async function createDebtor() {
+    const payload = {
+      name: form.name.trim(),
+      phone: form.phone.replace(/[^\d]/g, ''),
+      amount: form.amount,
+      dueDate: form.dueDate,
+      note: form.note.trim()
+    };
+    if (!payload.name || !payload.phone || !payload.amount) {
+      setMsg({ ok: false, text: 'Completá nombre, WhatsApp y monto.' });
+      return;
+    }
+    setSaving(true);
+    setMsg(null);
+    try {
+      const res = await authFetch(`${api}/api/bots/${botId}/debtors`, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      }, token);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'No se pudo cargar el recordatorio.');
+      setForm({ name: '', phone: '', amount: '', dueDate: '', note: '' });
+      setMsg({ ok: true, text: 'Recordatorio cargado. Atento enviará el aviso automático a las 10:00 AM.' });
+      await loadDebtors();
+    } catch (err) {
+      setMsg({ ok: false, text: err.message || 'Error al guardar.' });
+    } finally {
+      setSaving(false);
+      setTimeout(() => setMsg(null), 4000);
+    }
+  }
+
+  async function updateStatus(id, status) {
+    await authFetch(`${api}/api/bots/${botId}/debtors/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status })
+    }, token);
+    loadDebtors();
+  }
+
+  async function removeDebtor(id) {
+    if (!confirm('Borrar este recordatorio de pago?')) return;
+    await authFetch(`${api}/api/bots/${botId}/debtors/${id}`, { method: 'DELETE' }, token);
+    loadDebtors();
+  }
+
+  const inputStyle = {
+    width: '100%',
+    background: 'var(--input-bg)',
+    border: '1px solid var(--border)',
+    borderRadius: '10px',
+    color: 'var(--text-primary)',
+    padding: '0.72rem 0.85rem',
+    fontSize: '0.9rem',
+    boxSizing: 'border-box'
+  };
+
+  const renderDebtor = (d) => (
+    <PanelCard key={d.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', alignItems: 'center', padding: '1rem' }}>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', flexWrap: 'wrap' }}>
+          <strong style={{ color: 'var(--text-primary)', fontSize: '0.96rem' }}>{d.name}</strong>
+          <span style={{ color: d.status === 'paid' ? 'var(--success)' : '#f59e0b', background: d.status === 'paid' ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)', border: `1px solid ${d.status === 'paid' ? 'rgba(16,185,129,0.28)' : 'rgba(245,158,11,0.28)'}`, borderRadius: '999px', padding: '0.15rem 0.5rem', fontSize: '0.72rem', fontWeight: 800 }}>
+            {d.status === 'paid' ? 'Pagado' : 'Pendiente'}
+          </span>
+        </div>
+        <div style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: '0.28rem' }}>
+          +{d.phone} · ${Number(d.amount || 0).toLocaleString('es-AR')}
+        </div>
+        {d.dueDate && <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginTop: '0.22rem' }}>Vencimiento: {d.dueDate}</div>}
+        {d.note && <div style={{ color: 'var(--text-3)', fontSize: '0.78rem', marginTop: '0.22rem' }}>{d.note}</div>}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        {d.status === 'pending' && (
+          <button onClick={() => updateStatus(d.id, 'paid')} style={{ border: 'none', borderRadius: '9px', background: 'rgba(16,185,129,0.16)', color: 'var(--success)', padding: '0.55rem 0.75rem', cursor: 'pointer', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <CheckCircle2 size={15} /> Pagó
+          </button>
+        )}
+        <button onClick={() => removeDebtor(d.id)} aria-label="Borrar recordatorio" style={{ border: '1px solid var(--danger-border)', borderRadius: '9px', background: 'transparent', color: 'var(--danger)', padding: '0.55rem 0.65rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
+          <Trash2 size={15} />
+        </button>
+      </div>
+    </PanelCard>
+  );
+
+  return (
+    <div id="tour-payments-area">
+      <SectionHeader
+        icon={<CircleDollarSign size={18} />}
+        tone="amber"
+        title="Recordatorios de pago"
+        desc="Agendá clientes con pagos pendientes para que Atento les recuerde automáticamente por WhatsApp."
+        action={<button onClick={loadDebtors} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.45rem 0.75rem', fontSize: '0.8rem' }}>Actualizar</button>}
+      />
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '0.85rem', marginBottom: '1rem' }}>
+        <PanelCard style={{ padding: '1rem' }}>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 }}>Pendientes</div>
+          <div style={{ color: 'var(--text-primary)', fontSize: '1.75rem', fontWeight: 900, marginTop: '0.2rem' }}>{pending.length}</div>
+        </PanelCard>
+        <PanelCard style={{ padding: '1rem' }}>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 }}>Monto pendiente</div>
+          <div style={{ color: 'var(--text-primary)', fontSize: '1.75rem', fontWeight: 900, marginTop: '0.2rem' }}>${pendingTotal.toLocaleString('es-AR')}</div>
+        </PanelCard>
+        <PanelCard style={{ padding: '1rem' }}>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800 }}>Pagados</div>
+          <div style={{ color: 'var(--success)', fontSize: '1.75rem', fontWeight: 900, marginTop: '0.2rem' }}>{paid.length}</div>
+        </PanelCard>
+      </div>
+
+      <PanelCard style={{ marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+          <IconBox tone="amber"><CircleDollarSign size={19} /></IconBox>
+          <div>
+            <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 850 }}>Nuevo pago pendiente</h2>
+            <p style={{ margin: '0.2rem 0 0', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>El recordatorio automático se envía todos los días a las 10:00 AM mientras siga pendiente.</p>
+          </div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '0.75rem' }}>
+          <input style={inputStyle} placeholder="Nombre del cliente" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+          <input style={inputStyle} inputMode="tel" placeholder="WhatsApp: 5491122334455" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+          <input style={inputStyle} inputMode="decimal" type="number" placeholder="Monto" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
+          <input style={inputStyle} type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+        </div>
+        <textarea style={{ ...inputStyle, minHeight: 78, marginTop: '0.75rem', resize: 'vertical' }} placeholder="Nota opcional: concepto, cuota, pedido o detalle interno" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
+        {msg && (
+          <div style={{ marginTop: '0.75rem', border: `1px solid ${msg.ok ? 'rgba(16,185,129,0.35)' : 'var(--danger-border)'}`, background: msg.ok ? 'rgba(16,185,129,0.09)' : 'var(--danger-dim)', color: msg.ok ? 'var(--success)' : 'var(--danger)', borderRadius: '10px', padding: '0.65rem 0.8rem', fontSize: '0.85rem' }}>
+            {msg.text}
+          </div>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.9rem' }}>
+          <button onClick={createDebtor} disabled={saving} className="btn-solid-blue" style={{ width: 'auto', marginTop: 0, padding: '0.7rem 1rem' }}>
+            {saving ? 'Guardando...' : 'Cargar recordatorio'}
+          </button>
+        </div>
+      </PanelCard>
+
+      <div style={{ display: 'grid', gap: '0.75rem' }}>
+        {loading ? (
+          <PanelCard style={{ color: 'var(--text-secondary)' }}>Cargando recordatorios...</PanelCard>
+        ) : debtors.length ? (
+          debtors.map(renderDebtor)
+        ) : (
+          <PanelCard style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+            <CircleDollarSign size={30} style={{ marginBottom: '0.6rem', color: '#f59e0b' }} />
+            <div style={{ color: 'var(--text-primary)', fontWeight: 850, marginBottom: '0.25rem' }}>No hay pagos pendientes cargados</div>
+            <div style={{ fontSize: '0.86rem' }}>Cargá un cliente, monto y WhatsApp para que Atento lo recuerde automáticamente.</div>
+          </PanelCard>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// -----------------------------------------------------------------------------
+
 export default function MerchantPanel() {
   const nav = useNavigate();
   const token = localStorage.getItem('merchant_token');
@@ -2088,7 +2274,7 @@ export default function MerchantPanel() {
   const [expandedField, setExpandedField] = useState(null); // 'prompt' | 'kb'
   const [responseDelay, setResponseDelay] = useState(2.5);
   const [humanHandoff, setHumanHandoff] = useState(DEFAULT_HUMAN_HANDOFF);
-  const [activeTab, setActiveTab] = useState('config'); // 'config' | 'chats' | 'metrics' | 'campaigns' | 'turnos'
+  const [activeTab, setActiveTab] = useState('config'); // 'config' | 'chats' | 'metrics' | 'campaigns' | 'payments' | 'turnos'
   const [configSection, setConfigSection] = useState('assistant');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [showTour, setShowTour] = useState(() => !localStorage.getItem('atento_tour_done'));
@@ -2308,13 +2494,14 @@ export default function MerchantPanel() {
   const expandedTitle = expandedField === 'prompt' ? 'Comportamiento Psicologico' : 'Base de Conocimientos';
 
   const TOUR_STEPS = [
-    { id: 'tour-tabs',           tab: 'config',    title: 'Menú principal',              desc: 'El panel se organiza por secciones: configuración, chats, métricas, campañas y turnos. Desde acá cambiás rápido de área.' },
+    { id: 'tour-tabs',           tab: 'config',    title: 'Menú principal',              desc: 'El panel se organiza por secciones: configuración, chats, métricas, campañas, cobros y turnos. Desde acá cambiás rápido de área.' },
     { id: 'tour-config-area',    tab: 'config',    title: 'Configuración del asistente', desc: 'Acá definís cómo habla tu asistente, cargás la base de conocimiento, conectás catálogo y preparás las reglas principales del negocio.' },
     { id: 'tour-status',         tab: 'config',    title: 'WhatsApp y estado',           desc: 'Con este boton conectas WhatsApp por QR, pausas el asistente o lo vuelves a activar cuando quieras.' },
     { id: 'tour-preview-area',   tab: 'config',    title: 'Probar asistente',            desc: 'Usa este chat para probar respuestas antes de dejarlo contestando clientes reales. Sirve para ajustar personalidad, precios y condiciones.' },
     { id: 'tour-chats-header',   tab: 'chats',     title: 'Chats respondidos',           desc: 'Acá ves las conversaciones que está contestando el asistente, con historial de mensajes y canal de origen.' },
     { id: 'tour-metrics-header', tab: 'metrics',   title: 'Métricas del asistente',      desc: 'Acá controlás clientes atendidos, tasa de respuesta, horarios pico, canales, temas frecuentes y uso mensual del plan.' },
     { id: 'tour-campaigns-header', tab: 'campaigns', title: 'Campañas de mensajería',    desc: 'Desde acá podés enviar mensajes masivos a una lista de clientes. Cargás contactos manualmente, por CSV o Google Sheets.' },
+    { id: 'tour-payments-area',  tab: 'payments',  title: 'Recordatorios de pago',       desc: 'Agendá clientes con pagos pendientes para que Atento les envíe un recordatorio automático por WhatsApp.' },
     { id: 'tour-turnos-area',    tab: 'turnos',    title: 'Gestion de turnos',           desc: 'Si tu negocio da turnos, aca configuras servicios, horarios y capacidad para que el asistente pueda reservar automaticamente.' },
   ];
 
@@ -2390,6 +2577,7 @@ export default function MerchantPanel() {
             <div className={`sidebar-nav-item${activeTab === 'chats' ? ' active' : ''}`} onClick={() => { setActiveTab('chats'); setSidebarOpen(false); }}><MessageCircle size={16} /> Chats</div>
             <div className={`sidebar-nav-item${activeTab === 'metrics' ? ' active' : ''}`} onClick={() => { setActiveTab('metrics'); setSidebarOpen(false); }}><PlugZap size={16} /> Métricas</div>
             <div className={`sidebar-nav-item${activeTab === 'campaigns' ? ' active' : ''}`} onClick={() => { setActiveTab('campaigns'); setSidebarOpen(false); }}><Send size={16} /> Campañas</div>
+            <div className={`sidebar-nav-item${activeTab === 'payments' ? ' active' : ''}`} onClick={() => { setActiveTab('payments'); setSidebarOpen(false); }}><CircleDollarSign size={16} /> Cobros</div>
             <div className={`sidebar-nav-item${activeTab === 'turnos' ? ' active' : ''}`} onClick={() => { setActiveTab('turnos'); setSidebarOpen(false); }}><CalendarClock size={16} /> Turnos</div>
           </nav>
           <div className="sidebar-footer">
@@ -2434,6 +2622,7 @@ export default function MerchantPanel() {
             {activeTab === 'campaigns' && <CampaignPanel botId={botId} token={token} api={API} />}
             {activeTab === 'chats' && <MerchantChatsPanel botId={botId} token={token} api={API} />}
             {activeTab === 'metrics' && <MerchantMetricsPanel botId={botId} token={token} api={API} bot={bot} />}
+            {activeTab === 'payments' && <PaymentRemindersPanel botId={botId} token={token} api={API} />}
             {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} /></div>}
 
           {activeTab === 'config' && (<>
