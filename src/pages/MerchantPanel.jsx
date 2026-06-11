@@ -639,6 +639,11 @@ function MerchantChatsPanel({ botId, token, api }) {
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [interventions, setInterventions] = useState([]);
+  const [selectedIntervention, setSelectedIntervention] = useState(null);
+  const [humanReply, setHumanReply] = useState('');
+  const [replying, setReplying] = useState(false);
+  const [interventionMsg, setInterventionMsg] = useState(null);
 
   const fmt = (ts) => {
     if (!ts) return '';
@@ -683,8 +688,54 @@ function MerchantChatsPanel({ botId, token, api }) {
     }
   }
 
+  async function loadInterventions() {
+    try {
+      const params = new URLSearchParams({ bot_id: botId });
+      const res = await authFetch(`${api}/api/merchant/interventions?${params}`, {}, token);
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : [];
+      setInterventions(list);
+      setSelectedIntervention(prev => {
+        if (prev && list.some(i => i.id === prev.id)) return list.find(i => i.id === prev.id);
+        return list[0] || null;
+      });
+    } catch {
+      setInterventions([]);
+      setSelectedIntervention(null);
+    }
+  }
+
+  async function refreshAll() {
+    await Promise.all([loadChats(), loadInterventions()]);
+  }
+
+  async function sendHumanReply() {
+    if (!selectedIntervention || !humanReply.trim()) return;
+    setReplying(true);
+    setInterventionMsg(null);
+    try {
+      const res = await authFetch(`${api}/api/merchant/interventions/${selectedIntervention.id}/respond`, {
+        method: 'POST',
+        body: JSON.stringify({ answer: humanReply.trim() })
+      }, token);
+      const data = await res.json();
+      if (res.ok) {
+        setHumanReply('');
+        setInterventionMsg({ ok: true, text: 'Respuesta enviada y aprendizaje guardado.' });
+        await refreshAll();
+      } else {
+        setInterventionMsg({ ok: false, text: data.error || 'No se pudo enviar la respuesta.' });
+      }
+    } catch {
+      setInterventionMsg({ ok: false, text: 'Error de conexión al enviar la respuesta.' });
+    } finally {
+      setReplying(false);
+      setTimeout(() => setInterventionMsg(null), 4500);
+    }
+  }
+
   useEffect(() => {
-    loadChats();
+    refreshAll();
   }, [botId, search]);
 
   const lastMessage = selected?.messages?.[selected.messages.length - 1];
@@ -698,7 +749,7 @@ function MerchantChatsPanel({ botId, token, api }) {
           title="Chats atendidos por el asistente"
           desc="Historial de conversaciones que el asistente esta respondiendo en tus canales conectados."
           action={
-            <button onClick={loadChats} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}>
+            <button onClick={refreshAll} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.35rem 0.65rem', fontSize: '0.78rem' }}>
               Actualizar
             </button>
           }
@@ -710,6 +761,82 @@ function MerchantChatsPanel({ botId, token, api }) {
           placeholder="Buscar por numero o ID del cliente"
           style={{ marginBottom: 0, background: 'var(--bg-card)' }}
         />
+      </PanelCard>
+
+      <PanelCard style={{ borderColor: interventions.length ? 'rgba(245,158,11,0.36)' : 'var(--border)' }}>
+        <SectionHeader
+          icon={<ShieldCheck size={18} />}
+          tone={interventions.length ? 'amber' : 'green'}
+          title="Necesitan intervención humana"
+          desc={interventions.length ? 'Chats pausados esperando una respuesta del dueño o del equipo.' : 'No hay conversaciones esperando intervención en este momento.'}
+          action={<span style={{ background: interventions.length ? 'rgba(245,158,11,0.14)' : 'rgba(16,185,129,0.12)', color: interventions.length ? '#fbbf24' : '#34d399', border: `1px solid ${interventions.length ? 'rgba(245,158,11,0.28)' : 'rgba(16,185,129,0.24)'}`, borderRadius: 99, padding: '4px 10px', fontSize: '0.76rem', fontWeight: 800 }}>{interventions.length} pendientes</span>}
+        />
+
+        {interventions.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(280px,100%),1fr))', gap: '1rem', alignItems: 'start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', maxHeight: '300px', overflowY: 'auto' }}>
+              {interventions.map(item => {
+                const active = selectedIntervention?.id === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => { setSelectedIntervention(item); setHumanReply(''); setInterventionMsg(null); }}
+                    style={{
+                      textAlign: 'left',
+                      border: `1px solid ${active ? 'rgba(245,158,11,0.6)' : 'var(--border)'}`,
+                      background: active ? 'rgba(245,158,11,0.12)' : 'rgba(255,255,255,0.035)',
+                      borderRadius: '12px',
+                      padding: '0.8rem',
+                      color: 'var(--text-primary)',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'center', marginBottom: '0.35rem' }}>
+                      <strong style={{ fontSize: '0.86rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayClient(item.client_number)}</strong>
+                      <span style={{ fontSize: '0.68rem', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 99, padding: '2px 7px', flexShrink: 0 }}>{channelLabel(item.client_number)}</span>
+                    </div>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.78rem', lineHeight: 1.4 }}>{item.question}</p>
+                    <span style={{ display: 'block', color: 'var(--text-3)', fontSize: '0.7rem', marginTop: '0.4rem' }}>{fmt(item.created_at)}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div style={{ border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '0.9rem' }}>
+              {selectedIntervention ? (
+                <>
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <strong style={{ display: 'block', fontSize: '0.92rem', marginBottom: '0.25rem' }}>{displayClient(selectedIntervention.client_number)}</strong>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.8rem', lineHeight: 1.45 }}>{selectedIntervention.question}</p>
+                  </div>
+                  {selectedIntervention.messages?.length > 0 && (
+                    <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: '10px', padding: '0.65rem', marginBottom: '0.75rem', background: 'rgba(11,20,26,0.45)' }}>
+                      {selectedIntervention.messages.map(message => (
+                        <div key={message.id} style={{ color: message.role === 'user' ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '0.76rem', lineHeight: 1.45, marginBottom: '0.45rem' }}>
+                          <strong>{message.role === 'user' ? 'Cliente' : 'Asistente'}:</strong> {message.content}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <textarea
+                    className="prompt-textarea editable"
+                    value={humanReply}
+                    onChange={e => setHumanReply(e.target.value)}
+                    placeholder="Escribí la respuesta que recibirá el cliente..."
+                    style={{ minHeight: '100px', marginBottom: '0.75rem' }}
+                  />
+                  {interventionMsg && <p style={{ margin: '0 0 0.75rem', color: interventionMsg.ok ? '#34d399' : '#f87171', fontSize: '0.82rem' }}>{interventionMsg.text}</p>}
+                  <button onClick={sendHumanReply} disabled={replying || !humanReply.trim()} className="btn-solid-blue" style={{ margin: 0, width: 'auto', padding: '0.62rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <Send size={15} /> {replying ? 'Enviando...' : 'Responder y cerrar'}
+                  </button>
+                </>
+              ) : (
+                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.86rem' }}>Seleccioná una intervención para responder.</p>
+              )}
+            </div>
+          </div>
+        )}
       </PanelCard>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '1rem', alignItems: 'start' }}>
