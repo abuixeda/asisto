@@ -179,31 +179,8 @@ function ConversationsPanel({ bots }) {
   );
 }
 
-// ─── Subscription Panel (LemonSqueezy) ────────────────────────
-const LS_PLANS = [
-  {
-    variantId: import.meta.env.VITE_LS_VARIANT_STARTER || '',
-    name: 'Plan Starter', price: '$59', currency: 'USD', period: 'mes',
-    key: 'starter',
-    features: ['1 número WhatsApp', 'Hasta 1.500 mensajes/mes', 'Catálogo sincronizado', 'Panel de control', 'Soporte por email'],
-  },
-  {
-    variantId: import.meta.env.VITE_LS_VARIANT_GROWTH || '',
-    name: 'Plan Growth', price: '$99', currency: 'USD', period: 'mes',
-    key: 'growth',
-    recommended: true,
-    features: ['Todo lo de Starter', 'Hasta 5.000 mensajes/mes', 'Soporte prioritario', 'Horario anti-nocturno', 'Base de conocimientos avanzada'],
-  },
-  {
-    variantId: import.meta.env.VITE_LS_VARIANT_SCALE || '',
-    name: 'Plan Scale', price: '$179', currency: 'USD', period: 'mes',
-    key: 'scale',
-    features: ['Todo lo de Growth', '20.000 mensajes/mes', 'Instagram DMs', 'Soporte directo WhatsApp', 'Multi-idioma'],
-  },
-];
-
+// ─── Subscription Panel (Whop) ────────────────────────
 function SubscriptionPanel() {
-  const [loading, setLoading] = useState(null); // variantId del plan en proceso
   const [subscription, setSubscription] = useState(null);
   const [subLoading, setSubLoading] = useState(true);
 
@@ -215,27 +192,6 @@ function SubscriptionPanel() {
       .finally(() => setSubLoading(false));
   }, []);
 
-  const handleSubscribe = async (variantId) => {
-    if (!variantId) return alert('Variant ID no configurado. Revisá las variables de entorno del frontend.');
-    setLoading(variantId);
-    try {
-      const res = await authFetch(`${API_URL}/api/payments/create-checkout`, {
-        method: 'POST',
-        body: JSON.stringify({ variantId }),
-      });
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert(data.error || 'Error al iniciar el pago.');
-      }
-    } catch {
-      alert('Error de conexión con el servidor.');
-    } finally {
-      setLoading(null);
-    }
-  };
-
   const isActive = subscription && ['active', 'on_trial'].includes(subscription.status);
   const renewDate = subscription?.renewsAt
     ? new Date(subscription.renewsAt).toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -243,7 +199,7 @@ function SubscriptionPanel() {
 
   const statusLabel = {
     active: 'Activa',
-    on_trial: 'En período de prueba',
+    on_trial: 'En periodo de prueba',
     cancelled: 'Cancelada',
     expired: 'Expirada',
     paused: 'Pausada',
@@ -252,105 +208,47 @@ function SubscriptionPanel() {
 
   return (
     <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--bg)', flex: 1 }}>
-
-      {/* Banner suscripción activa */}
-      {!subLoading && isActive && (
-        <div style={{ width: '100%', maxWidth: '900px', marginBottom: '2rem', background: 'linear-gradient(135deg, rgba(124,58,237,0.12), rgba(59,130,246,0.10))', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '20px', padding: '1.5rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+      <div style={{ width: '100%', maxWidth: '900px', background: 'var(--surface)', border: '1px solid var(--border-strong)', borderRadius: '24px', padding: '2rem', boxShadow: 'var(--shadow-lg)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1.25rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.3rem' }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--success)', display: 'inline-block' }} />
-              <strong style={{ color: 'var(--text-1)', fontSize: '1.05rem' }}>
-                {statusLabel[subscription.status] || subscription.status} — {subscription.plan ? `Plan ${subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}` : ''}
-              </strong>
-            </div>
-            {renewDate && (
-              <p style={{ margin: 0, color: 'var(--text-3)', fontSize: '0.85rem' }}>
-                Próxima renovación: {renewDate}
-              </p>
-            )}
+            <p style={{ margin: '0 0 0.5rem', color: 'var(--text-3)', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '0.72rem' }}>Pagos</p>
+            <h1 style={{ margin: 0, color: 'var(--text-1)', fontSize: '2rem', fontWeight: 850 }}>Suscripciones gestionadas por Whop</h1>
+            <p style={{ color: 'var(--text-2)', margin: '0.75rem 0 0', lineHeight: 1.55, maxWidth: '620px' }}>
+              Atento usa Whop como pasarela activa. Los planes se compran desde la landing y el webhook acredita el acceso automaticamente cuando el email del pago coincide con la cuenta del usuario.
+            </p>
           </div>
           <a
-            href={`https://app.lemonsqueezy.com/my-orders`}
+            href="https://whop.com/dashboard"
             target="_blank"
             rel="noreferrer"
-            style={{ padding: '0.6rem 1.4rem', borderRadius: '12px', border: '1px solid var(--border-strong)', background: 'var(--surface)', color: 'var(--text-1)', fontWeight: 600, fontSize: '0.88rem', textDecoration: 'none', cursor: 'pointer' }}
+            style={{ padding: '0.7rem 1rem', borderRadius: '12px', border: '1px solid var(--border-strong)', background: 'var(--surface-2)', color: 'var(--text-1)', fontWeight: 700, fontSize: '0.88rem', textDecoration: 'none' }}
           >
-            Gestionar suscripción →
+            Abrir Whop
           </a>
         </div>
-      )}
 
-      <div style={{ textAlign: 'center', marginBottom: '3rem', maxWidth: '700px' }}>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '0.75rem', background: 'var(--gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          Potenciá tu Negocio con Atento AI
-        </h1>
-        <p style={{ color: 'var(--text-2)', fontSize: '1.15rem', lineHeight: 1.5 }}>
-          Activá tu suscripción para mantener tu bot atendiendo clientes las 24hs.
-          <br/><strong style={{ color: 'var(--success)' }}>Incluye 7 días de prueba gratis.</strong> Cancelá cuando quieras.
-        </p>
-      </div>
-
-      <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '1100px', width: '100%' }}>
-        {LS_PLANS.map(plan => {
-          const isCurrent = isActive && subscription?.plan === plan.key;
-          return (
-            <div key={plan.key} style={{ background: 'var(--surface)', border: isCurrent ? '2px solid #7c3aed' : '1px solid var(--border-strong)', borderRadius: '28px', padding: '3rem 2.5rem', width: '360px', display: 'flex', flexDirection: 'column', boxShadow: isCurrent ? '0 0 0 4px rgba(124,58,237,0.1), var(--shadow-lg)' : 'var(--shadow-lg)', position: 'relative', overflow: 'hidden', transition: 'transform 0.2s' }}>
-              {plan.recommended && !isCurrent && (
-                <div style={{ position: 'absolute', top: '15px', right: '-40px', background: 'var(--success)', color: '#fff', padding: '5px 45px', transform: 'rotate(45deg)', fontSize: '0.7rem', fontWeight: 900, letterSpacing: '0.05em', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-                  MÁS ELEGIDO
-                </div>
-              )}
-              {isCurrent && (
-                <div style={{ position: 'absolute', top: '15px', right: '-40px', background: '#7c3aed', color: '#fff', padding: '5px 45px', transform: 'rotate(45deg)', fontSize: '0.7rem', fontWeight: 900, letterSpacing: '0.05em', boxShadow: '0 2px 8px rgba(124,58,237,0.4)' }}>
-                  TU PLAN
-                </div>
-              )}
-
-              <div style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-1)' }}>{plan.name}</h2>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem' }}>
-                  <span style={{ fontSize: '2.8rem', fontWeight: 800, color: 'var(--text-1)' }}>{plan.price}</span>
-                  <span style={{ color: 'var(--text-3)', fontWeight: 600, fontSize: '1rem' }}>{plan.currency}/{plan.period}</span>
-                </div>
-              </div>
-
-              <div style={{ flex: 1, marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {plan.features.map((f, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem', fontSize: '0.92rem', color: 'var(--text-2)', lineHeight: 1.4 }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: 'rgba(124,58,237,0.12)', color: '#a78bfa', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', flexShrink: 0, marginTop: '2px', fontWeight: 800 }}>✓</div>
-                    {f}
-                  </div>
-                ))}
-              </div>
-
-              <button
-                onClick={() => !isCurrent && handleSubscribe(plan.variantId)}
-                disabled={!!loading || isCurrent}
-                className="btn-primary"
-                style={{ width: '100%', padding: '1.1rem', borderRadius: '16px', fontSize: '1.05rem', fontWeight: 700, boxShadow: isCurrent ? 'none' : '0 4px 15px rgba(124,58,237,0.3)', cursor: isCurrent ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: isCurrent ? 0.7 : 1, background: isCurrent ? 'var(--surface-2)' : undefined }}
-              >
-                {loading === plan.variantId
-                  ? <Loader className="spinner" size={20} />
-                  : isCurrent
-                    ? <>Plan actual ✓</>
-                    : <>Suscribirse ahora <ChevronRight size={18} /></>}
-              </button>
-            </div>
-          );
-        })}
-      </div>
-
-      <div style={{ marginTop: '4rem', textAlign: 'center', color: 'var(--text-3)', fontSize: '0.88rem', maxWidth: '650px', background: 'var(--surface-2)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border)' }}>
-        <p style={{ margin: 0 }}>
-          🛡️ Transacción segura vía <strong>LemonSqueezy</strong>.
-          <br/>La activación es instantánea una vez procesado el pago. Podés gestionar tu suscripción y descargar facturas desde el portal de LemonSqueezy.
-        </p>
+        <div style={{ marginTop: '1.5rem', background: isActive ? 'rgba(16,185,129,0.10)' : 'rgba(245,158,11,0.10)', border: `1px solid ${isActive ? 'rgba(16,185,129,0.28)' : 'rgba(245,158,11,0.28)'}`, borderRadius: '16px', padding: '1rem 1.25rem' }}>
+          {subLoading ? (
+            <p style={{ margin: 0, color: 'var(--text-2)' }}>Consultando estado de suscripcion...</p>
+          ) : (
+            <>
+              <strong style={{ color: isActive ? 'var(--success)' : '#f59e0b', display: 'block', marginBottom: '0.35rem' }}>
+                {subscription?.provider === 'whop'
+                  ? `${statusLabel[subscription.status] || subscription.status} ${subscription.plan ? `- Plan ${subscription.plan}` : ''}`
+                  : 'Sin suscripcion Whop activa'}
+              </strong>
+              <p style={{ margin: 0, color: 'var(--text-2)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                {renewDate ? `Proxima renovacion: ${renewDate}. ` : ''}
+                Si el cliente ya pago y no se activo, revisa que haya usado el mismo email en Whop y en Atento.
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── Smooth Area Chart (SVG, interactive) ─────────────────────
 function SmoothAreaChart({ data, color = '#3b82f6', height = 160, tooltipFn }) {
   const [hoveredIdx, setHoveredIdx] = useState(null);
   const svgRef = useRef(null);
