@@ -642,6 +642,7 @@ function MerchantChatsPanel({ botId, token, api }) {
   const [interventions, setInterventions] = useState([]);
   const [selectedIntervention, setSelectedIntervention] = useState(null);
   const [humanReply, setHumanReply] = useState('');
+  const [saveHumanLearning, setSaveHumanLearning] = useState(true);
   const [replying, setReplying] = useState(false);
   const [interventionMsg, setInterventionMsg] = useState(null);
 
@@ -716,12 +717,13 @@ function MerchantChatsPanel({ botId, token, api }) {
     try {
       const res = await authFetch(`${api}/api/merchant/interventions/${selectedIntervention.id}/respond`, {
         method: 'POST',
-        body: JSON.stringify({ answer: humanReply.trim() })
+        body: JSON.stringify({ answer: humanReply.trim(), saveLearning: saveHumanLearning })
       }, token);
       const data = await res.json();
       if (res.ok) {
         setHumanReply('');
-        setInterventionMsg({ ok: true, text: 'Respuesta enviada y aprendizaje guardado.' });
+        setSaveHumanLearning(true);
+        setInterventionMsg({ ok: true, text: saveHumanLearning ? 'Respuesta enviada y aprendizaje guardado.' : 'Respuesta enviada sin guardar aprendizaje.' });
         await refreshAll();
       } else {
         setInterventionMsg({ ok: false, text: data.error || 'No se pudo enviar la respuesta.' });
@@ -781,7 +783,7 @@ function MerchantChatsPanel({ botId, token, api }) {
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => { setSelectedIntervention(item); setHumanReply(''); setInterventionMsg(null); }}
+                    onClick={() => { setSelectedIntervention(item); setHumanReply(''); setSaveHumanLearning(true); setInterventionMsg(null); }}
                     style={{
                       textAlign: 'left',
                       border: `1px solid ${active ? 'rgba(245,158,11,0.6)' : 'var(--border)'}`,
@@ -826,6 +828,18 @@ function MerchantChatsPanel({ botId, token, api }) {
                     placeholder="Escribí la respuesta que recibirá el cliente..."
                     style={{ minHeight: '100px', marginBottom: '0.75rem' }}
                   />
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.035)', borderRadius: '10px', padding: '0.7rem 0.8rem', marginBottom: '0.75rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={saveHumanLearning}
+                      onChange={e => setSaveHumanLearning(e.target.checked)}
+                      style={{ marginTop: 3, accentColor: '#10b981' }}
+                    />
+                    <span>
+                      <span style={{ display: 'block', color: 'var(--text-primary)', fontWeight: 800, fontSize: '0.84rem' }}>Guardar esta respuesta en la base de conocimiento</span>
+                      <span style={{ display: 'block', color: 'var(--text-secondary)', fontSize: '0.76rem', lineHeight: 1.4, marginTop: '0.2rem' }}>Si lo desactivás, la respuesta se envía al cliente pero no se usa como aprendizaje futuro.</span>
+                    </span>
+                  </label>
                   {interventionMsg && <p style={{ margin: '0 0 0.75rem', color: interventionMsg.ok ? '#34d399' : '#f87171', fontSize: '0.82rem' }}>{interventionMsg.text}</p>}
                   <button onClick={sendHumanReply} disabled={replying || !humanReply.trim()} className="btn-solid-blue" style={{ margin: 0, width: 'auto', padding: '0.62rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
                     <Send size={15} /> {replying ? 'Enviando...' : 'Responder y cerrar'}
