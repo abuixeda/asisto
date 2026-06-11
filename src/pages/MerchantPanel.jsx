@@ -2089,6 +2089,7 @@ export default function MerchantPanel() {
   const [humanHandoff, setHumanHandoff] = useState(DEFAULT_HUMAN_HANDOFF);
   const [activeTab, setActiveTab] = useState('config'); // 'config' | 'chats' | 'metrics' | 'campaigns' | 'turnos'
   const [configSection, setConfigSection] = useState('assistant');
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [showTour, setShowTour] = useState(() => !localStorage.getItem('atento_tour_done'));
   const [theme, setTheme] = useState(() => localStorage.getItem('atento_theme') || 'dark');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -2370,6 +2371,36 @@ export default function MerchantPanel() {
           />
         </div>
       )}
+      {previewOpen && (
+        <div
+          onClick={() => setPreviewOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(2,6,23,0.82)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ width: 'min(390px, 100%)', display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+              <div>
+                <h2 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: 850 }}>Probar asistente</h2>
+                <p style={{ margin: '0.2rem 0 0', color: '#94a3b8', fontSize: '0.78rem' }}>Simulación con la configuración actual.</p>
+              </div>
+              <button
+                onClick={() => setPreviewOpen(false)}
+                style={{ width: 36, height: 36, borderRadius: '10px', border: '1px solid rgba(255,255,255,0.16)', background: 'rgba(255,255,255,0.08)', color: '#fff', cursor: 'pointer', fontSize: '1.15rem', lineHeight: 1 }}
+                aria-label="Cerrar prueba"
+              >
+                ×
+              </button>
+            </div>
+            <BotPreviewChat
+              botId={botId}
+              token={token}
+              botName={bot?.name}
+              currentPrompt={prompt}
+              currentKB={knowledgeBase}
+              embedded
+            />
+          </div>
+        </div>
+      )}
       <div className="app-shell">
         <div className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`} onClick={() => setSidebarOpen(false)} />
         {/* -- Sidebar -- */}
@@ -2626,16 +2657,20 @@ export default function MerchantPanel() {
               icon={<TestTube2 size={18} />}
               tone="cyan"
               title="Probar asistente"
-              desc="Simula una conversacion real con el conocimiento y la personalidad que acabas de configurar."
+              desc="Abrí una vista tipo celular para probar cómo respondería antes de atender clientes reales."
+              action={
+                <button
+                  onClick={() => setPreviewOpen(true)}
+                  className="btn-solid-blue"
+                  style={{ margin: 0, width: 'auto', padding: '0.55rem 0.95rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                >
+                  <Smartphone size={15} /> Abrir simulador
+                </button>
+              }
             />
-            <BotPreviewChat
-              botId={botId}
-              token={token}
-              botName={bot?.name}
-              currentPrompt={prompt}
-              currentKB={knowledgeBase}
-              embedded
-            />
+            <div style={{ border: '1px dashed rgba(34,211,238,0.26)', background: 'rgba(34,211,238,0.055)', borderRadius: '12px', padding: '0.85rem 1rem', color: 'var(--text-secondary)', fontSize: '0.84rem', lineHeight: 1.5 }}>
+              La prueba usa la personalidad y la base de conocimiento que tenés cargadas en esta pantalla, incluso antes de guardar.
+            </div>
           </PanelCard>}
 
           </div>
