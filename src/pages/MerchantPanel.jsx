@@ -2066,7 +2066,7 @@ function WidgetPanel({ botId, token, api }) {
 
 function PaymentRemindersPanel({ botId, token, api }) {
   const [debtors, setDebtors] = useState([]);
-  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'daily', maxReminders: '0', note: '' });
+  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', reminderDaysBefore: '7', note: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -2099,7 +2099,8 @@ function PaymentRemindersPanel({ botId, token, api }) {
       amount: form.amount,
       dueDate: form.dueDate,
       reminderFrequency: form.reminderFrequency,
-      maxReminders: Number(form.maxReminders) || 0,
+      totalInstallments: Number(form.totalInstallments) || 1,
+      reminderDaysBefore: Number(form.reminderDaysBefore) || 0,
       note: form.note.trim()
     };
     if (!payload.name || !payload.phone || !payload.amount) {
@@ -2115,7 +2116,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
       }, token);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'No se pudo cargar el recordatorio.');
-      setForm({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'daily', maxReminders: '0', note: '' });
+      setForm({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', reminderDaysBefore: '7', note: '' });
       setMsg({ ok: true, text: 'Recordatorio cargado. Atento enviará el aviso automático a las 10:00 AM.' });
       await loadDebtors();
     } catch (err) {
@@ -2151,7 +2152,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
     boxSizing: 'border-box'
   };
   const frequencyLabel = {
-    daily: 'Diario',
+    daily: 'Diaria',
     weekly: 'Semanal',
     monthly: 'Mensual'
   };
@@ -2170,14 +2171,14 @@ function PaymentRemindersPanel({ botId, token, api }) {
         </div>
         {d.dueDate && <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginTop: '0.22rem' }}>Vencimiento: {d.dueDate}</div>}
         <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginTop: '0.22rem' }}>
-          Frecuencia: {frequencyLabel[d.reminderFrequency] || 'Diario'} · Avisos: {Number(d.remindersSent || 0)}{Number(d.maxReminders || 0) > 0 ? `/${d.maxReminders}` : ' / sin límite'}
+          Cuota actual: {Number(d.currentInstallment || 1)}/{Number(d.totalInstallments || 1)} · Cobro {frequencyLabel[d.reminderFrequency] || 'Mensual'} · Avisos enviados: {Number(d.remindersSent || 0)}
         </div>
         {d.note && <div style={{ color: 'var(--text-3)', fontSize: '0.78rem', marginTop: '0.22rem' }}>{d.note}</div>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
         {d.status === 'pending' && (
           <button onClick={() => updateStatus(d.id, 'paid')} style={{ border: 'none', borderRadius: '9px', background: 'rgba(16,185,129,0.16)', color: 'var(--success)', padding: '0.55rem 0.75rem', cursor: 'pointer', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-            <CheckCircle2 size={15} /> Pagó
+            <CheckCircle2 size={15} /> {Number(d.totalInstallments || 1) > 1 ? 'Cuota cobrada' : 'Pagó'}
           </button>
         )}
         <button onClick={() => removeDebtor(d.id)} aria-label="Borrar recordatorio" style={{ border: '1px solid var(--danger-border)', borderRadius: '9px', background: 'transparent', color: 'var(--danger)', padding: '0.55rem 0.65rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
@@ -2193,7 +2194,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
         icon={<CircleDollarSign size={18} />}
         tone="amber"
         title="Recordatorios de pago"
-        desc="Agendá pagos pendientes y definí si Atento debe recordar de forma diaria, semanal o mensual."
+        desc="Agendá cuotas o pagos recurrentes y definí desde cuántos días antes Atento debe recordarlos."
         action={<button onClick={loadDebtors} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.45rem 0.75rem', fontSize: '0.8rem' }}>Actualizar</button>}
       />
 
@@ -2217,20 +2218,21 @@ function PaymentRemindersPanel({ botId, token, api }) {
           <IconBox tone="amber"><CircleDollarSign size={19} /></IconBox>
           <div>
             <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 850 }}>Nuevo pago pendiente</h2>
-            <p style={{ margin: '0.2rem 0 0', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>Elegí desde qué fecha empieza, cada cuánto se repite y cuántos avisos debe enviar.</p>
+            <p style={{ margin: '0.2rem 0 0', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>Indicá monto por cuota, cantidad de cuotas, frecuencia de cobro y cuántos días antes avisar.</p>
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '0.75rem' }}>
           <input style={inputStyle} placeholder="Nombre del cliente" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
           <input style={inputStyle} inputMode="tel" placeholder="WhatsApp: 5491122334455" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
-          <input style={inputStyle} inputMode="decimal" type="number" placeholder="Monto" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
-          <input style={inputStyle} type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />
+          <input style={inputStyle} inputMode="decimal" type="number" placeholder="Monto por cuota" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />
+          <input style={inputStyle} type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} title="Fecha de vencimiento de la primera cuota" />
           <select style={inputStyle} value={form.reminderFrequency} onChange={e => setForm(f => ({ ...f, reminderFrequency: e.target.value }))}>
-            <option value="daily">Recordar diariamente</option>
-            <option value="weekly">Recordar semanalmente</option>
-            <option value="monthly">Recordar mensualmente</option>
+            <option value="monthly">Cobro mensual</option>
+            <option value="weekly">Cobro semanal</option>
+            <option value="daily">Cobro diario</option>
           </select>
-          <input style={inputStyle} inputMode="numeric" type="number" min="0" max="60" placeholder="Cantidad de avisos/cuotas (0 = sin límite)" value={form.maxReminders} onChange={e => setForm(f => ({ ...f, maxReminders: e.target.value }))} />
+          <input style={inputStyle} inputMode="numeric" type="number" min="1" max="120" placeholder="Cantidad de cuotas" value={form.totalInstallments} onChange={e => setForm(f => ({ ...f, totalInstallments: e.target.value }))} />
+          <input style={inputStyle} inputMode="numeric" type="number" min="0" max="30" placeholder="Avisar días antes del vencimiento" value={form.reminderDaysBefore} onChange={e => setForm(f => ({ ...f, reminderDaysBefore: e.target.value }))} />
         </div>
         <textarea style={{ ...inputStyle, minHeight: 78, marginTop: '0.75rem', resize: 'vertical' }} placeholder="Nota opcional: concepto, cuota, pedido o detalle interno" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
         {msg && (
