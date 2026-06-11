@@ -136,7 +136,9 @@ function ShopifyPanel() {
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
       ]);
       headers['Authorization'] = `Bearer ${token}`;
-    } catch (_e) {}
+    } catch (_e) {
+      // Shopify App Bridge token can be unavailable during local preview.
+    }
     return fetch(url, { ...options, headers });
   }, [app, shop]);
 
@@ -216,14 +218,18 @@ function ShopifyPanel() {
         try {
           const w = JSON.parse(data.widgetConfig || '{}');
           setWidget({ enabled: !!w.enabled, welcomeMessage: w.welcomeMessage || '', buttonText: w.buttonText || '' });
-        } catch (_e) {}
+        } catch (_e) {
+          // Keep default widget config if stored JSON is invalid.
+        }
         const m = (() => { try { return JSON.parse(data.metrics || '{}'); } catch { return {}; } })();
         if (m.responseDelay !== undefined) setResponseDelay(m.responseDelay);
         if (m.workingHours) setHours(m.workingHours);
         if (m.adminNumber) setAdminPhone(m.adminNumber.replace('@c.us', ''));
         if (data.language) setLanguage(data.language);
       })
-      .catch(() => {})
+      .catch(() => {
+        // Initial embedded load can fail outside Shopify iframe.
+      })
       .finally(() => setLoading(false));
   }, [activeBotId]);
 
@@ -232,7 +238,9 @@ function ShopifyPanel() {
     shopifyFetch(`${API}/api/shopify/embedded/bots`)
       .then(r => r.json())
       .then(data => { if (Array.isArray(data)) setAllBots(data); })
-      .catch(() => {});
+      .catch(() => {
+        // Scale bot list is optional for non-Scale shops.
+      });
   }, [activeBotId]);
 
   async function handleCreateSecondBot() {
@@ -285,7 +293,9 @@ function ShopifyPanel() {
       if (Array.isArray(specsData) && specsData.length > 0) {
         setSelectedSpecId(prev => prev || specsData[0].id);
       }
-    } catch (_e) {}
+    } catch (_e) {
+      // Leave the existing schedule state untouched on load failure.
+    }
   }
 
   useEffect(() => {
@@ -334,7 +344,9 @@ function ShopifyPanel() {
         setStarting(false); setQrData(null);
         clearInterval(pollRef.current);
       }
-    } catch (_e) {}
+    } catch (_e) {
+      // Polling retries on the next interval.
+    }
   }
 
   async function startBot() {
@@ -347,7 +359,9 @@ function ShopifyPanel() {
   }
 
   async function stopBot() {
-    try { await shopifyFetch(`${API}/api/shopify/embedded/stop`, { method: 'POST' }); } catch (_e) {}
+    try { await shopifyFetch(`${API}/api/shopify/embedded/stop`, { method: 'POST' }); } catch (_e) {
+      // UI is reset locally even if the remote stop request fails.
+    }
     setBot(b => ({ ...b, status: 'OFF' }));
     setStarting(false); setQrData(null);
     clearInterval(pollRef.current);
@@ -507,7 +521,9 @@ function ShopifyPanel() {
       const cartData = await cartRes.json();
       setCartConfig(cartData.config);
       setAbandonedCarts(cartData.carts || []);
-    } catch (_e) {}
+    } catch (_e) {
+      // Marketing widgets stay empty if Shopify data is unavailable.
+    }
     finally { setMarketingLoading(false); }
   }
 
@@ -557,14 +573,18 @@ function ShopifyPanel() {
     try {
       await shopifyFetch(`${API}/api/shopify/embedded/campaigns/${id}/pause`, { method: 'POST' });
       loadMarketing();
-    } catch (_e) {}
+    } catch (_e) {
+      // Keep current campaign state if pause fails.
+    }
   }
 
   async function deleteCampaign(id) {
     try {
       await shopifyFetch(`${API}/api/shopify/embedded/campaigns/${id}`, { method: 'DELETE' });
       loadMarketing();
-    } catch (_e) {}
+    } catch (_e) {
+      // Keep current campaign state if delete fails.
+    }
   }
 
   if (loading) return (
@@ -591,14 +611,6 @@ function ShopifyPanel() {
     const d = await res.json();
     return d.reply || d.error || 'Sin respuesta.';
   }
-
-  const specOptions = [
-    { label: 'Seleccion un servicio', value: '' },
-    ...specialties.map(s => ({ label: s.name, value: s.id })),
-  ];
-
-  const statusColors = { confirmed: '#10b981', completed: '#3b82f6', cancelled: '#ef4444' };
-  const statusLabels = { confirmed: 'Confirmado', completed: 'Completado', cancelled: 'Cancelado' };
 
   const planLimits = { starter: 1500, growth: 5000, scale: 20000 };
   const planLimit = planLimits[bot?.plan] ?? 1500;

@@ -349,7 +349,7 @@ export default function LandingAgency() {
           <div className="steps-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0' }}>
             {steps.map((s, i) => (
               <FadeIn key={i} delay={i * 0.1}>
-                <div style={{ padding: '0 1.5rem 0 0', borderRight: i < STEPS.length - 1 ? `1px solid ${C.border}` : 'none', paddingRight: i < STEPS.length - 1 ? '1.5rem' : 0, marginRight: i < STEPS.length - 1 ? '1.5rem' : 0, position: 'relative' }}>
+                <div style={{ padding: '0 1.5rem 0 0', borderRight: i < steps.length - 1 ? `1px solid ${C.border}` : 'none', paddingRight: i < steps.length - 1 ? '1.5rem' : 0, marginRight: i < steps.length - 1 ? '1.5rem' : 0, position: 'relative' }}>
                   <div className="serif" style={{ fontSize: '4rem', fontWeight: 800, color: C.accentSubtle, lineHeight: 1, marginBottom: '1rem', userSelect: 'none' }}>{s.n}</div>
                   <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: C.accentSubtle, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.accent, marginBottom: '0.85rem' }}>{s.icon}</div>
                   <h3 style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>{s.title}</h3>

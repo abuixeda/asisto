@@ -202,7 +202,7 @@ const LS_PLANS = [
   },
 ];
 
-function SubscriptionPanel({ user, bots }) {
+function SubscriptionPanel() {
   const [loading, setLoading] = useState(null); // variantId del plan en proceso
   const [subscription, setSubscription] = useState(null);
   const [subLoading, setSubLoading] = useState(true);
@@ -3048,7 +3048,7 @@ function Dashboard() {
                       </div>
                     )}
 
-                    {false && (
+                    {import.meta.env.VITE_SHOW_WHATSAPP_CLOUD === 'true' && (
                     /* WhatsApp Cloud API */
                     <div style={{marginTop:'2rem', borderTop:'1px solid var(--border)', paddingTop:'1rem'}}>
                       <div className="prompt-header">

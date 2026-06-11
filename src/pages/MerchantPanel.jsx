@@ -2097,9 +2097,8 @@ export default function MerchantPanel() {
   const pollRef = useRef(null);
 
   // Meta Config (Instagram/Facebook)
-  const [metaPageId, setMetaPageId] = useState('');
-  const [metaIgId, setMetaIgId] = useState('');
-  const [metaMsg, setMetaMsg] = useState(null);
+  const [, setMetaPageId] = useState('');
+  const [, setMetaIgId] = useState('');
 
   // Telegram Config
   const [telegramBotToken, setTelegramBotToken] = useState('');
@@ -2117,14 +2116,7 @@ export default function MerchantPanel() {
     loadBot();
     // Handle OAuth callback params
     const params = new URLSearchParams(window.location.search);
-    if (params.get('meta_ok')) {
-      const pageName = params.get('page_name') || 'tu pgina';
-      setMetaMsg({ ok: true, text: `? Conectado con ${pageName}! Instagram y Facebook ya estn activos.` });
-      window.history.replaceState({}, '', '/mi-panel');
-    } else if (params.get('meta_error')) {
-      const err = params.get('meta_error');
-      const msgs = { acceso_denegado: 'Cancelaste el acceso.', sesion_expirada: 'La sesion expiro, intenta de nuevo.', sin_paginas: 'No se encontraron paginas de Facebook en tu cuenta.', error_interno: 'Error interno, contacta soporte.' };
-      setMetaMsg({ ok: false, text: `? ${msgs[err] || err}` });
+    if (params.get('meta_ok') || params.get('meta_error')) {
       window.history.replaceState({}, '', '/mi-panel');
     }
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
@@ -2200,24 +2192,6 @@ export default function MerchantPanel() {
     } finally {
       setSaving(false);
       setTimeout(() => setSaveMsg(''), 3000);
-    }
-  }
-
-  async function connectMeta() {
-    setMetaMsg(null);
-    try {
-      const res = await authFetch(`${API}/api/oauth/meta/init`, {
-        method: 'POST',
-        body: JSON.stringify({ botId })
-      }, token);
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setMetaMsg({ ok: false, text: `? ${data.error || 'Error al iniciar conexin.'}` });
-      }
-    } catch {
-      setMetaMsg({ ok: false, text: 'Error de conexion con el servidor.' });
     }
   }
 

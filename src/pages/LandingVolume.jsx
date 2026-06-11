@@ -225,7 +225,7 @@ function DemoChat() {
       } else {
         setMessages([...newMsgs, { from: 'bot', text: data.error || t('demo.errors.network') }]);
       }
-    } catch (err) {
+    } catch {
       setMessages([...newMsgs, { from: 'bot', text: t('demo.errors.brain') }]);
     }
     setLoading(false);
