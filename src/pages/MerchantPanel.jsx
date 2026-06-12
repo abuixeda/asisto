@@ -2066,9 +2066,10 @@ function WidgetPanel({ botId, token, api }) {
 
 function PaymentRemindersPanel({ botId, token, api }) {
   const [debtors, setDebtors] = useState([]);
-  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', reminderDaysBefore: '7', note: '' });
+  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', reminderDaysBefore: '7', note: '', reminderMessage: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [generatingMessage, setGeneratingMessage] = useState(false);
   const [msg, setMsg] = useState(null);
   const [installments, setInstallments] = useState([{ number: 1, amount: '', dueDate: '', status: 'pending' }]);
   const previousInstallmentDefaultsRef = useRef({ amount: '', dueDate: '', frequency: 'monthly' });
@@ -2159,6 +2160,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
       totalInstallments: Number(form.totalInstallments) || 1,
       reminderDaysBefore: Number(form.reminderDaysBefore) || 0,
       installments,
+      reminderMessage: form.reminderMessage.trim(),
       note: form.note.trim()
     };
     if (!payload.name || !payload.phone || !payload.amount) {
@@ -2174,7 +2176,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
       }, token);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'No se pudo cargar el recordatorio.');
-      setForm({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', reminderDaysBefore: '7', note: '' });
+      setForm({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', reminderDaysBefore: '7', note: '', reminderMessage: '' });
       setInstallments([{ number: 1, amount: '', dueDate: '', status: 'pending' }]);
       setMsg({ ok: true, text: 'Recordatorio cargado. Atento enviará el aviso automático a las 10:00 AM.' });
       await loadDebtors();
@@ -2186,10 +2188,34 @@ function PaymentRemindersPanel({ botId, token, api }) {
     }
   }
 
-  async function updateStatus(id, status) {
+  async function generateReminderMessage() {
+    setGeneratingMessage(true);
+    setMsg(null);
+    try {
+      const res = await authFetch(`${api}/api/bots/${botId}/debtors/generate-message`, {
+        method: 'POST',
+        body: JSON.stringify({
+          name: form.name || 'Cliente',
+          amount: form.amount || installments[0]?.amount || '',
+          dueDate: form.dueDate || installments[0]?.dueDate || '',
+          totalInstallments: Number(form.totalInstallments) || installments.length || 1,
+          note: form.note
+        })
+      }, token);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'No se pudo generar el mensaje.');
+      setForm(f => ({ ...f, reminderMessage: data.message || f.reminderMessage }));
+    } catch (err) {
+      setMsg({ ok: false, text: err.message || 'No se pudo generar el mensaje.' });
+    } finally {
+      setGeneratingMessage(false);
+    }
+  }
+
+  async function updateStatus(id, status, installmentNumber = null) {
     await authFetch(`${api}/api/bots/${botId}/debtors/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ status, installmentNumber })
     }, token);
     loadDebtors();
   }
@@ -2249,7 +2275,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
         {d.note && <div style={{ color: 'var(--text-3)', fontSize: '0.78rem', marginTop: '0.22rem' }}>{d.note}</div>}
         {debtorInstallments.length > 0 && (
           <div style={{ marginTop: '0.85rem', border: '1px solid var(--border)', borderRadius: '10px', overflow: 'hidden', maxWidth: 760 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '72px 1fr 1fr 96px', gap: '0.5rem', padding: '0.55rem 0.7rem', background: 'rgba(255,255,255,0.035)', color: 'var(--text-secondary)', fontSize: '0.72rem', fontWeight: 850, textTransform: 'uppercase' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '72px 1fr 1fr 120px', gap: '0.5rem', padding: '0.55rem 0.7rem', background: 'rgba(255,255,255,0.035)', color: 'var(--text-secondary)', fontSize: '0.72rem', fontWeight: 850, textTransform: 'uppercase' }}>
               <span>Cuota</span>
               <span>Monto</span>
               <span>Vence</span>
@@ -2258,13 +2284,17 @@ function PaymentRemindersPanel({ botId, token, api }) {
             {debtorInstallments.map((item, idx) => {
               const isPaid = item.status === 'paid' || idx + 1 < currentInstallment || d.status === 'paid';
               return (
-                <div key={`${d.id}-${item.number || idx}`} style={{ display: 'grid', gridTemplateColumns: '72px 1fr 1fr 96px', gap: '0.5rem', alignItems: 'center', padding: '0.55rem 0.7rem', borderTop: '1px solid var(--border)', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                <div key={`${d.id}-${item.number || idx}`} style={{ display: 'grid', gridTemplateColumns: '72px 1fr 1fr 120px', gap: '0.5rem', alignItems: 'center', padding: '0.55rem 0.7rem', borderTop: '1px solid var(--border)', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
                   <strong style={{ color: 'var(--text-primary)' }}>#{item.number || idx + 1}</strong>
                   <span>${Number(item.amount || d.amount || 0).toLocaleString('es-AR')}</span>
                   <span>{item.dueDate || d.dueDate || '-'}</span>
-                  <span style={{ justifySelf: 'start', color: isPaid ? 'var(--success)' : '#f59e0b', background: isPaid ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)', border: `1px solid ${isPaid ? 'rgba(16,185,129,0.28)' : 'rgba(245,158,11,0.28)'}`, borderRadius: '999px', padding: '0.12rem 0.45rem', fontSize: '0.7rem', fontWeight: 850 }}>
-                    {isPaid ? 'Cobrada' : 'Pendiente'}
-                  </span>
+                  {isPaid ? (
+                    <span style={{ justifySelf: 'start', color: 'var(--success)', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.28)', borderRadius: '999px', padding: '0.18rem 0.5rem', fontSize: '0.7rem', fontWeight: 850 }}>Cobrada</span>
+                  ) : (
+                    <button onClick={() => updateStatus(d.id, 'paid', item.number || idx + 1)} style={{ justifySelf: 'start', color: '#f59e0b', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.32)', borderRadius: '999px', padding: '0.25rem 0.6rem', fontSize: '0.72rem', fontWeight: 850, cursor: 'pointer' }}>
+                      Pendiente
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -2272,9 +2302,9 @@ function PaymentRemindersPanel({ botId, token, api }) {
         )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-        {d.status === 'pending' && (
+        {d.status === 'pending' && totalInstallments <= 1 && (
           <button onClick={() => updateStatus(d.id, 'paid')} style={{ border: 'none', borderRadius: '9px', background: 'rgba(16,185,129,0.16)', color: 'var(--success)', padding: '0.55rem 0.75rem', cursor: 'pointer', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-            <CheckCircle2 size={15} /> {totalInstallments > 1 ? 'Cuota cobrada' : 'Pagó'}
+            <CheckCircle2 size={15} /> Pagó
           </button>
         )}
         <button onClick={() => removeDebtor(d.id)} aria-label="Borrar recordatorio" style={{ border: '1px solid var(--danger-border)', borderRadius: '9px', background: 'transparent', color: 'var(--danger)', padding: '0.55rem 0.65rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}>
@@ -2330,13 +2360,16 @@ function PaymentRemindersPanel({ botId, token, api }) {
               <option value="daily">Diaria</option>
             </select>],
             ['Cantidad de cuotas', <input style={inputStyle} inputMode="numeric" type="number" min="1" max="120" placeholder="Ej: 12" value={form.totalInstallments} onChange={e => setForm(f => ({ ...f, totalInstallments: e.target.value }))} />],
-            ['Empezar a avisar', <input style={inputStyle} inputMode="numeric" type="number" min="0" max="30" placeholder="Dias antes del vencimiento" value={form.reminderDaysBefore} onChange={e => setForm(f => ({ ...f, reminderDaysBefore: e.target.value }))} />],
+            ['Avisar desde', <input style={inputStyle} inputMode="numeric" type="number" min="0" max="30" placeholder="Dias antes del vencimiento" value={form.reminderDaysBefore} onChange={e => setForm(f => ({ ...f, reminderDaysBefore: e.target.value }))} />],
           ].map(([label, field]) => (
             <label key={label} style={{ display: 'grid', gap: '0.35rem' }}>
               <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 750 }}>{label}</span>
               {field}
             </label>
           ))}
+        </div>
+        <div style={{ marginTop: '0.55rem', color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
+          Ej: si ponés 7, Atento empieza a avisar 7 días antes del vencimiento y repite 1 vez por día hasta que la cuota se marque como cobrada.
         </div>
         <div style={{ marginTop: '1rem', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.025)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr 1fr', gap: '0.75rem', padding: '0.75rem 0.9rem', color: 'var(--text-secondary)', fontSize: '0.76rem', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--border)' }}>
@@ -2350,7 +2383,19 @@ function PaymentRemindersPanel({ botId, token, api }) {
             </div>
           ))}
         </div>
-        <textarea style={{ ...inputStyle, minHeight: 78, marginTop: '0.75rem', resize: 'vertical' }} placeholder="Nota opcional: concepto, cuota, pedido o detalle interno" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
+        <div style={{ marginTop: '1rem', display: 'grid', gap: '0.45rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ color: 'var(--text-primary)', fontSize: '0.9rem', fontWeight: 850 }}>Mensaje de recordatorio</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>Podés usar variables: {'{{nombre}}'}, {'{{monto}}'}, {'{{cuota}}'}, {'{{total_cuotas}}'}, {'{{vencimiento}}'}, {'{{concepto}}'}, {'{{negocio}}'}.</div>
+            </div>
+            <button type="button" onClick={generateReminderMessage} disabled={generatingMessage} style={{ border: '1px solid rgba(124,58,237,0.35)', borderRadius: '9px', background: 'rgba(124,58,237,0.14)', color: 'var(--accent)', padding: '0.55rem 0.75rem', fontWeight: 850, cursor: generatingMessage ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+              <BrainCircuit size={15} /> {generatingMessage ? 'Generando...' : 'Generar con IA'}
+            </button>
+          </div>
+          <textarea style={{ ...inputStyle, minHeight: 96, resize: 'vertical' }} placeholder="Hola {{nombre}}, te recordamos la cuota {{cuota}}/{{total_cuotas}} por ${{monto}}, con vencimiento {{vencimiento}}." value={form.reminderMessage} onChange={e => setForm(f => ({ ...f, reminderMessage: e.target.value }))} />
+        </div>
+        <textarea style={{ ...inputStyle, minHeight: 78, marginTop: '0.75rem', resize: 'vertical' }} placeholder="Concepto o nota interna: pedido, detalle de la cuota o aclaración para el mensaje" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
         {msg && (
           <div style={{ marginTop: '0.75rem', border: `1px solid ${msg.ok ? 'rgba(16,185,129,0.35)' : 'var(--danger-border)'}`, background: msg.ok ? 'rgba(16,185,129,0.09)' : 'var(--danger-dim)', color: msg.ok ? 'var(--success)' : 'var(--danger)', borderRadius: '10px', padding: '0.65rem 0.8rem', fontSize: '0.85rem' }}>
             {msg.text}
