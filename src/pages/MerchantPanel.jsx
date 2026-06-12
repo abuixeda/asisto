@@ -2066,7 +2066,7 @@ function WidgetPanel({ botId, token, api }) {
 
 function PaymentRemindersPanel({ botId, token, api }) {
   const [debtors, setDebtors] = useState([]);
-  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', reminderTime: '10:00', note: '', reminderMessage: '' });
+  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', remindersEnabled: true, reminderTime: '10:00', note: '', reminderMessage: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [generatingMessage, setGeneratingMessage] = useState(false);
@@ -2167,6 +2167,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
       totalInstallments: Number(form.totalInstallments) || 1,
       reminderDaysBefore: Math.max(...reminderDaysBeforeList, 0),
       reminderDaysBeforeList,
+      remindersEnabled: form.remindersEnabled,
       reminderTime: form.reminderTime || '10:00',
       installments,
       reminderMessage: form.reminderMessage.trim(),
@@ -2185,7 +2186,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
       }, token);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'No se pudo cargar el recordatorio.');
-      setForm({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', reminderTime: '10:00', note: '', reminderMessage: '' });
+      setForm({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', remindersEnabled: true, reminderTime: '10:00', note: '', reminderMessage: '' });
       setInstallments([{ number: 1, amount: '', dueDate: '', status: 'pending' }]);
       setReminderDaysBeforeList([7, 0]);
       setMsg({ ok: true, text: 'Recordatorio cargado. Atento enviará el aviso automático a las 10:00 AM.' });
@@ -2439,21 +2440,26 @@ function PaymentRemindersPanel({ botId, token, api }) {
             </label>
           ))}
         </div>
-        <div style={{ marginTop: '1rem', border: '1px solid rgba(124,58,237,0.25)', borderRadius: '12px', padding: '0.9rem', background: 'rgba(124,58,237,0.055)' }}>
+        <div style={{ marginTop: '1rem', border: '1px solid rgba(124,58,237,0.25)', borderRadius: '12px', padding: '0.9rem', background: form.remindersEnabled ? 'rgba(124,58,237,0.055)' : 'rgba(148,163,184,0.06)', opacity: form.remindersEnabled ? 1 : 0.72 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.75rem' }}>
             <div>
               <div style={{ color: 'var(--text-primary)', fontWeight: 850, fontSize: '0.9rem' }}>Preavisos automáticos</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>Elegí cuántos días antes del vencimiento se envía cada aviso. Usá 0 para avisar el mismo día. Todos se envían a las {form.reminderTime || '10:00'}.</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>{form.remindersEnabled ? `Elegí cuántos días antes del vencimiento se envía cada aviso. Usá 0 para avisar el mismo día. Todos se envían a las ${form.reminderTime || '10:00'}.` : 'Activá esta opción si querés que Atento envíe recordatorios automáticos por WhatsApp.'}</div>
             </div>
-            <button type="button" onClick={addReminderDay} style={{ width: 34, height: 30, border: 'none', borderRadius: '8px', background: 'linear-gradient(135deg,#8b5cf6,#3b82f6)', color: '#fff', fontWeight: 900, cursor: 'pointer' }}>+</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
+              <button type="button" onClick={() => setForm(f => ({ ...f, remindersEnabled: !f.remindersEnabled }))} style={{ border: '1px solid var(--border)', borderRadius: '999px', background: form.remindersEnabled ? 'rgba(16,185,129,0.14)' : 'var(--surface-2)', color: form.remindersEnabled ? 'var(--success)' : 'var(--text-secondary)', padding: '0.45rem 0.75rem', fontSize: '0.78rem', fontWeight: 850, cursor: 'pointer' }}>
+                {form.remindersEnabled ? 'Preavisos activos' : 'Activar preavisos'}
+              </button>
+              <button type="button" onClick={addReminderDay} disabled={!form.remindersEnabled} style={{ width: 34, height: 30, border: 'none', borderRadius: '8px', background: form.remindersEnabled ? 'linear-gradient(135deg,#8b5cf6,#3b82f6)' : 'var(--surface-2)', color: '#fff', fontWeight: 900, cursor: form.remindersEnabled ? 'pointer' : 'not-allowed' }}>+</button>
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', flexWrap: 'wrap' }}>
             {reminderDaysBeforeList.map(day => (
-              <button key={day} type="button" onClick={() => removeReminderDay(day)} title="Quitar preaviso" style={{ border: '1px solid rgba(124,58,237,0.3)', borderRadius: '9px', background: 'var(--input-bg)', color: 'var(--text-primary)', padding: '0.5rem 0.75rem', cursor: 'pointer' }}>
+              <button key={day} type="button" disabled={!form.remindersEnabled} onClick={() => removeReminderDay(day)} title="Quitar preaviso" style={{ border: '1px solid rgba(124,58,237,0.3)', borderRadius: '9px', background: 'var(--input-bg)', color: 'var(--text-primary)', padding: '0.5rem 0.75rem', cursor: form.remindersEnabled ? 'pointer' : 'not-allowed' }}>
                 {day} día{day === 1 ? '' : 's'} antes
               </button>
             ))}
-            <input style={{ ...inputStyle, width: 130 }} inputMode="numeric" type="number" min="0" max="365" placeholder="Días antes" value={newReminderDay} onChange={e => setNewReminderDay(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addReminderDay(); } }} />
+            <input style={{ ...inputStyle, width: 130 }} disabled={!form.remindersEnabled} inputMode="numeric" type="number" min="0" max="365" placeholder="Días antes" value={newReminderDay} onChange={e => setNewReminderDay(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addReminderDay(); } }} />
           </div>
         </div>
         <div style={{ marginTop: '1rem', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.025)' }}>
