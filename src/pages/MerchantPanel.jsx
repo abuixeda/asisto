@@ -2424,13 +2424,13 @@ function PaymentRemindersPanel({ botId, token, api }) {
             ['Monto base por cuota', <input style={inputStyle} inputMode="decimal" type="number" placeholder="Ej: 20000" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} />],
             ['Primer vencimiento', <input style={inputStyle} type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))} />],
             ['Frecuencia de cobro', <select style={inputStyle} value={form.reminderFrequency} onChange={e => setForm(f => ({ ...f, reminderFrequency: e.target.value }))}>
-              <option value="monthly">Mensual</option>
-              <option value="weekly">Semanal</option>
-              <option value="biweekly">Quincenal</option>
-              <option value="quarterly">Trimestral</option>
-              <option value="semiannual">Semestral</option>
-              <option value="annual">Anual</option>
-              <option value="daily">Diaria</option>
+              <option style={{ color: '#111827', background: '#fff' }} value="monthly">Mensual</option>
+              <option style={{ color: '#111827', background: '#fff' }} value="weekly">Semanal</option>
+              <option style={{ color: '#111827', background: '#fff' }} value="biweekly">Quincenal</option>
+              <option style={{ color: '#111827', background: '#fff' }} value="quarterly">Trimestral</option>
+              <option style={{ color: '#111827', background: '#fff' }} value="semiannual">Semestral</option>
+              <option style={{ color: '#111827', background: '#fff' }} value="annual">Anual</option>
+              <option style={{ color: '#111827', background: '#fff' }} value="daily">Diaria</option>
             </select>],
             ['Cantidad de cuotas', <input style={inputStyle} inputMode="numeric" type="number" min="1" max="120" placeholder="Ej: 12" value={form.totalInstallments} onChange={e => setForm(f => ({ ...f, totalInstallments: e.target.value }))} />],
             ['Hora de envío', <input style={inputStyle} type="time" value={form.reminderTime} onChange={e => setForm(f => ({ ...f, reminderTime: e.target.value }))} />],
@@ -2448,10 +2448,9 @@ function PaymentRemindersPanel({ botId, token, api }) {
               <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>{form.remindersEnabled ? `Elegí cuántos días antes del vencimiento se envía cada aviso. Usá 0 para avisar el mismo día. Todos se envían a las ${form.reminderTime || '10:00'}.` : 'Activá esta opción si querés que Atento envíe recordatorios automáticos por WhatsApp.'}</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-              <button type="button" onClick={() => setForm(f => ({ ...f, remindersEnabled: !f.remindersEnabled }))} aria-pressed={form.remindersEnabled} style={{ border: 'none', background: 'transparent', color: 'var(--text-primary)', padding: 0, display: 'inline-flex', alignItems: 'center', gap: '0.55rem', cursor: 'pointer', fontWeight: 850, fontSize: '0.8rem' }}>
-                <span>{form.remindersEnabled ? 'Activo' : 'Activar'}</span>
-                <span style={{ width: 52, height: 30, borderRadius: 999, background: form.remindersEnabled ? '#22c55e' : '#cbd5e1', padding: 3, boxSizing: 'border-box', display: 'inline-flex', justifyContent: form.remindersEnabled ? 'flex-end' : 'flex-start', alignItems: 'center', transition: 'all 160ms ease', boxShadow: form.remindersEnabled ? '0 0 0 3px rgba(34,197,94,0.12)' : 'inset 0 0 0 1px rgba(15,23,42,0.08)' }}>
-                  <span style={{ width: 24, height: 24, borderRadius: '50%', background: '#fff', boxShadow: '0 2px 8px rgba(15,23,42,0.25)', display: 'block' }} />
+              <button type="button" onClick={() => setForm(f => ({ ...f, remindersEnabled: !f.remindersEnabled }))} aria-label={form.remindersEnabled ? 'Desactivar preavisos' : 'Activar preavisos'} aria-pressed={form.remindersEnabled} style={{ border: 'none', background: 'transparent', padding: 0, display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
+                <span style={{ width: 42, height: 24, borderRadius: 999, background: form.remindersEnabled ? 'linear-gradient(135deg,#8b5cf6,#6366f1)' : '#334155', padding: 3, boxSizing: 'border-box', display: 'inline-flex', justifyContent: form.remindersEnabled ? 'flex-end' : 'flex-start', alignItems: 'center', transition: 'all 160ms ease', boxShadow: form.remindersEnabled ? '0 0 16px rgba(124,58,237,0.45)' : 'inset 0 0 0 1px rgba(148,163,184,0.18)' }}>
+                  <span style={{ width: 18, height: 18, borderRadius: '50%', background: '#fff', boxShadow: '0 2px 8px rgba(15,23,42,0.25)', display: 'block' }} />
                 </span>
               </button>
               <button type="button" onClick={addReminderDay} disabled={!form.remindersEnabled} style={{ width: 34, height: 30, border: 'none', borderRadius: '8px', background: form.remindersEnabled ? 'linear-gradient(135deg,#8b5cf6,#3b82f6)' : 'var(--surface-2)', color: '#fff', fontWeight: 900, cursor: form.remindersEnabled ? 'pointer' : 'not-allowed' }}>+</button>
