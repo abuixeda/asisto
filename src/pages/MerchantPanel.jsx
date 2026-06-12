@@ -2066,12 +2066,15 @@ function WidgetPanel({ botId, token, api }) {
 
 function PaymentRemindersPanel({ botId, token, api }) {
   const [debtors, setDebtors] = useState([]);
-  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', reminderDaysBefore: '7', note: '', reminderMessage: '' });
+  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', note: '', reminderMessage: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [generatingMessage, setGeneratingMessage] = useState(false);
   const [msg, setMsg] = useState(null);
   const [installments, setInstallments] = useState([{ number: 1, amount: '', dueDate: '', status: 'pending' }]);
+  const [reminderDaysBeforeList, setReminderDaysBeforeList] = useState([7, 0]);
+  const [newReminderDay, setNewReminderDay] = useState('');
+  const [expandedDebtors, setExpandedDebtors] = useState({});
   const previousInstallmentDefaultsRef = useRef({ amount: '', dueDate: '', frequency: 'monthly' });
 
   const loadDebtors = useCallback(async () => {
@@ -2127,7 +2130,11 @@ function PaymentRemindersPanel({ botId, token, api }) {
     const previousDefaults = previousInstallmentDefaultsRef.current;
     const getDefaultDueDate = (baseDate, frequency, idx) => {
       if (frequency === 'weekly') return addDaysToDate(baseDate, idx * 7);
+      if (frequency === 'biweekly') return addDaysToDate(baseDate, idx * 14);
       if (frequency === 'daily') return addDaysToDate(baseDate, idx);
+      if (frequency === 'quarterly') return addMonthsToDate(baseDate, idx * 3);
+      if (frequency === 'semiannual') return addMonthsToDate(baseDate, idx * 6);
+      if (frequency === 'annual') return addMonthsToDate(baseDate, idx * 12);
       return addMonthsToDate(baseDate, idx);
     };
     setInstallments(prev => Array.from({ length: total }, (_, idx) => {
@@ -2158,7 +2165,8 @@ function PaymentRemindersPanel({ botId, token, api }) {
       dueDate: form.dueDate,
       reminderFrequency: form.reminderFrequency,
       totalInstallments: Number(form.totalInstallments) || 1,
-      reminderDaysBefore: Number(form.reminderDaysBefore) || 0,
+      reminderDaysBefore: Math.max(...reminderDaysBeforeList, 0),
+      reminderDaysBeforeList,
       installments,
       reminderMessage: form.reminderMessage.trim(),
       note: form.note.trim()
@@ -2176,8 +2184,9 @@ function PaymentRemindersPanel({ botId, token, api }) {
       }, token);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'No se pudo cargar el recordatorio.');
-      setForm({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', reminderDaysBefore: '7', note: '', reminderMessage: '' });
+      setForm({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', note: '', reminderMessage: '' });
       setInstallments([{ number: 1, amount: '', dueDate: '', status: 'pending' }]);
+      setReminderDaysBeforeList([7, 0]);
       setMsg({ ok: true, text: 'Recordatorio cargado. Atento enviará el aviso automático a las 10:00 AM.' });
       await loadDebtors();
     } catch (err) {
@@ -2220,6 +2229,22 @@ function PaymentRemindersPanel({ botId, token, api }) {
     loadDebtors();
   }
 
+  function addReminderDay() {
+    const value = Math.max(0, Math.min(365, Number(newReminderDay)));
+    if (!Number.isFinite(value)) return;
+    setReminderDaysBeforeList(list => [...new Set([...list, Math.round(value)])].sort((a, b) => b - a));
+    setNewReminderDay('');
+  }
+
+  function removeReminderDay(day) {
+    setReminderDaysBeforeList(list => list.filter(item => item !== day));
+  }
+
+  async function confirmInstallmentPaid(id, number) {
+    if (!confirm(`Marcar la cuota #${number} como cobrada? Atento no enviará más recordatorios por esta cuota.`)) return;
+    await updateStatus(id, 'paid', number);
+  }
+
   async function removeDebtor(id) {
     if (!confirm('Borrar este recordatorio de pago?')) return;
     await authFetch(`${api}/api/bots/${botId}/debtors/${id}`, { method: 'DELETE' }, token);
@@ -2239,7 +2264,11 @@ function PaymentRemindersPanel({ botId, token, api }) {
   const frequencyLabel = {
     daily: 'Diaria',
     weekly: 'Semanal',
-    monthly: 'Mensual'
+    biweekly: 'Quincenal',
+    monthly: 'Mensual',
+    quarterly: 'Trimestral',
+    semiannual: 'Semestral',
+    annual: 'Anual'
   };
   const parseInstallments = (value) => {
     if (Array.isArray(value)) return value;
@@ -2255,6 +2284,10 @@ function PaymentRemindersPanel({ botId, token, api }) {
     const debtorInstallments = parseInstallments(d.installments);
     const currentInstallment = Number(d.currentInstallment || 1);
     const totalInstallments = Number(d.totalInstallments || debtorInstallments.length || 1);
+    const expanded = expandedDebtors[d.id] !== false;
+    const currentItem = debtorInstallments[currentInstallment - 1] || {};
+    const nextDueDate = currentItem.dueDate || d.dueDate || '-';
+    const pendingInstallments = d.status === 'paid' ? 0 : Math.max(1, debtorInstallments.filter((item, idx) => item.status !== 'paid' && idx + 1 >= currentInstallment).length);
 
     return (
     <PanelCard key={d.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', alignItems: 'start', padding: '1rem' }}>
@@ -2265,9 +2298,16 @@ function PaymentRemindersPanel({ botId, token, api }) {
             {d.status === 'paid' ? 'Pagado' : 'Pendiente'}
           </span>
         </div>
-        <div style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: '0.28rem' }}>
+        <div style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', marginTop: '0.28rem', display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
           +{d.phone} · ${Number(d.amount || 0).toLocaleString('es-AR')}
         </div>
+        <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginTop: '0.28rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <span>Cuota {currentInstallment}/{totalInstallments}</span>
+          <span>Próximo vencimiento: {nextDueDate}</span>
+          <span>{pendingInstallments} pendiente{pendingInstallments === 1 ? '' : 's'}</span>
+        </div>
+        {expanded && (
+          <>
         {d.dueDate && <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginTop: '0.22rem' }}>Vencimiento: {d.dueDate}</div>}
         <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginTop: '0.22rem' }}>
           Cuota actual: {currentInstallment}/{totalInstallments} · Cobro {frequencyLabel[d.reminderFrequency] || 'Mensual'} · Avisos enviados: {Number(d.remindersSent || 0)}
@@ -2291,8 +2331,8 @@ function PaymentRemindersPanel({ botId, token, api }) {
                   {isPaid ? (
                     <span style={{ justifySelf: 'start', color: 'var(--success)', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.28)', borderRadius: '999px', padding: '0.18rem 0.5rem', fontSize: '0.7rem', fontWeight: 850 }}>Cobrada</span>
                   ) : (
-                    <button onClick={() => updateStatus(d.id, 'paid', item.number || idx + 1)} style={{ justifySelf: 'start', color: '#f59e0b', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.32)', borderRadius: '999px', padding: '0.25rem 0.6rem', fontSize: '0.72rem', fontWeight: 850, cursor: 'pointer' }}>
-                      Pendiente
+                    <button onClick={() => confirmInstallmentPaid(d.id, item.number || idx + 1)} style={{ justifySelf: 'start', color: '#f59e0b', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.32)', borderRadius: '999px', padding: '0.25rem 0.6rem', fontSize: '0.72rem', fontWeight: 850, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                      Pendiente <CheckCircle2 size={13} color="var(--success)" />
                     </button>
                   )}
                 </div>
@@ -2300,8 +2340,13 @@ function PaymentRemindersPanel({ botId, token, api }) {
             })}
           </div>
         )}
+          </>
+        )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <button onClick={() => setExpandedDebtors(prev => ({ ...prev, [d.id]: expanded ? false : true }))} style={{ border: '1px solid var(--border)', borderRadius: '9px', background: 'var(--surface-2)', color: 'var(--text-secondary)', padding: '0.55rem 0.75rem', cursor: 'pointer', fontWeight: 800 }}>
+          {expanded ? 'Minimizar' : 'Ver cuotas'}
+        </button>
         {d.status === 'pending' && totalInstallments <= 1 && (
           <button onClick={() => updateStatus(d.id, 'paid')} style={{ border: 'none', borderRadius: '9px', background: 'rgba(16,185,129,0.16)', color: 'var(--success)', padding: '0.55rem 0.75rem', cursor: 'pointer', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
             <CheckCircle2 size={15} /> Pagó
@@ -2357,10 +2402,13 @@ function PaymentRemindersPanel({ botId, token, api }) {
             ['Frecuencia de cobro', <select style={inputStyle} value={form.reminderFrequency} onChange={e => setForm(f => ({ ...f, reminderFrequency: e.target.value }))}>
               <option value="monthly">Mensual</option>
               <option value="weekly">Semanal</option>
+              <option value="biweekly">Quincenal</option>
+              <option value="quarterly">Trimestral</option>
+              <option value="semiannual">Semestral</option>
+              <option value="annual">Anual</option>
               <option value="daily">Diaria</option>
             </select>],
             ['Cantidad de cuotas', <input style={inputStyle} inputMode="numeric" type="number" min="1" max="120" placeholder="Ej: 12" value={form.totalInstallments} onChange={e => setForm(f => ({ ...f, totalInstallments: e.target.value }))} />],
-            ['Avisar desde', <input style={inputStyle} inputMode="numeric" type="number" min="0" max="30" placeholder="Dias antes del vencimiento" value={form.reminderDaysBefore} onChange={e => setForm(f => ({ ...f, reminderDaysBefore: e.target.value }))} />],
           ].map(([label, field]) => (
             <label key={label} style={{ display: 'grid', gap: '0.35rem' }}>
               <span style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 750 }}>{label}</span>
@@ -2368,8 +2416,22 @@ function PaymentRemindersPanel({ botId, token, api }) {
             </label>
           ))}
         </div>
-        <div style={{ marginTop: '0.55rem', color: 'var(--text-secondary)', fontSize: '0.78rem' }}>
-          Ej: si ponés 7, Atento empieza a avisar 7 días antes del vencimiento y repite 1 vez por día hasta que la cuota se marque como cobrada.
+        <div style={{ marginTop: '1rem', border: '1px solid rgba(124,58,237,0.25)', borderRadius: '12px', padding: '0.9rem', background: 'rgba(124,58,237,0.055)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <div>
+              <div style={{ color: 'var(--text-primary)', fontWeight: 850, fontSize: '0.9rem' }}>Preavisos automáticos</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>Elegí cuántos días antes del vencimiento se envía cada aviso. Usá 0 para avisar el mismo día.</div>
+            </div>
+            <button type="button" onClick={addReminderDay} style={{ width: 34, height: 30, border: 'none', borderRadius: '8px', background: 'linear-gradient(135deg,#8b5cf6,#3b82f6)', color: '#fff', fontWeight: 900, cursor: 'pointer' }}>+</button>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', flexWrap: 'wrap' }}>
+            {reminderDaysBeforeList.map(day => (
+              <button key={day} type="button" onClick={() => removeReminderDay(day)} title="Quitar preaviso" style={{ border: '1px solid rgba(124,58,237,0.3)', borderRadius: '9px', background: 'var(--input-bg)', color: 'var(--text-primary)', padding: '0.5rem 0.75rem', cursor: 'pointer' }}>
+                {day} día{day === 1 ? '' : 's'} antes
+              </button>
+            ))}
+            <input style={{ ...inputStyle, width: 130 }} inputMode="numeric" type="number" min="0" max="365" placeholder="Días antes" value={newReminderDay} onChange={e => setNewReminderDay(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addReminderDay(); } }} />
+          </div>
         </div>
         <div style={{ marginTop: '1rem', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', background: 'rgba(255,255,255,0.025)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr 1fr', gap: '0.75rem', padding: '0.75rem 0.9rem', color: 'var(--text-secondary)', fontSize: '0.76rem', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--border)' }}>
