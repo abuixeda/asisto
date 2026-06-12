@@ -149,20 +149,20 @@ function useAtentoConfirm() {
   const confirmDialog = dialog ? (
     <div
       onClick={() => closeDialog(false)}
-      style={{ position: 'fixed', inset: 0, zIndex: 12000, background: 'rgba(2,6,23,0.78)', backdropFilter: 'blur(7px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 12000, background: 'rgba(15,23,42,0.68)', backdropFilter: 'blur(7px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ width: 'min(420px, 100%)', background: 'linear-gradient(180deg, var(--surface-1), var(--surface-2))', border: '1px solid var(--border)', borderRadius: '16px', boxShadow: '0 24px 80px rgba(0,0,0,0.5)', padding: '1.15rem' }}
+        style={{ width: 'min(420px, 100%)', background: 'var(--surface)', border: '1px solid var(--border-strong)', borderRadius: '16px', boxShadow: '0 24px 80px rgba(15,23,42,0.28)', padding: '1.15rem' }}
       >
         <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
           <IconBox tone="violet">
             {dialog.danger ? <Trash2 size={18} /> : <ShieldCheck size={18} />}
           </IconBox>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 850 }}>{dialog.title}</h3>
+            <h3 style={{ margin: 0, color: 'var(--text-1)', fontSize: '1rem', fontWeight: 850 }}>{dialog.title}</h3>
             {dialog.message && (
-              <p style={{ margin: '0.4rem 0 0', color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.55 }}>
+              <p style={{ margin: '0.4rem 0 0', color: 'var(--text-2)', fontSize: '0.86rem', lineHeight: 1.55 }}>
                 {dialog.message}
               </p>
             )}
@@ -171,7 +171,7 @@ function useAtentoConfirm() {
             type="button"
             onClick={() => closeDialog(false)}
             aria-label="Cerrar"
-            style={{ width: 32, height: 32, borderRadius: '9px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1.1rem', lineHeight: 1 }}
+            style={{ width: 32, height: 32, borderRadius: '9px', border: '1px solid var(--border)', background: 'var(--surface-2)', color: 'var(--text-2)', cursor: 'pointer', fontSize: '1.1rem', lineHeight: 1 }}
           >
             X
           </button>
@@ -180,7 +180,7 @@ function useAtentoConfirm() {
           <button
             type="button"
             onClick={() => closeDialog(false)}
-            style={{ border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-secondary)', borderRadius: '10px', padding: '0.62rem 0.9rem', cursor: 'pointer', fontWeight: 700 }}
+            style={{ border: '1px solid var(--border-strong)', background: 'var(--surface-2)', color: 'var(--text-2)', borderRadius: '10px', padding: '0.62rem 0.9rem', cursor: 'pointer', fontWeight: 700 }}
           >
             {dialog.cancelText}
           </button>
