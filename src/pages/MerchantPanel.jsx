@@ -156,7 +156,7 @@ function useAtentoConfirm() {
         style={{ width: 'min(420px, 100%)', background: 'linear-gradient(180deg, var(--surface-1), var(--surface-2))', border: '1px solid var(--border)', borderRadius: '16px', boxShadow: '0 24px 80px rgba(0,0,0,0.5)', padding: '1.15rem' }}
       >
         <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
-          <IconBox tone={dialog.danger ? 'rose' : 'violet'}>
+          <IconBox tone="violet">
             {dialog.danger ? <Trash2 size={18} /> : <ShieldCheck size={18} />}
           </IconBox>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -187,7 +187,7 @@ function useAtentoConfirm() {
           <button
             type="button"
             onClick={() => closeDialog(true)}
-            style={{ border: 'none', background: dialog.danger ? 'linear-gradient(135deg,#ef4444,#f97316)' : 'linear-gradient(135deg,#7c3aed,#3b82f6)', color: '#fff', borderRadius: '10px', padding: '0.62rem 1rem', cursor: 'pointer', fontWeight: 800, boxShadow: dialog.danger ? '0 12px 30px rgba(239,68,68,0.24)' : '0 12px 30px rgba(124,58,237,0.24)' }}
+            style={{ border: 'none', background: 'linear-gradient(135deg,#7c3aed,#3b82f6)', color: '#fff', borderRadius: '10px', padding: '0.62rem 1rem', cursor: 'pointer', fontWeight: 800, boxShadow: '0 12px 30px rgba(124,58,237,0.24)' }}
           >
             {dialog.confirmText}
           </button>
