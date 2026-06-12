@@ -2071,6 +2071,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
   const [installments, setInstallments] = useState([{ number: 1, amount: '', dueDate: '', status: 'pending' }]);
+  const previousInstallmentDefaultsRef = useRef({ amount: '', dueDate: '', frequency: 'monthly' });
 
   const loadDebtors = useCallback(async () => {
     setLoading(true);
@@ -2092,39 +2093,61 @@ function PaymentRemindersPanel({ botId, token, api }) {
   const pending = debtors.filter(d => d.status === 'pending');
   const paid = debtors.filter(d => d.status === 'paid');
   const pendingTotal = pending.reduce((sum, d) => sum + (Number(d.amount) || 0), 0);
-  const addDaysToDate = (date, days) => {
+  const parseDateParts = useCallback((date) => {
     if (!date) return '';
-    const d = new Date(`${date}T00:00:00`);
-    d.setDate(d.getDate() + days);
-    return d.toISOString().slice(0, 10);
-  };
-  const addMonthsToDate = (date, months) => {
-    if (!date) return '';
-    const d = new Date(`${date}T00:00:00`);
-    const day = d.getDate();
-    d.setMonth(d.getMonth() + months, 1);
-    const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-    d.setDate(Math.min(day, lastDay));
-    return d.toISOString().slice(0, 10);
-  };
+    const [year, month, day] = date.split('-').map(Number);
+    if (!year || !month || !day) return '';
+    return { year, month, day };
+  }, []);
+  const formatDateParts = useCallback((year, month, day) => {
+    const mm = String(month).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    return `${year}-${mm}-${dd}`;
+  }, []);
+  const addDaysToDate = useCallback((date, days) => {
+    const parts = parseDateParts(date);
+    if (!parts) return '';
+    const d = new Date(Date.UTC(parts.year, parts.month - 1, parts.day));
+    d.setUTCDate(d.getUTCDate() + days);
+    return formatDateParts(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+  }, [formatDateParts, parseDateParts]);
+  const addMonthsToDate = useCallback((date, months) => {
+    const parts = parseDateParts(date);
+    if (!parts) return '';
+    const monthIndex = parts.month - 1 + months;
+    const year = parts.year + Math.floor(monthIndex / 12);
+    const month = ((monthIndex % 12) + 12) % 12 + 1;
+    const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    return formatDateParts(year, month, Math.min(parts.day, lastDay));
+  }, [formatDateParts, parseDateParts]);
 
   useEffect(() => {
     const total = Math.max(1, Math.min(120, Number(form.totalInstallments) || 1));
+    const previousDefaults = previousInstallmentDefaultsRef.current;
+    const getDefaultDueDate = (baseDate, frequency, idx) => {
+      if (frequency === 'weekly') return addDaysToDate(baseDate, idx * 7);
+      if (frequency === 'daily') return addDaysToDate(baseDate, idx);
+      return addMonthsToDate(baseDate, idx);
+    };
     setInstallments(prev => Array.from({ length: total }, (_, idx) => {
       const existing = prev[idx] || {};
-      const dueDate = form.reminderFrequency === 'weekly'
-        ? addDaysToDate(form.dueDate, idx * 7)
-        : form.reminderFrequency === 'daily'
-          ? addDaysToDate(form.dueDate, idx)
-          : addMonthsToDate(form.dueDate, idx);
+      const dueDate = getDefaultDueDate(form.dueDate, form.reminderFrequency, idx);
+      const previousDueDate = getDefaultDueDate(previousDefaults.dueDate, previousDefaults.frequency, idx);
+      const amountWasCustomized = existing.amount && existing.amount !== previousDefaults.amount;
+      const dueDateWasCustomized = existing.dueDate && existing.dueDate !== previousDueDate;
       return {
         number: idx + 1,
-        amount: existing.amount || form.amount || '',
-        dueDate: existing.dueDate || dueDate,
+        amount: amountWasCustomized ? existing.amount : form.amount || '',
+        dueDate: dueDateWasCustomized ? existing.dueDate : dueDate,
         status: existing.status || 'pending'
       };
     }));
-  }, [form.amount, form.dueDate, form.reminderFrequency, form.totalInstallments]);
+    previousInstallmentDefaultsRef.current = {
+      amount: form.amount || '',
+      dueDate: form.dueDate || '',
+      frequency: form.reminderFrequency || 'monthly'
+    };
+  }, [addDaysToDate, addMonthsToDate, form.amount, form.dueDate, form.reminderFrequency, form.totalInstallments]);
 
   async function createDebtor() {
     const payload = {
