@@ -124,8 +124,83 @@ function MetricPill({ icon, value, label }) {
   );
 }
 
+function useAtentoConfirm() {
+  const [dialog, setDialog] = useState(null);
+  const resolverRef = useRef(null);
+
+  const confirmAction = useCallback((options) => new Promise(resolve => {
+    resolverRef.current = resolve;
+    setDialog({
+      title: 'Confirmar accion',
+      message: '',
+      confirmText: 'Confirmar',
+      cancelText: 'Cancelar',
+      danger: false,
+      ...options
+    });
+  }), []);
+
+  const closeDialog = useCallback((accepted) => {
+    if (resolverRef.current) resolverRef.current(accepted);
+    resolverRef.current = null;
+    setDialog(null);
+  }, []);
+
+  const confirmDialog = dialog ? (
+    <div
+      onClick={() => closeDialog(false)}
+      style={{ position: 'fixed', inset: 0, zIndex: 12000, background: 'rgba(2,6,23,0.78)', backdropFilter: 'blur(7px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ width: 'min(420px, 100%)', background: 'linear-gradient(180deg, var(--surface-1), var(--surface-2))', border: '1px solid var(--border)', borderRadius: '16px', boxShadow: '0 24px 80px rgba(0,0,0,0.5)', padding: '1.15rem' }}
+      >
+        <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'flex-start' }}>
+          <IconBox tone={dialog.danger ? 'rose' : 'violet'}>
+            {dialog.danger ? <Trash2 size={18} /> : <ShieldCheck size={18} />}
+          </IconBox>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 850 }}>{dialog.title}</h3>
+            {dialog.message && (
+              <p style={{ margin: '0.4rem 0 0', color: 'var(--text-secondary)', fontSize: '0.86rem', lineHeight: 1.55 }}>
+                {dialog.message}
+              </p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => closeDialog(false)}
+            aria-label="Cerrar"
+            style={{ width: 32, height: 32, borderRadius: '9px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '1.1rem', lineHeight: 1 }}
+          >
+            X
+          </button>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.65rem', marginTop: '1.2rem' }}>
+          <button
+            type="button"
+            onClick={() => closeDialog(false)}
+            style={{ border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-secondary)', borderRadius: '10px', padding: '0.62rem 0.9rem', cursor: 'pointer', fontWeight: 700 }}
+          >
+            {dialog.cancelText}
+          </button>
+          <button
+            type="button"
+            onClick={() => closeDialog(true)}
+            style={{ border: 'none', background: dialog.danger ? 'linear-gradient(135deg,#ef4444,#f97316)' : 'linear-gradient(135deg,#7c3aed,#3b82f6)', color: '#fff', borderRadius: '10px', padding: '0.62rem 1rem', cursor: 'pointer', fontWeight: 800, boxShadow: dialog.danger ? '0 12px 30px rgba(239,68,68,0.24)' : '0 12px 30px rgba(124,58,237,0.24)' }}
+          >
+            {dialog.confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
+  return { confirmAction, confirmDialog };
+}
+
 // --- CampaignPanel ------------------------------------------------------------
-function CampaignPanel({ botId, token, api }) {
+function CampaignPanel({ botId, token, api, confirmAction }) {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showNewModal, setShowNewModal] = useState(false);
@@ -179,7 +254,13 @@ function CampaignPanel({ botId, token, api }) {
   }
 
   async function deleteCampaign(cid) {
-    if (!confirm('Eliminar esta campaña y todos sus leads?')) return;
+    const ok = await confirmAction({
+      title: 'Eliminar campaña',
+      message: '¿Querés eliminar esta campaña y todos sus leads? Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      danger: true
+    });
+    if (!ok) return;
     await authFetch(`${api}/api/bots/${botId}/campaigns/${cid}`, { method: 'DELETE' }, token);
     loadCampaigns();
   }
@@ -1235,7 +1316,7 @@ function getTimeSlotsForSpec(spec) {
   return { slots, dayMap };
 }
 
-function TurnosPanel({ botId, token, api }) {
+function TurnosPanel({ botId, token, api, confirmAction }) {
   const [specs, setSpecs] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [view, setView] = useState('agenda'); // 'agenda' | 'especialidades'
@@ -1310,13 +1391,25 @@ function TurnosPanel({ botId, token, api }) {
   }
 
   async function deleteSpec(sid) {
-    if (!confirm('?Eliminar este servicio y todos sus turnos?')) return;
+    const ok = await confirmAction({
+      title: 'Eliminar servicio',
+      message: '¿Querés eliminar este servicio y todos sus turnos? Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      danger: true
+    });
+    if (!ok) return;
     await authFetch(`${api}/api/bots/${botId}/specialties/${sid}`, { method:'DELETE' }, token);
     loadSpecs(); loadAppointments();
   }
 
   async function deleteAppt(aid) {
-    if (!confirm('Eliminar este turno definitivamente? Esta accion no se puede deshacer.')) return;
+    const ok = await confirmAction({
+      title: 'Eliminar turno',
+      message: '¿Querés eliminar este turno definitivamente? Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      danger: true
+    });
+    if (!ok) return;
     await authFetch(`${api}/api/bots/${botId}/appointments/${aid}`, { method:'DELETE' }, token);
     setApptDetail(null); loadAppointments();
   }
@@ -2088,7 +2181,7 @@ function WidgetPanel({ botId, token, api }) {
 
 // -----------------------------------------------------------------------------
 
-function PaymentRemindersPanel({ botId, token, api }) {
+function PaymentRemindersPanel({ botId, token, api, confirmAction }) {
   const [debtors, setDebtors] = useState([]);
   const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', remindersEnabled: true, reminderTime: '10:00', note: '', reminderMessage: '', paymentKnowledge: '' });
   const [loading, setLoading] = useState(true);
@@ -2288,12 +2381,23 @@ function PaymentRemindersPanel({ botId, token, api }) {
   }
 
   async function confirmInstallmentPaid(id, number) {
-    if (!confirm(`Marcar la cuota #${number} como cobrada? Atento no enviará más recordatorios por esta cuota.`)) return;
+    const ok = await confirmAction({
+      title: `Marcar cuota #${number} como cobrada`,
+      message: 'Atento no enviará más recordatorios por esta cuota. ¿Confirmás que ya fue cobrada?',
+      confirmText: 'Sí, marcar cobrada'
+    });
+    if (!ok) return;
     await updateStatus(id, 'paid', number);
   }
 
   async function removeDebtor(id) {
-    if (!confirm('Borrar este recordatorio de pago?')) return;
+    const ok = await confirmAction({
+      title: 'Borrar recordatorio',
+      message: '¿Querés borrar este recordatorio de pago?',
+      confirmText: 'Borrar',
+      danger: true
+    });
+    if (!ok) return;
     await authFetch(`${api}/api/bots/${botId}/debtors/${id}`, { method: 'DELETE' }, token);
     loadDebtors();
   }
@@ -2578,6 +2682,7 @@ export default function MerchantPanel() {
   const nav = useNavigate();
   const token = localStorage.getItem('merchant_token');
   const botId = localStorage.getItem('merchant_bot_id');
+  const { confirmAction, confirmDialog } = useAtentoConfirm();
 
   const [bot, setBot] = useState(null);
   const [prompt, setPrompt] = useState('');
@@ -2766,7 +2871,13 @@ export default function MerchantPanel() {
   }
 
   async function unlinkWhatsApp() {
-    if (!confirm('Cerrar sesion de WhatsApp? Deberas escanear el QR nuevamente para reconectar.')) return;
+    const ok = await confirmAction({
+      title: 'Cerrar sesión de WhatsApp',
+      message: '¿Querés cerrar la sesión de WhatsApp? Deberás escanear el QR nuevamente para reconectar.',
+      confirmText: 'Cerrar sesión',
+      danger: true
+    });
+    if (!ok) return;
     setUnlinking(true);
     await authFetch(`${API}/api/bots/${botId}/logout`, { method: 'POST' }, token);
     setBot(b => ({ ...b, status: 'OFF' }));
@@ -2840,6 +2951,7 @@ export default function MerchantPanel() {
 
   return (
     <>
+      {confirmDialog}
       {showTour && <TourOverlay steps={TOUR_STEPS} onFinish={() => setShowTour(false)} setActiveTab={setActiveTab} />}
 
       {/* Modal expandido */}
@@ -2945,11 +3057,11 @@ export default function MerchantPanel() {
                 <line x1="2" y1="13.5" x2="16" y2="13.5" />
               </svg>
             </button>
-            {activeTab === 'campaigns' && <CampaignPanel botId={botId} token={token} api={API} />}
+            {activeTab === 'campaigns' && <CampaignPanel botId={botId} token={token} api={API} confirmAction={confirmAction} />}
             {activeTab === 'chats' && <MerchantChatsPanel botId={botId} token={token} api={API} />}
             {activeTab === 'metrics' && <MerchantMetricsPanel botId={botId} token={token} api={API} bot={bot} />}
-            {activeTab === 'payments' && <PaymentRemindersPanel botId={botId} token={token} api={API} />}
-            {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} /></div>}
+            {activeTab === 'payments' && <PaymentRemindersPanel botId={botId} token={token} api={API} confirmAction={confirmAction} />}
+            {activeTab === 'turnos' && <div id="tour-turnos-area"><TurnosPanel botId={botId} token={token} api={API} confirmAction={confirmAction} /></div>}
 
           {activeTab === 'config' && (<>
 
