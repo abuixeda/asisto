@@ -2066,7 +2066,7 @@ function WidgetPanel({ botId, token, api }) {
 
 function PaymentRemindersPanel({ botId, token, api }) {
   const [debtors, setDebtors] = useState([]);
-  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', remindersEnabled: true, reminderTime: '10:00', note: '', reminderMessage: '' });
+  const [form, setForm] = useState({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', remindersEnabled: true, reminderTime: '10:00', note: '', reminderMessage: '', paymentKnowledge: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [generatingMessage, setGeneratingMessage] = useState(false);
@@ -2171,6 +2171,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
       reminderTime: form.reminderTime || '10:00',
       installments,
       reminderMessage: form.reminderMessage.trim(),
+      paymentKnowledge: form.paymentKnowledge.trim(),
       note: form.note.trim()
     };
     if (!payload.name || !payload.phone || !payload.amount) {
@@ -2186,7 +2187,7 @@ function PaymentRemindersPanel({ botId, token, api }) {
       }, token);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'No se pudo cargar el recordatorio.');
-      setForm({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', remindersEnabled: true, reminderTime: '10:00', note: '', reminderMessage: '' });
+      setForm({ name: '', phone: '', amount: '', dueDate: '', reminderFrequency: 'monthly', totalInstallments: '1', remindersEnabled: true, reminderTime: '10:00', note: '', reminderMessage: '', paymentKnowledge: '' });
       setInstallments([{ number: 1, amount: '', dueDate: '', status: 'pending' }]);
       setReminderDaysBeforeList([7, 0]);
       setMsg({ ok: true, text: 'Recordatorio cargado. Atento enviará el aviso automático a las 10:00 AM.' });
@@ -2447,8 +2448,11 @@ function PaymentRemindersPanel({ botId, token, api }) {
               <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>{form.remindersEnabled ? `Elegí cuántos días antes del vencimiento se envía cada aviso. Usá 0 para avisar el mismo día. Todos se envían a las ${form.reminderTime || '10:00'}.` : 'Activá esta opción si querés que Atento envíe recordatorios automáticos por WhatsApp.'}</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-              <button type="button" onClick={() => setForm(f => ({ ...f, remindersEnabled: !f.remindersEnabled }))} style={{ border: '1px solid var(--border)', borderRadius: '999px', background: form.remindersEnabled ? 'rgba(16,185,129,0.14)' : 'var(--surface-2)', color: form.remindersEnabled ? 'var(--success)' : 'var(--text-secondary)', padding: '0.45rem 0.75rem', fontSize: '0.78rem', fontWeight: 850, cursor: 'pointer' }}>
-                {form.remindersEnabled ? 'Preavisos activos' : 'Activar preavisos'}
+              <button type="button" onClick={() => setForm(f => ({ ...f, remindersEnabled: !f.remindersEnabled }))} aria-pressed={form.remindersEnabled} style={{ border: 'none', background: 'transparent', color: 'var(--text-primary)', padding: 0, display: 'inline-flex', alignItems: 'center', gap: '0.55rem', cursor: 'pointer', fontWeight: 850, fontSize: '0.8rem' }}>
+                <span>{form.remindersEnabled ? 'Activo' : 'Activar'}</span>
+                <span style={{ width: 52, height: 30, borderRadius: 999, background: form.remindersEnabled ? '#22c55e' : '#cbd5e1', padding: 3, boxSizing: 'border-box', display: 'inline-flex', justifyContent: form.remindersEnabled ? 'flex-end' : 'flex-start', alignItems: 'center', transition: 'all 160ms ease', boxShadow: form.remindersEnabled ? '0 0 0 3px rgba(34,197,94,0.12)' : 'inset 0 0 0 1px rgba(15,23,42,0.08)' }}>
+                  <span style={{ width: 24, height: 24, borderRadius: '50%', background: '#fff', boxShadow: '0 2px 8px rgba(15,23,42,0.25)', display: 'block' }} />
+                </span>
               </button>
               <button type="button" onClick={addReminderDay} disabled={!form.remindersEnabled} style={{ width: 34, height: 30, border: 'none', borderRadius: '8px', background: form.remindersEnabled ? 'linear-gradient(135deg,#8b5cf6,#3b82f6)' : 'var(--surface-2)', color: '#fff', fontWeight: 900, cursor: form.remindersEnabled ? 'pointer' : 'not-allowed' }}>+</button>
             </div>
@@ -2506,6 +2510,16 @@ function PaymentRemindersPanel({ botId, token, api }) {
           </div>
         </div>
         <textarea style={{ ...inputStyle, minHeight: 78, marginTop: '0.75rem', resize: 'vertical' }} placeholder="Concepto del cobro: pedido, detalle de la cuota o aclaración que puede aparecer en el mensaje" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
+        <div style={{ marginTop: '0.75rem', display: 'grid', gap: '0.4rem' }}>
+          <div style={{ color: 'var(--text-primary)', fontSize: '0.9rem', fontWeight: 850 }}>Conocimiento para respuestas de cobro</div>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>Usalo para decirle a Atento cómo responder si el cliente contesta el recordatorio.</div>
+          <textarea
+            style={{ ...inputStyle, minHeight: 96, resize: 'vertical' }}
+            placeholder={`Ej: Si dice que ya pagó, pedir comprobante. Alias: atento.mp. Si pide prórroga, ofrecer hasta 48 hs y avisar que se consulta con administración. No confirmar pagos sin validación del dueño.`}
+            value={form.paymentKnowledge}
+            onChange={e => setForm(f => ({ ...f, paymentKnowledge: e.target.value }))}
+          />
+        </div>
         {msg && (
           <div style={{ marginTop: '0.75rem', border: `1px solid ${msg.ok ? 'rgba(16,185,129,0.35)' : 'var(--danger-border)'}`, background: msg.ok ? 'rgba(16,185,129,0.09)' : 'var(--danger-dim)', color: msg.ok ? 'var(--success)' : 'var(--danger)', borderRadius: '10px', padding: '0.65rem 0.8rem', fontSize: '0.85rem' }}>
             {msg.text}
