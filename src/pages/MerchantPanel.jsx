@@ -2240,6 +2240,26 @@ function PaymentRemindersPanel({ botId, token, api }) {
     setReminderDaysBeforeList(list => list.filter(item => item !== day));
   }
 
+  function insertReminderVariable(variable) {
+    setForm(f => ({
+      ...f,
+      reminderMessage: `${f.reminderMessage}${f.reminderMessage ? ' ' : ''}{{${variable}}}`
+    }));
+  }
+
+  function previewReminderMessage() {
+    const firstInstallment = installments[0] || {};
+    const template = form.reminderMessage || 'Hola {{nombre}}, te recordamos la cuota {{cuota}}/{{total_cuotas}} por ${{monto}}, con vencimiento {{vencimiento}}.';
+    return template
+      .replace(/\{\{\s*nombre\s*\}\}/gi, form.name || 'Juan Perez')
+      .replace(/\{\{\s*monto\s*\}\}/gi, firstInstallment.amount || form.amount || '5000')
+      .replace(/\{\{\s*cuota\s*\}\}/gi, '1')
+      .replace(/\{\{\s*total_cuotas\s*\}\}/gi, String(installments.length || form.totalInstallments || 1))
+      .replace(/\{\{\s*vencimiento\s*\}\}/gi, firstInstallment.dueDate || form.dueDate || '2026-06-10')
+      .replace(/\{\{\s*concepto\s*\}\}/gi, form.note || 'concepto del pago')
+      .replace(/\{\{\s*negocio\s*\}\}/gi, 'tu negocio');
+  }
+
   async function confirmInstallmentPaid(id, number) {
     if (!confirm(`Marcar la cuota #${number} como cobrada? Atento no enviará más recordatorios por esta cuota.`)) return;
     await updateStatus(id, 'paid', number);
@@ -2445,19 +2465,38 @@ function PaymentRemindersPanel({ botId, token, api }) {
             </div>
           ))}
         </div>
-        <div style={{ marginTop: '1rem', display: 'grid', gap: '0.45rem' }}>
+        <div style={{ marginTop: '1rem', display: 'grid', gap: '0.55rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
             <div>
-              <div style={{ color: 'var(--text-primary)', fontSize: '0.9rem', fontWeight: 850 }}>Mensaje de recordatorio</div>
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>Podés usar variables: {'{{nombre}}'}, {'{{monto}}'}, {'{{cuota}}'}, {'{{total_cuotas}}'}, {'{{vencimiento}}'}, {'{{concepto}}'}, {'{{negocio}}'}.</div>
+              <div style={{ color: 'var(--text-primary)', fontSize: '0.9rem', fontWeight: 850 }}>Mensaje que recibe el cliente</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem' }}>Atento reemplaza automáticamente los datos de cada cuota antes de enviar.</div>
             </div>
             <button type="button" onClick={generateReminderMessage} disabled={generatingMessage} style={{ border: '1px solid rgba(124,58,237,0.35)', borderRadius: '9px', background: 'rgba(124,58,237,0.14)', color: 'var(--accent)', padding: '0.55rem 0.75rem', fontWeight: 850, cursor: generatingMessage ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
               <BrainCircuit size={15} /> {generatingMessage ? 'Generando...' : 'Generar con IA'}
             </button>
           </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+            {[
+              ['nombre', 'Nombre'],
+              ['monto', 'Monto'],
+              ['cuota', 'Cuota actual'],
+              ['total_cuotas', 'Total cuotas'],
+              ['vencimiento', 'Vencimiento'],
+              ['concepto', 'Concepto'],
+              ['negocio', 'Negocio']
+            ].map(([key, label]) => (
+              <button key={key} type="button" onClick={() => insertReminderVariable(key)} style={{ border: '1px solid var(--border)', borderRadius: '999px', background: 'var(--surface-2)', color: 'var(--text-secondary)', padding: '0.32rem 0.6rem', fontSize: '0.74rem', fontWeight: 800, cursor: 'pointer' }}>
+                + {label}
+              </button>
+            ))}
+          </div>
           <textarea style={{ ...inputStyle, minHeight: 96, resize: 'vertical' }} placeholder="Hola {{nombre}}, te recordamos la cuota {{cuota}}/{{total_cuotas}} por ${{monto}}, con vencimiento {{vencimiento}}." value={form.reminderMessage} onChange={e => setForm(f => ({ ...f, reminderMessage: e.target.value }))} />
+          <div style={{ border: '1px solid rgba(16,185,129,0.22)', background: 'rgba(16,185,129,0.07)', borderRadius: '10px', padding: '0.75rem 0.85rem' }}>
+            <div style={{ color: 'var(--success)', fontSize: '0.74rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.35rem' }}>Vista previa</div>
+            <div style={{ color: 'var(--text-primary)', fontSize: '0.84rem', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>{previewReminderMessage()}</div>
+          </div>
         </div>
-        <textarea style={{ ...inputStyle, minHeight: 78, marginTop: '0.75rem', resize: 'vertical' }} placeholder="Concepto o nota interna: pedido, detalle de la cuota o aclaración para el mensaje" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
+        <textarea style={{ ...inputStyle, minHeight: 78, marginTop: '0.75rem', resize: 'vertical' }} placeholder="Concepto del cobro: pedido, detalle de la cuota o aclaración que puede aparecer en el mensaje" value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
         {msg && (
           <div style={{ marginTop: '0.75rem', border: `1px solid ${msg.ok ? 'rgba(16,185,129,0.35)' : 'var(--danger-border)'}`, background: msg.ok ? 'rgba(16,185,129,0.09)' : 'var(--danger-dim)', color: msg.ok ? 'var(--success)' : 'var(--danger)', borderRadius: '10px', padding: '0.65rem 0.8rem', fontSize: '0.85rem' }}>
             {msg.text}
