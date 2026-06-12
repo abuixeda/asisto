@@ -1254,6 +1254,7 @@ function TurnosPanel({ botId, token, api }) {
   // Timetable state
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedSpecId, setSelectedSpecId] = useState(null);
+  const [agendaCollapsed, setAgendaCollapsed] = useState(false);
 
   async function loadSpecs() {
     try {
@@ -1729,12 +1730,19 @@ function TurnosPanel({ botId, token, api }) {
                   const confirmed = appointments.filter(a => a.specialty_id === spec.id && a.status==='confirmed').length;
                   const isActive = selectedSpecId === spec.id;
                   return (
-                    <div key={spec.id} onClick={() => setSelectedSpecId(isActive ? null : spec.id)}
+                    <div key={spec.id} onClick={() => {
+                      if (isActive) {
+                        setAgendaCollapsed(v => !v);
+                      } else {
+                        setSelectedSpecId(spec.id);
+                        setAgendaCollapsed(false);
+                      }
+                    }}
                       style={{ display:'flex', alignItems:'center', gap:'0.45rem', padding:'0.35rem 0.75rem', borderRadius:'20px', border:`1.5px solid ${isActive ? spec.color : 'var(--border)'}`, background: isActive ? `${spec.color}20` : 'var(--card-bg)', cursor:'pointer', transition:'all 0.15s' }}>
                       <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:spec.color, flexShrink:0 }} />
                       <span style={{ fontWeight:600, fontSize:'0.82rem', color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)', whiteSpace:'nowrap' }}>{spec.name}</span>
                       {confirmed > 0 && <span style={{ fontSize:'0.7rem', fontWeight:700, background:spec.color, color:'#fff', borderRadius:'10px', padding:'0 5px', lineHeight:'1.4' }}>{confirmed}</span>}
-                      <span style={{ fontSize:'0.75rem', color:'var(--text-secondary)', marginLeft:'1px' }}>{isActive ? '?' : '?'}</span>
+                      <span style={{ fontSize:'0.72rem', color:'var(--text-secondary)', marginLeft:'1px' }}>{isActive ? (agendaCollapsed ? 'Ver' : 'Minimizar') : 'Ver'}</span>
                     </div>
                   );
                 })}
@@ -1742,7 +1750,23 @@ function TurnosPanel({ botId, token, api }) {
             )}
 
             {/* Grilla semanal */}
-            {activeSpec && (
+            {activeSpec && agendaCollapsed && (
+              <PanelCard style={{ padding:'0.9rem 1rem', display:'flex', alignItems:'center', justifyContent:'space-between', gap:'1rem', flexWrap:'wrap', borderColor:`${activeSpec.color}55` }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'0.65rem', minWidth:0 }}>
+                  <div style={{ width:'10px', height:'10px', borderRadius:'50%', background:activeSpec.color, flexShrink:0 }} />
+                  <div style={{ minWidth:0 }}>
+                    <div style={{ color:'var(--text-primary)', fontWeight:850, fontSize:'0.95rem' }}>{activeSpec.name}</div>
+                    <div style={{ color:'var(--text-secondary)', fontSize:'0.78rem', marginTop:'0.15rem' }}>
+                      Semana del {new Date(weekDays[0]+'T12:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'})} al {new Date(weekDays[6]+'T12:00').toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})} · {appointments.filter(a => a.specialty_id === activeSpec.id && a.status === 'confirmed').length} turnos confirmados
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => setAgendaCollapsed(false)} style={{ border:'1px solid var(--border)', borderRadius:'9px', background:'var(--surface-2)', color:'var(--text-primary)', cursor:'pointer', padding:'0.55rem 0.8rem', fontWeight:800 }}>
+                  Desplegar agenda
+                </button>
+              </PanelCard>
+            )}
+            {activeSpec && !agendaCollapsed && (
               <div style={{ background:'var(--card-bg)', border:'1px solid var(--border)', borderRadius:'14px', overflow:'hidden' }}>
 
                 {/* Nav semana */}
