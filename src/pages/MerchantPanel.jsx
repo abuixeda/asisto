@@ -2929,6 +2929,9 @@ export default function MerchantPanel() {
   const expandedValue = expandedField === 'prompt' ? prompt : knowledgeBase;
   const expandedSetter = expandedField === 'prompt' ? setPrompt : setKnowledgeBase;
   const expandedTitle = expandedField === 'prompt' ? 'Comportamiento Psicologico' : 'Base de Conocimientos';
+  const expandedDesc = expandedField === 'prompt'
+    ? 'Edita la personalidad, el tono y las reglas principales del asistente.'
+    : 'Edita la informacion fija que Atento usa para responder sobre productos, precios, envios y condiciones.';
 
   const TOUR_STEPS = [
     { id: 'tour-tabs',           tab: 'config',    title: 'Menú principal',              desc: 'El panel se organiza por secciones: configuración, chats, métricas, campañas, cobros y turnos. Desde acá cambiás rápido de área.' },
@@ -2956,19 +2959,35 @@ export default function MerchantPanel() {
 
       {/* Modal expandido */}
       {expandedField && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 10000, display: 'flex', flexDirection: 'column', padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-primary)' }}>{expandedTitle}</span>
-            <button onClick={() => setExpandedField(null)} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--text-primary)', cursor: 'pointer', padding: '0.4rem 0.9rem', fontSize: '0.9rem' }}>
-              Cerrar
-            </button>
+        <div
+          onClick={() => setExpandedField(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.68)', backdropFilter: 'blur(7px)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(1rem, 3vw, 2rem)' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ width: 'min(980px, 100%)', maxHeight: '82vh', background: 'var(--surface)', border: '1px solid var(--border-strong)', borderRadius: '18px', boxShadow: '0 26px 90px rgba(15,23,42,0.34)', padding: '1.15rem', display: 'flex', flexDirection: 'column', gap: '0.9rem' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+              <div style={{ minWidth: 0 }}>
+                <span style={{ display: 'block', fontWeight: 850, fontSize: '1.02rem', color: 'var(--text-1)' }}>{expandedTitle}</span>
+                <span style={{ display: 'block', color: 'var(--text-2)', fontSize: '0.82rem', marginTop: '0.18rem', lineHeight: 1.45 }}>{expandedDesc}</span>
+              </div>
+              <button onClick={() => setExpandedField(null)} style={{ width: 36, height: 36, flexShrink: 0, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text-2)', cursor: 'pointer', fontSize: '1rem', lineHeight: 1 }}>
+                X
+              </button>
+            </div>
+            <textarea
+              className="prompt-textarea editable"
+              style={{ minHeight: 'min(560px, 58vh)', maxHeight: '58vh', resize: 'vertical', fontSize: '0.9rem', lineHeight: 1.62, background: 'var(--input-bg)', color: 'var(--text-1)', borderColor: 'var(--border-strong)' }}
+              value={expandedValue}
+              onChange={e => expandedSetter(e.target.value)}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.65rem' }}>
+              <button onClick={() => setExpandedField(null)} style={{ border: '1px solid var(--border-strong)', background: 'var(--surface-2)', color: 'var(--text-2)', borderRadius: '10px', padding: '0.62rem 0.95rem', cursor: 'pointer', fontWeight: 750 }}>
+                Cerrar
+              </button>
+            </div>
           </div>
-          <textarea
-            className="prompt-textarea editable"
-            style={{ flex: 1, resize: 'none', fontSize: '0.9rem', lineHeight: 1.6 }}
-            value={expandedValue}
-            onChange={e => expandedSetter(e.target.value)}
-          />
         </div>
       )}
       {previewOpen && (
