@@ -37,6 +37,7 @@ const FEATURE_STYLES = [
 ];
 
 const PLAN_HIGHLIGHTS = [false, true, false];
+const SHOW_REVIEWS_SECTION = false;
 const WHOP_PLAN_IDS = {
   starter: 'plan_v5NUICSwihOKZ',
   growth: 'plan_074m3NxwBdu3r',
@@ -431,7 +432,7 @@ export default function LandingVolume() {
             <span style={{ fontWeight: 800, fontSize: '1.05rem', color: C.text }}>Atento AI</span>
           </div>
           <div className="desktop-nav" style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
-            {[['features', t('nav.features')],['pricing', t('nav.pricing')],['reviews', t('nav.clients')]].map(([id, label]) => (
+            {[['features', t('nav.features')],['pricing', t('nav.pricing')]].map(([id, label]) => (
               <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500, fontFamily: 'inherit' }}>{label}</button>
             ))}
             <a href="/login" style={{ color: C.textSec, textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>{t('nav.login')}</a>
@@ -446,7 +447,7 @@ export default function LandingVolume() {
         </div>
         {menuOpen && (
           <div style={{ borderTop: `1px solid ${C.border}`, padding: '1rem 2rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: C.bgCard }}>
-            {[['features', t('nav.features')],['pricing', t('nav.pricing')],['reviews', t('nav.clients')]].map(([id, label]) => (
+            {[['features', t('nav.features')],['pricing', t('nav.pricing')]].map(([id, label]) => (
               <button key={id} onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textSec, cursor: 'pointer', fontSize: '1rem', textAlign: 'left', padding: '0.2rem 0', fontFamily: 'inherit' }}>{label}</button>
             ))}
             <a href="/login" style={{ color: C.textSec, textDecoration: 'none', fontSize: '1rem' }}>{t('nav.login')}</a>
@@ -700,8 +701,8 @@ export default function LandingVolume() {
         </div>
       </section>
 
-      {/* ════════════ TESTIMONIOS ════════════ */}
-      <section id="reviews" style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', borderBottom: `1px solid ${C.border}` }}>
+      {/* ════════════ TESTIMONIOS (oculto temporalmente) ════════════ */}
+      {SHOW_REVIEWS_SECTION && <section id="reviews" style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', borderBottom: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <FadeIn style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
             <div style={{ fontSize: '0.72rem', color: C.pink, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, marginBottom: '1rem' }}>{t('nav.clients').toUpperCase()}</div>
@@ -734,7 +735,7 @@ export default function LandingVolume() {
             </div>
           </FadeIn>
         </div>
-      </section>
+      </section>}
 
       {/* ════════════ PRICING ════════════ */}
       <section id="pricing" style={{ padding: 'clamp(4rem,8vw,7rem) 2rem', background: C.bgCard2, borderBottom: `1px solid ${C.border}` }}>
@@ -830,7 +831,7 @@ export default function LandingVolume() {
             </div>
             <div>
               <div style={{ fontWeight: 700, fontSize: '0.78rem', color: C.textSec, marginBottom: '1rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>{t('footer.product')}</div>
-              {[['features', t('nav.features')],['pricing', t('nav.pricing')],['reviews', t('nav.clients')]].map(([id, label]) => (
+              {[['features', t('nav.features')],['pricing', t('nav.pricing')]].map(([id, label]) => (
                 <div key={id} style={{ marginBottom: '0.6rem' }}><button onClick={() => scrollTo(id)} style={{ background: 'none', border: 'none', color: C.textMuted, cursor: 'pointer', fontSize: '0.87rem', padding: 0, fontFamily: 'inherit' }}>{label}</button></div>
               ))}
             </div>
