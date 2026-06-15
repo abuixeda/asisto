@@ -391,28 +391,28 @@
       "sub": "Catalogue depuis votre feuille publique"
     },
     "badges": {
-      "soon": "Bient?t",
+      "soon": "Bientôt",
       "now": "Disponible"
     }
   },
   "stats": {
-    "messages": "10 000+ messages trait?s cette semaine",
+    "messages": "10 000+ messages traités cette semaine",
     "satisfaction": "4,9/5 de satisfaction moyenne",
     "businesses": "340+ entreprises actives"
   },
   "dashboardDemo": {
     "metrics": {
-      "today": "Demandes aujourd?hui",
-      "responseRate": "Taux de r?ponse",
-      "assistedSales": "Ventes assist?es",
+      "today": "Demandes aujourd’hui",
+      "responseRate": "Taux de réponse",
+      "assistedSales": "Ventes assistées",
       "optimal": "optimal",
       "salesDelta": "+6 vs hier"
     },
     "liveConversation": "Conversation en direct",
     "conversation": {
       "client1": "Bonjour, avez-vous des baskets Nike en taille 42 ?",
-      "bot1": "Oui ! Nous avons des Air Max en noir et blanc en taille 42. 94 900 $. ?a vous int?resse ?",
-      "client2": "Les blanches, je les r?serve",
+      "bot1": "Oui ! Nous avons des Air Max en noir et blanc en taille 42. 94 900 $. Ça vous intéresse ?",
+      "client2": "Les blanches, je les réserve",
       "bot2": "Parfait ! Je vous envoie le lien de paiement tout de suite."
     }
   }

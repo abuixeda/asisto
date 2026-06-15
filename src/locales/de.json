@@ -388,11 +388,11 @@
     },
     "googleSheets": {
       "name": "Google Sheets",
-      "sub": "Katalog aus Ihrer ?ffentlichen Tabelle"
+      "sub": "Katalog aus Ihrer öffentlichen Tabelle"
     },
     "badges": {
-      "soon": "Demn?chst",
-      "now": "Verf?gbar"
+      "soon": "Demnächst",
+      "now": "Verfügbar"
     }
   },
   "stats": {
@@ -404,15 +404,15 @@
     "metrics": {
       "today": "Anfragen heute",
       "responseRate": "Antwortrate",
-      "assistedSales": "Unterst?tzte Verk?ufe",
+      "assistedSales": "Unterstützte Verkäufe",
       "optimal": "optimal",
       "salesDelta": "+6 vs gestern"
     },
-    "liveConversation": "Live-Gespr?ch",
+    "liveConversation": "Live-Gespräch",
     "conversation": {
-      "client1": "Hallo, haben Sie Nike-Sneaker in Gr??e 42?",
-      "bot1": "Ja! Wir haben Air Max in Schwarz und Wei? in Gr??e 42. $94.900. Interessiert?",
-      "client2": "Die wei?en, bitte reservieren",
+      "client1": "Hallo, haben Sie Nike-Sneaker in Größe 42?",
+      "bot1": "Ja! Wir haben Air Max in Schwarz und Weiß in Größe 42. $94.900. Interessiert?",
+      "client2": "Die weißen, bitte reservieren",
       "bot2": "Perfekt! Ich sende Ihnen sofort den Zahlungslink."
     }
   }

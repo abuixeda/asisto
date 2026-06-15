@@ -397,10 +397,10 @@
     "title": "Negocios que ya confían en Atento AI"
   },
   "platformAvailability": {
-    "label": "Tambi?n disponible en",
+    "label": "También disponible en",
     "storeLink": {
       "name": "Shopify / Tienda Nube / web",
-      "sub": "Peg?s el link de tu tienda y Atento lee el cat?logo si est? publicado"
+      "sub": "Pegás el link de tu tienda y Atento lee el catálogo si está publicado"
     },
     "shopify": {
       "name": "Shopify",
@@ -412,16 +412,16 @@
     },
     "googleSheets": {
       "name": "Google Sheets",
-      "sub": "Cat?logo desde tu planilla p?blica"
+      "sub": "Catálogo desde tu planilla pública"
     },
     "badges": {
-      "soon": "Pr?ximamente",
+      "soon": "Próximamente",
       "now": "Disponible"
     }
   },
   "stats": {
     "messages": "10.000+ mensajes respondidos esta semana",
-    "satisfaction": "4.9/5 satisfacci?n promedio",
+    "satisfaction": "4.9/5 satisfacción promedio",
     "businesses": "340+ negocios activos"
   },
   "dashboardDemo": {
@@ -429,15 +429,15 @@
       "today": "Consultas hoy",
       "responseRate": "Tasa de respuesta",
       "assistedSales": "Ventas asistidas",
-      "optimal": "?ptimo",
+      "optimal": "Óptimo",
       "salesDelta": "+6 vs ayer"
     },
-    "liveConversation": "Conversaci?n en vivo",
+    "liveConversation": "Conversación en vivo",
     "conversation": {
-      "client1": "Hola, ?tienen zapatillas Nike en el 42?",
-      "bot1": "?S?! Tenemos Air Max en blanco y negro en el 42. $94.900. ?Te interesa?",
+      "client1": "Hola, ¿tienen zapatillas Nike en el 42?",
+      "bot1": "¡Sí! Tenemos Air Max en blanco y negro en el 42. $94.900. ¿Te interesa?",
       "client2": "El blanco, lo reservo",
-      "bot2": "?Perfecto! Te mando el link de pago ahora mismo."
+      "bot2": "¡Perfecto! Te mando el link de pago ahora mismo."
     }
   }
 }

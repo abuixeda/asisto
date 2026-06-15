@@ -384,7 +384,7 @@
     "label": "Disponibile anche con",
     "storeLink": {
       "name": "Shopify / Tienda Nube / web",
-      "sub": "Incolla il link del tuo negozio e Atento legge il catalogo se ? pubblico"
+      "sub": "Incolla il link del tuo negozio e Atento legge il catalogo se è pubblico"
     },
     "googleSheets": {
       "name": "Google Sheets",
@@ -398,7 +398,7 @@
   "stats": {
     "messages": "10.000+ messaggi risposti questa settimana",
     "satisfaction": "4,9/5 soddisfazione media",
-    "businesses": "340+ attivit? attive"
+    "businesses": "340+ attività attive"
   },
   "dashboardDemo": {
     "metrics": {
@@ -411,7 +411,7 @@
     "liveConversation": "Conversazione live",
     "conversation": {
       "client1": "Ciao, avete scarpe Nike taglia 42?",
-      "bot1": "S?! Abbiamo Air Max bianche e nere taglia 42. $94.900. Ti interessano?",
+      "bot1": "Sì! Abbiamo Air Max bianche e nere taglia 42. $94.900. Ti interessano?",
       "client2": "Quelle bianche, le prenoto",
       "bot2": "Perfetto! Ti mando subito il link di pagamento."
     }
