@@ -43,14 +43,6 @@ const WHOP_PLAN_IDS = {
   scale: 'plan_b3RCl3tcxlikv',
 };
 
-const LIVE_TOASTS = [
-  { name: 'Valentina G.', action: 'activó su bot',              city: 'Córdoba'      },
-  { name: 'Diego M.',     action: 'recibió 47 consultas hoy',   city: 'Rosario'      },
-  { name: 'Marcelo R.',   action: 'cerró una venta con el bot', city: 'CABA'         },
-  { name: 'Carolina F.',  action: 'configuró su catálogo',      city: 'Mendoza'      },
-  { name: 'Lucía P.',     action: 'acaba de registrarse',       city: 'Mar del Plata'},
-];
-
 /* ─── Helpers ─────────────────────────────────────────── */
 function useInView(threshold = 0.15) {
   const ref = useRef(null);
@@ -129,32 +121,6 @@ function ParticleField() {
   return <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', opacity: 0.75 }} />;
 }
 
-/* ─── Live Toast ──────────────────────────────────────── */
-function LiveToast() {
-  const [idx, setIdx] = useState(0);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVisible(true), 2500); return () => clearTimeout(t); }, []);
-  useEffect(() => {
-    if (!visible) return;
-    const id = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => { setIdx(i => (i + 1) % LIVE_TOASTS.length); setVisible(true); }, 600);
-    }, 4500);
-    return () => clearInterval(id);
-  }, [visible]);
-  const t = LIVE_TOASTS[idx];
-  return (
-    <div style={{ position: 'fixed', bottom: '1.5rem', left: '1.5rem', zIndex: 200, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.97)', transition: 'all 0.5s cubic-bezier(0.16,1,0.3,1)', background: 'rgba(10,10,20,0.96)', backdropFilter: 'blur(12px)', border: '1px solid rgba(224,64,251,0.2)', borderRadius: '14px', padding: '0.7rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', maxWidth: '290px', pointerEvents: 'none' }}>
-      <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(224,64,251,0.12)', border: '1px solid rgba(224,64,251,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: C.pink, fontWeight: 800, fontSize: '0.9rem' }}>{t.name[0]}</div>
-      <div>
-        <div style={{ fontSize: '0.8rem', color: '#dde', fontWeight: 600 }}><span style={{ color: C.pink }}>{t.name}</span>{' '}{t.action}</div>
-        <div style={{ fontSize: '0.68rem', color: C.textMuted, marginTop: '2px' }}>📍 {t.city} · ahora</div>
-      </div>
-      <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, flexShrink: 0, boxShadow: `0 0 6px ${C.green}` }} />
-    </div>
-  );
-}
-
 /* ─── Animated Bar Chart ──────────────────────────────── */
 function BarChart() {
   const { t } = useTranslation();
@@ -195,14 +161,19 @@ function DemoChat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const bottomRef = useRef(null);
+  const chatBodyRef = useRef(null);
   const now = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
 
   useEffect(() => {
     setMessages([{ from: 'bot', text: t('demo.greeting') }]);
   }, [t]);
 
-  useEffect(() => { if (messages.length > 1 || loading) bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
+  useEffect(() => {
+    if (messages.length <= 1 && !loading) return;
+    const body = chatBodyRef.current;
+    if (!body) return;
+    body.scrollTo({ top: body.scrollHeight, behavior: 'smooth' });
+  }, [messages, loading]);
 
   async function send() {
     const txt = input.trim();
@@ -240,7 +211,7 @@ function DemoChat() {
           <div style={{ fontSize: '0.72rem', color: C.waGreen }}>{t('demo.online')}</div>
         </div>
       </div>
-      <div style={{ background: '#0b141a', padding: '14px', height: '260px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div ref={chatBodyRef} style={{ background: '#0b141a', padding: '14px', height: '260px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {messages.map((m, i) => (
           <div key={i} style={{ display: 'flex', justifyContent: m.from === 'bot' ? 'flex-start' : 'flex-end' }}>
             <div style={{ maxWidth: '80%', padding: '8px 11px 5px', borderRadius: m.from === 'bot' ? '0 10px 10px 10px' : '10px 0 10px 10px', background: m.from === 'bot' ? '#202c33' : '#005c4b', fontSize: '0.85rem', color: 'white', lineHeight: 1.5 }}>
@@ -250,11 +221,10 @@ function DemoChat() {
           </div>
         ))}
         {loading && <div style={{ display: 'flex' }}><div style={{ background: '#202c33', borderRadius: '0 10px 10px 10px', padding: '10px 14px', display: 'flex', gap: '4px' }}>{[0,1,2].map(i => <div key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#8696a0', animation: `bounce 1.2s ${i*0.2}s infinite` }} />)}</div></div>}
-        <div ref={bottomRef} />
       </div>
       <div style={{ background: '#202c33', padding: '10px 12px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()} placeholder={t('demo.placeholder')} style={{ flex: 1, background: '#2a3942', border: 'none', borderRadius: '20px', padding: '9px 16px', color: 'white', fontSize: '0.88rem', outline: 'none', fontFamily: 'inherit' }} />
-        <button onClick={send} style={{ width: '38px', height: '38px', borderRadius: '50%', background: C.gradBtn, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); send(); } }} placeholder={t('demo.placeholder')} style={{ flex: 1, background: '#2a3942', border: 'none', borderRadius: '20px', padding: '9px 16px', color: 'white', fontSize: '0.88rem', outline: 'none', fontFamily: 'inherit' }} />
+        <button type="button" onClick={send} style={{ width: '38px', height: '38px', borderRadius: '50%', background: C.gradBtn, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Send size={15} color="white" />
         </button>
       </div>
@@ -451,7 +421,6 @@ export default function LandingVolume() {
         }
       `}</style>
 
-      <LiveToast />
       <WhopCheckoutModal checkout={checkout} onClose={() => setCheckout(null)} />
 
       {/* ════════════ NAVBAR ════════════ */}
