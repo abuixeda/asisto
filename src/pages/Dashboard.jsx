@@ -2723,11 +2723,12 @@ function Dashboard() {
                     <Settings size={17} />
                   </button>
                   <div className="ios-toggle-wrapper">
-                    <span className="toggle-label">{bot.status === 'OFF' ? 'OFF' : 'ON'}</span>
+                    <span className="toggle-label">
+                      {bot.status === 'OFF' ? 'OFF' : bot.status === 'QR_READY' ? 'QR' : bot.status === 'STARTING' ? '...' : 'ON'}
+                    </span>
                     <label className="ios-toggle">
                       <input type="checkbox" checked={bot.status !== 'OFF'}
-                        onChange={() => bot.status === 'OFF' ? handleStart(bot.id) : handleStop(bot.id)}
-                        disabled={bot.status === 'STARTING' || bot.status === 'QR_READY'} />
+                        onChange={() => bot.status === 'OFF' ? handleStart(bot.id) : handleStop(bot.id)} />
                       <span className="slider"></span>
                     </label>
                   </div>

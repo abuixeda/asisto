@@ -205,7 +205,8 @@ function CampaignPanel({ botId, token, api, confirmAction }) {
   const [loading, setLoading] = useState(true);
   const [showNewModal, setShowNewModal] = useState(false);
   const [leadsModal, setLeadsModal] = useState(null); // campaign object or null
-  const [newCampaign, setNewCampaign] = useState({ name: '', message_template: '', delay_seconds: 45, use_ai: false, campaign_goal: '' });
+  const defaultNewCampaign = { name: '', channel: 'whatsapp', subject_template: '', message_template: '', delay_seconds: 45, use_ai: false, campaign_goal: '' };
+  const [newCampaign, setNewCampaign] = useState(defaultNewCampaign);
   const [saving, setSaving] = useState(false);
   const [leads, setLeads] = useState([]);
   const [leadsText, setLeadsText] = useState('');
@@ -234,8 +235,9 @@ function CampaignPanel({ botId, token, api, confirmAction }) {
 
   async function createCampaign() {
     if (!newCampaign.name) { setCampaignMsg({ ok: false, text: 'El nombre es requerido.' }); return; }
-    if (newCampaign.use_ai && !newCampaign.campaign_goal) { setCampaignMsg({ ok: false, text: 'Describí el objetivo de la campaña para el modo IA.' }); return; }
-    if (!newCampaign.use_ai && !newCampaign.message_template) { setCampaignMsg({ ok: false, text: 'Escribí el mensaje a enviar.' }); return; }
+    if (newCampaign.use_ai && !newCampaign.campaign_goal) { setCampaignMsg({ ok: false, text: 'Describi el objetivo de la campana para el modo IA.' }); return; }
+    if (newCampaign.channel === 'email' && !newCampaign.use_ai && !newCampaign.subject_template) { setCampaignMsg({ ok: false, text: 'Escribi el asunto del email.' }); return; }
+    if (!newCampaign.use_ai && !newCampaign.message_template) { setCampaignMsg({ ok: false, text: 'Escribi el mensaje a enviar.' }); return; }
     setSaving(true); setCampaignMsg(null);
     try {
       const res = await authFetch(`${api}/api/bots/${botId}/campaigns`, {
@@ -243,7 +245,7 @@ function CampaignPanel({ botId, token, api, confirmAction }) {
       }, token);
       if (res.ok) {
         setShowNewModal(false);
-        setNewCampaign({ name: '', message_template: '', delay_seconds: 45, use_ai: false, campaign_goal: '' });
+        setNewCampaign(defaultNewCampaign);
         loadCampaigns();
       } else {
         const d = await res.json();
@@ -313,9 +315,14 @@ function CampaignPanel({ botId, token, api, confirmAction }) {
     setImportingLeads(true); setLeadsMsg(null);
     const lines = leadsText.trim().split('\n').filter(l => l.trim());
     const parsed = lines.map(line => {
-      const [phone, name, business_type, city] = line.split(',').map(s => s.trim());
-      return { phone, name: name || '', business_type: business_type || '', city: city || '' };
-    }).filter(l => l.phone);
+      const parts = line.split(',').map(s => s.trim());
+      if (leadsModal?.channel === 'email') {
+        const [email, name, business_type, city, website] = parts;
+        return { email, name: name || '', business_type: business_type || '', city: city || '', website: website || '' };
+      }
+      const [phone, name, business_type, city, website, email] = parts;
+      return { phone, email: email || '', name: name || '', business_type: business_type || '', city: city || '', website: website || '' };
+    }).filter(l => leadsModal?.channel === 'email' ? l.email : l.phone);
 
     try {
       const res = await authFetch(`${api}/api/bots/${botId}/campaigns/${leadsModal.id}/leads`, {
@@ -365,6 +372,17 @@ function CampaignPanel({ botId, token, api, confirmAction }) {
               <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Nombre de la campaña</label>
               <input className="modal-input" value={newCampaign.name} onChange={e => setNewCampaign(p => ({ ...p, name: e.target.value }))} placeholder="Ej: Promo Mayo 2026" style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
             </div>
+            <div>
+              <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.45rem' }}>Canal de envio</label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                {[['whatsapp', 'WhatsApp'], ['email', 'Email']].map(([value, label]) => (
+                  <button key={value} type="button" onClick={() => setNewCampaign(p => ({ ...p, channel: value }))}
+                    style={{ border: '1px solid var(--border)', borderRadius: '10px', padding: '0.65rem 0.8rem', cursor: 'pointer', fontWeight: 800, background: newCampaign.channel === value ? 'linear-gradient(135deg,#7c3aed,#3b82f6)' : 'rgba(255,255,255,0.05)', color: newCampaign.channel === value ? '#fff' : 'var(--text-secondary)' }}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
             {/* Toggle modo IA */}
             <div style={{ background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: '10px', padding: '0.875rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
               <div>
@@ -388,6 +406,15 @@ function CampaignPanel({ botId, token, api, confirmAction }) {
               </label>
             </div>
 
+            {newCampaign.channel === 'email' && !newCampaign.use_ai && (
+              <div>
+                <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Asunto del email</label>
+                <input className="modal-input" value={newCampaign.subject_template}
+                  onChange={e => setNewCampaign(p => ({ ...p, subject_template: e.target.value }))}
+                  placeholder={'Ej: {{nombre}}, una idea para automatizar tus consultas'} style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
+              </div>
+            )}
+
             {/* Modo IA: campo objetivo */}
             {newCampaign.use_ai && (
               <div>
@@ -405,7 +432,7 @@ function CampaignPanel({ botId, token, api, confirmAction }) {
             {!newCampaign.use_ai && (
               <div>
                 <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>
-                  Mensaje a enviar <span style={{ opacity: 0.6 }}>(variables: {'{{nombre}}'}, {'{{negocio}}'}, {'{{ciudad}}'})</span>
+                  Mensaje a enviar <span style={{ opacity: 0.6 }}>(variables: {'{{nombre}}'}, {'{{negocio}}'}, {'{{ciudad}}'}, {'{{email}}'}, {'{{url}}'})</span>
                 </label>
                 <textarea className="prompt-textarea editable" style={{ minHeight: '120px' }}
                   value={newCampaign.message_template}
@@ -415,7 +442,7 @@ function CampaignPanel({ botId, token, api, confirmAction }) {
             )}
 
             <div>
-              <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Espera entre mensajes (segundos)</label>
+              <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>Espera entre envios (segundos)</label>
               <input className="modal-input" type="number" min={CAMPAIGN_MIN_DELAY_SECONDS} max="3600" value={newCampaign.delay_seconds}
                 onChange={e => setNewCampaign(p => ({ ...p, delay_seconds: normalizeDelay(e.target.value) }))}
                 style={{ marginBottom: 0, background: 'var(--bg-card)', width: '120px' }} />
@@ -456,11 +483,11 @@ function CampaignPanel({ botId, token, api, confirmAction }) {
               {leadsImportMode === 'manual' && (
                 <>
                   <label style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.3rem' }}>
-                    Formato: <code style={{ background: 'rgba(255,255,255,0.08)', padding: '0 4px', borderRadius: '4px' }}>telefono,nombre,negocio,ciudad,url</code>  uno por linea
+                    Formato: <code style={{ background: 'rgba(255,255,255,0.08)', padding: '0 4px', borderRadius: '4px' }}>{leadsModal?.channel === 'email' ? 'email,nombre,negocio,ciudad,url' : 'telefono,nombre,negocio,ciudad,url,email'}</code> uno por linea
                   </label>
                   <textarea className="prompt-textarea editable" style={{ minHeight: '90px' }}
                     value={leadsText} onChange={e => setLeadsText(e.target.value)}
-                    placeholder={'5491112345678,Juan,Panaderia,CABA,https://maps.app.goo.gl/xyz\n5491198765432,Maria,Ferreteria,Cordoba,'} />
+                    placeholder={leadsModal?.channel === 'email' ? 'hola@negocio.com,Juan,Panaderia,CABA,https://maps.app.goo.gl/xyz' : '5491112345678,Juan,Panaderia,CABA,https://maps.app.goo.gl/xyz,hola@negocio.com'} />
                   <button onClick={importLeads} disabled={importingLeads || !leadsText.trim()} className="btn-solid-blue"
                     style={{ margin: '0.5rem 0 0', width: 'auto', padding: '0.5rem 1rem', opacity: (importingLeads || !leadsText.trim()) ? 0.6 : 1 }}>
                     {importingLeads ? 'Importando...' : 'Importar'}
@@ -476,7 +503,7 @@ function CampaignPanel({ botId, token, api, confirmAction }) {
                   <input className="modal-input" name="campaign_sheet_url" autoComplete="off" value={sheetsUrl} onChange={e => setSheetsUrl(e.target.value)}
                     placeholder="Pega aca el enlace publico de Google Sheets" style={{ marginBottom: 0, background: 'var(--bg-card)' }} />
                   <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                    Columnas recomendadas: <strong>telefono, nombre, negocio, ciudad, url</strong> (con o sin encabezados). La columna <strong>url</strong> puede ser el sitio web o link de Google Maps del negocio  la IA lo analizar antes de escribir el mensaje.
+                    Columnas recomendadas: <strong>telefono, email, nombre, negocio, ciudad, url</strong>. Para campanas de email, la columna <strong>email</strong> es obligatoria.
                   </p>
                   <button onClick={importFromSheets} disabled={importingLeads || !sheetsUrl.trim()} className="btn-solid-blue"
                     style={{ margin: '0.5rem 0 0', width: 'auto', padding: '0.5rem 1rem', opacity: (importingLeads || !sheetsUrl.trim()) ? 0.6 : 1 }}>
@@ -497,10 +524,10 @@ function CampaignPanel({ botId, token, api, confirmAction }) {
                         {leadStatusBadge[lead.status]?.label || lead.status}
                       </span>
                       <span style={{ flex: 1, fontSize: '0.82rem', color: 'var(--text-primary)' }}>
-                        {lead.name || lead.phone.replace('@c.us', '')}
+                        {lead.name || lead.email || lead.phone.replace('@c.us', '')}
                         {lead.city && <span style={{ color: 'var(--text-secondary)', marginLeft: '0.4rem' }}> {lead.city}</span>}
                       </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{lead.phone.replace('@c.us', '')}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{leadsModal?.channel === 'email' ? lead.email : lead.phone.replace('@c.us', '')}</span>
                       <button onClick={() => deleteLead(lead.id)} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '0.85rem', padding: '0 4px' }}>Eliminar</button>
                     </div>
                   ))}
@@ -544,11 +571,12 @@ function CampaignPanel({ botId, token, api, confirmAction }) {
                   </span>
                   {c.use_ai ? (
                     <span style={{ background: 'rgba(124,58,237,0.2)', color: '#a78bfa', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '20px', border: '1px solid rgba(124,58,237,0.4)' }}>
-                      ? IA
+                      IA
                     </span>
                   ) : null}
                 </div>
                 <div style={{ display: 'flex', gap: '1rem', fontSize: '0.78rem', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
+                  <span style={{ color: (c.channel || 'whatsapp') === 'email' ? '#22d3ee' : '#10b981', fontWeight: 800 }}>{(c.channel || 'whatsapp') === 'email' ? 'Email' : 'WhatsApp'}</span>
                   <span>{c.stats?.pending || 0} pendientes</span>
                   <span style={{ color: '#3b82f6' }}>{c.stats?.sent || 0} enviados</span>
                   <span style={{ color: '#10b981' }}>{c.stats?.replied || 0} respondieron</span>
@@ -2892,6 +2920,7 @@ export default function MerchantPanel() {
       const res = await authFetch(`${API}/api/bots/${botId}/status`, {}, token);
       const data = await res.json();
       if (data.qr) setQrData(data.qr);
+      if (data.status) setBot(b => ({ ...b, ...data, status: data.status }));
       if (data.status === 'ON') {
         setBot(b => ({ ...b, status: 'ON' }));
         setStarting(false);
@@ -2914,6 +2943,8 @@ export default function MerchantPanel() {
 
   const metrics = (() => { try { return JSON.parse(bot.metrics || '{}'); } catch { return {}; } })();
   const isOn = bot.status === 'ON';
+  const isConnecting = starting || ['STARTING', 'QR_READY'].includes(bot.status);
+  const canStopWhatsApp = isOn || isConnecting;
   const planLimits = { starter: 1500, growth: 5000, scale: 20000 };
   const usage = bot.usage || {
     plan: bot.plan || 'starter',
@@ -3087,30 +3118,32 @@ export default function MerchantPanel() {
           <PanelCard style={{ marginBottom: '1rem', padding: '1.25rem 1.35rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
-                <IconBox tone={isOn ? 'green' : starting ? 'amber' : 'blue'}>
-                  {isOn ? <Wifi size={20} /> : starting ? <Clock size={20} /> : <Bot size={20} />}
+                <IconBox tone={isOn ? 'green' : isConnecting ? 'amber' : 'blue'}>
+                  {isOn ? <Wifi size={20} /> : isConnecting ? <Clock size={20} /> : <Bot size={20} />}
                 </IconBox>
                 <div>
                   <h1 style={{ margin: '0 0 0.25rem', fontSize: '1.65rem', fontWeight: 850, letterSpacing: 0 }}>Asistente Manager</h1>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <span style={{ color: 'var(--text-primary)', fontWeight: 750 }}>{bot.name}</span>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: isOn ? '#34d399' : starting ? '#f59e0b' : 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 700 }}>
-                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: isOn ? '#10b981' : starting ? '#f59e0b' : '#64748b' }} />
-                      {isOn ? 'Activo' : starting ? 'Conectando' : 'Pausado'}
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: isOn ? '#34d399' : isConnecting ? '#f59e0b' : 'var(--text-secondary)', fontSize: '0.78rem', fontWeight: 700 }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: isOn ? '#10b981' : isConnecting ? '#f59e0b' : '#64748b' }} />
+                      {isOn ? 'Activo' : isConnecting ? 'Esperando QR' : 'Pausado'}
                     </span>
                     <span style={{ background: 'rgba(59,130,246,0.14)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.24)', fontSize: '0.66rem', padding: '2px 8px', borderRadius: 999, fontWeight: 800 }}>PLAN {planName.toUpperCase()}</span>
                   </div>
                 </div>
               </div>
               <div id="tour-status" style={{ display: 'flex', gap: '0.65rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                {isOn ? (
+                {canStopWhatsApp ? (
                   <>
                     <button onClick={stopBot} style={{ padding: '0.65rem 0.95rem', borderRadius: '9px', border: '1px solid rgba(239,68,68,0.55)', background: 'rgba(239,68,68,0.08)', color: '#f87171', cursor: 'pointer', fontSize: '0.84rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
                       <WifiOff size={16} /> Detener
                     </button>
-                    <button onClick={unlinkWhatsApp} disabled={unlinking} style={{ padding: '0.65rem 0.95rem', borderRadius: '9px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.84rem', fontWeight: 700 }}>
-                      {unlinking ? 'Desvinculando...' : 'Desvincular'}
-                    </button>
+                    {isOn && (
+                      <button onClick={unlinkWhatsApp} disabled={unlinking} style={{ padding: '0.65rem 0.95rem', borderRadius: '9px', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.84rem', fontWeight: 700 }}>
+                        {unlinking ? 'Desvinculando...' : 'Desvincular'}
+                      </button>
+                    )}
                   </>
                 ) : (
                   <button onClick={startBot} disabled={starting} className="btn-solid-blue" style={{ margin: 0, width: 'auto', padding: '0.68rem 1rem', fontSize: '0.88rem', opacity: starting ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
@@ -3143,7 +3176,7 @@ export default function MerchantPanel() {
             </div>
           </PanelCard>
 
-          {(starting || isOn) && (
+          {(isConnecting || isOn) && (
             <PanelCard style={{ marginBottom: '1rem', borderColor: isOn ? 'rgba(16,185,129,0.24)' : 'var(--border)' }}>
               <SectionHeader
                 icon={isOn ? <Wifi size={18} /> : <Smartphone size={18} />}
@@ -3151,7 +3184,7 @@ export default function MerchantPanel() {
                 title={isOn ? 'WhatsApp conectado' : 'Conectar WhatsApp'}
                 desc={isOn ? 'El asistente esta activo y responde automaticamente.' : 'Escanea el codigo desde WhatsApp para vincular el numero del negocio.'}
               />
-              {starting && (
+              {isConnecting && (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.85rem', padding: '0.5rem 0 0.2rem' }}>
                   {qrData ? (
                     <>
