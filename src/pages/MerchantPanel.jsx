@@ -48,12 +48,12 @@ const cardStyle = {
 const CAMPAIGN_MIN_DELAY_SECONDS = 5;
 
 const DEFAULT_HUMAN_HANDOFF = {
-  enabled: true,
+  enabled: false,
   triggers: {
-    paymentRisk: true,
-    angryCustomer: true,
-    explicitRequest: true,
-    unknownAnswer: true,
+    paymentRisk: false,
+    angryCustomer: false,
+    explicitRequest: false,
+    unknownAnswer: false,
     highValue: false,
   },
   customRule: '',
